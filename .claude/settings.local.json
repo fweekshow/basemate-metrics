@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(curl -s --max-time 5 http://localhost:3000/api/agent/analytics)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npx --yes create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm --yes)"
+    ]
+  }
+}
