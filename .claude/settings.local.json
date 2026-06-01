@@ -4,7 +4,14 @@
       "Bash(npm --version)",
       "Bash(curl -s --max-time 5 http://localhost:3000/api/agent/analytics)",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(npx --yes create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm --yes)"
+      "Bash(npx --yes create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm --yes)",
+      "Bash(npx --yes shadcn@latest init -d --yes)",
+      "Bash(npx --yes shadcn@latest add card badge separator progress scroll-area --yes)",
+      "Bash(npm install *)",
+      "Bash(curl -s --max-time 8 http://localhost:3001/api/metrics)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 20 http://localhost:3001/)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python -m json.tool)"
     ]
   }
 }
