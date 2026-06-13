@@ -22,6 +22,7 @@ import {
   RatioDonut,
   TopActions,
 } from "./charts";
+import { ProtocolFlowBand, ProtocolFlowPlaceholder } from "./protocol-flow";
 import { Panel, SectionLabel, StatCard } from "./primitives";
 
 type NumericSampleKey = {
@@ -98,7 +99,7 @@ export function Dashboard() {
               />
               <StatCard
                 label="Messages Recv"
-                value={compact(data.users.messagesReceived)}
+                value={full(data.users.messagesReceived)}
                 accent="cyan"
                 icon={MessageSquare}
                 sub={`${full(data.activity.last24h.messages)} in last 24h`}
@@ -136,6 +137,12 @@ export function Dashboard() {
                 sub={`+${data.recommendations.sentLast24h} 24h · ${data.recommendations.pending} pending`}
               />
             </div>
+
+            {data.protocolFlow ? (
+              <ProtocolFlowBand flow={data.protocolFlow} />
+            ) : (
+              <ProtocolFlowPlaceholder />
+            )}
 
             {/* Middle bento band */}
             <div className="grid grid-cols-1 gap-3 lg:h-[310px] lg:grid-cols-12 lg:grid-rows-2">
@@ -219,13 +226,25 @@ export function Dashboard() {
                 </div>
               </Panel>
 
-              <Panel title="Legacy Groups" className="lg:col-span-2">
-                <div className="flex h-full flex-col justify-start gap-1">
-                  <MiniStat label="Active groups" value={full(data.legacyGroups.activeGroups)} accent="text-cyan" />
-                  <MiniStat label="Total messages" value={compact(data.legacyGroups.totalMessages)} />
-                  <MiniStat label="Mentioned msgs" value={full(data.legacyGroups.totalMentionedMessages)} />
-                </div>
-              </Panel>
+              {data.legacyGroups ? (
+                <Panel title="Legacy Groups" className="lg:col-span-2">
+                  <div className="flex h-full flex-col justify-start gap-1">
+                    <MiniStat
+                      label="Active groups"
+                      value={full(data.legacyGroups.activeGroups)}
+                      accent="text-cyan"
+                    />
+                    <MiniStat
+                      label="Total messages"
+                      value={compact(data.legacyGroups.totalMessages)}
+                    />
+                    <MiniStat
+                      label="Mentioned msgs"
+                      value={full(data.legacyGroups.totalMentionedMessages)}
+                    />
+                  </div>
+                </Panel>
+              ) : null}
 
               <Panel title="Keywords / Ads" className="lg:col-span-2">
                 <div className="flex h-full flex-col justify-start gap-1">

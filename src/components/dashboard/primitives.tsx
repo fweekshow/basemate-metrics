@@ -1,8 +1,9 @@
 "use client";
 
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { Area, AreaChart } from "recharts";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChartMount } from "./chart-mount";
 
 type Accent = "primary" | "cyan" | "up" | "down" | "violet" | "amber";
 
@@ -78,7 +79,7 @@ export function Panel({
         </div>
         {right}
       </header>
-      <div className={cn("min-h-0 flex-1 p-4", bodyClassName)}>{children}</div>
+      <div className={cn("min-h-0 min-w-0 flex-1 p-4", bodyClassName)}>{children}</div>
     </section>
   );
 }
@@ -118,9 +119,8 @@ export function Sparkline({
   const series = data.map((v, i) => ({ i, v }));
   const id = `spark-${accent}`;
   return (
-    <div className="h-full w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={series} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+    <ChartMount className="h-full w-full" minHeight={28}>
+      <AreaChart data={series} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={accentStroke[accent]} stopOpacity={0.45} />
@@ -137,8 +137,7 @@ export function Sparkline({
             dot={false}
           />
         </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    </ChartMount>
   );
 }
 

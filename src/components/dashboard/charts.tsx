@@ -8,13 +8,13 @@ import {
   Cell,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import type { ActivityWindow, ButtonAction, MetricSample } from "@/lib/types";
 import { compact, full } from "@/lib/format";
+import { ChartMount } from "./chart-mount";
 
 const C = {
   primary: "var(--primary)",
@@ -57,9 +57,8 @@ export function LiveTrend({ samples }: { samples: MetricSample[] }) {
   }));
 
   return (
-    <div className="h-full min-h-[160px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }}>
+    <ChartMount className="h-full min-h-[160px] w-full" minHeight={160}>
+      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }}>
           <defs>
             <linearGradient id="lt-msg" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={C.cyan} stopOpacity={0.4} />
@@ -110,8 +109,7 @@ export function LiveTrend({ samples }: { samples: MetricSample[] }) {
             isAnimationActive={false}
           />
         </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    </ChartMount>
   );
 }
 
@@ -134,9 +132,8 @@ export function ActivityComparison({
     },
   ];
   return (
-    <div className="h-full min-h-[160px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }} barGap={4}>
+    <ChartMount className="h-full min-h-[160px] w-full" minHeight={160}>
+      <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }} barGap={4}>
           <XAxis dataKey="k" tickLine={false} axisLine={false} />
           <YAxis tickLine={false} axisLine={false} width={40} tickFormatter={compact} />
           <Tooltip
@@ -164,8 +161,7 @@ export function ActivityComparison({
           <Bar dataKey="7d" fill={C.violet} radius={[3, 3, 0, 0]} maxBarSize={26} isAnimationActive={false} />
           <Bar dataKey="24h" fill={C.cyan} radius={[3, 3, 0, 0]} maxBarSize={26} isAnimationActive={false} />
         </BarChart>
-      </ResponsiveContainer>
-    </div>
+    </ChartMount>
   );
 }
 
@@ -214,7 +210,7 @@ export function RatioDonut({
   return (
     <div className="flex h-full items-center gap-4">
       <div className="relative size-20 shrink-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ChartMount className="size-full" minHeight={80}>
           <PieChart>
             <Pie
               data={data}
@@ -231,7 +227,7 @@ export function RatioDonut({
               ))}
             </Pie>
           </PieChart>
-        </ResponsiveContainer>
+        </ChartMount>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
             {rate}%

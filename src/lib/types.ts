@@ -10,6 +10,25 @@ export interface ActivityWindow {
   uniqueActiveUsers: number;
 }
 
+export interface ProtocolFlowMetric {
+  users: number;
+  clicks: number;
+  clicks24h: number;
+  confirmedVolumeUsdc: string;
+  volume24hUsdc: string;
+  confirmedTxCount: number;
+}
+
+export interface BankrFlowMetric {
+  totalLaunches: number;
+  launches24h: number;
+  failedLaunches: number;
+  tradingVolume24hUsdc: number;
+  tradingLiquidityUsdc: number;
+  basemateBuyVolumeUsdc: string;
+  basemateBuyVolume24hUsdc: string;
+}
+
 export interface AnalyticsPayload {
   generatedAt: string;
   instanceId: string;
@@ -65,10 +84,20 @@ export interface AnalyticsPayload {
     buttonClicksLast24h: number;
     topButtonActions: ButtonAction[];
   };
-  legacyGroups: {
+  legacyGroups?: {
     activeGroups: number;
     totalMessages: number;
     totalMentionedMessages: number;
+  };
+  protocolFlow?: {
+    moonwell: ProtocolFlowMetric;
+    morpho: ProtocolFlowMetric;
+    aave: ProtocolFlowMetric;
+    avantis: ProtocolFlowMetric & {
+      copyVolumeUsdc: string;
+      copyVolume24hUsdc: string;
+    };
+    bankr: BankrFlowMetric;
   };
 }
 
