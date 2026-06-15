@@ -24,9 +24,7 @@ export interface BankrFlowMetric {
   launches24h: number;
   failedLaunches: number;
   tradingVolume24hUsdc: number;
-  tradingLiquidityUsdc: number;
-  basemateBuyVolumeUsdc: string;
-  basemateBuyVolume24hUsdc: string;
+  tradingVolumeLifetimeUsdc: number;
 }
 
 export interface AnalyticsPayload {
