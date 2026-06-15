@@ -100,7 +100,7 @@ export function ProtocolFlowBand({
             />
           </div>
         </Panel>
-        <Panel title="Bankr" subtitle="launches + market volume">
+        <Panel title="Bankr" subtitle="launches + DexScreener market stats">
           <div className="flex h-full flex-col justify-start gap-1">
             <MiniStat
               label="Launches lifetime"
@@ -109,13 +109,13 @@ export function ProtocolFlowBand({
             />
             <MiniStat label="Launches 24h" value={full(flow.bankr.launches24h)} />
             <MiniStat
-              label="Market lifetime"
+              label="Market liquidity"
               value={`$${compact(flow.bankr.tradingLiquidityUsdc ?? 0)}`}
               accent="text-up"
             />
             <MiniStat
               label="Market vol 24h"
-              value={`$${compact(flow.bankr.tradingVolume24hUsdc)}`}
+              value={`$${usdc(flow.bankr.tradingVolume24hUsdc)}`}
               accent="text-up"
             />
           </div>

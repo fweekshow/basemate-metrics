@@ -127,7 +127,7 @@ export function Dashboard() {
                 value={full(data.tokenLaunches.allTime.success)}
                 accent="amber"
                 icon={Rocket}
-                sub={`+${data.tokenLaunches.last24h.success} 24h · ${data.tokenLaunches.allTime.failed} failed`}
+                sub={`+${data.tokenLaunches.last24h.success} 24h`}
               />
               <StatCard
                 label="Recs Sent"

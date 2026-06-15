@@ -4,19 +4,29 @@ import type { AnalyticsPayload } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const HOST = process.env.AGENT_API_HOST ?? "http://localhost:3000";
-const ENDPOINT = `${HOST.replace(/\/$/, "")}/api/agent/analytics`;
-
 export async function GET() {
+  const host = process.env.AGENT_API_HOST?.trim();
+  if (!host) {
+    return NextResponse.json(
+      {
+        error: "AGENT_API_HOST is not configured",
+        detail: "Set AGENT_API_HOST in Railway Variables to your xmtp-agent URL, then redeploy.",
+      },
+      { status: 500 },
+    );
+  }
+
+  const endpoint = `${host.replace(/\/$/, "")}/api/agent/analytics`;
+
   try {
-    const res = await fetch(ENDPOINT, {
+    const res = await fetch(endpoint, {
       cache: "no-store",
       headers: { accept: "application/json" },
     });
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: `Upstream responded ${res.status}`, endpoint: ENDPOINT },
+        { error: `Upstream responded ${res.status}`, endpoint },
         { status: 502 },
       );
     }
@@ -30,7 +40,7 @@ export async function GET() {
       {
         error: "Failed to reach agent API",
         detail: err instanceof Error ? err.message : String(err),
-        endpoint: ENDPOINT,
+        endpoint,
       },
       { status: 503 },
     );

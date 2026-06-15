@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "basemate · metrics",
-  description: "Live telemetry for the basemate on-chain agent (@basemateagent)",
+  title: {
+    default: "Basemate - Community Discovery",
+    template: "%s · Basemate",
+  },
+  description:
+    "AI-powered community discovery inside group chats on Base.",
 };
 
 export default function RootLayout({
