@@ -110,7 +110,7 @@ export function ProtocolFlowBand({
             <MiniStat label="Launches 24h" value={full(flow.bankr.launches24h)} />
             <MiniStat
               label="Lifetime volume"
-              value={`$${compact(flow.bankr.tradingVolumeLifetimeUsdc)}`}
+              value={`$${compact(flow.bankr.tradingVolumeLifetimeUsdc ?? 0)}`}
               accent="text-up"
             />
             <MiniStat
