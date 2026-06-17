@@ -14,7 +14,7 @@ const stats = [
   { value: "$2M+", label: "VOLUME TRADED" },
   { value: "1000s", label: "USERS" },
   { value: "100s", label: "TOKENS LAUNCHED" },
-  { value: "1", label: "PERPS PARTNER" },
+  { value: "Avantis", label: "PERPS PARTNER" },
 ] as const;
 
 const roadmap = [
@@ -115,25 +115,25 @@ export default function HomePage() {
             {
               label: "PERPS",
               headline: "Long or short anything",
-              body: 'Type "long eth 5×" and Basemate opens the position on Avantis — risk tier set, TP/SL auto-configured, settled on Base.',
+              body: 'Say "long eth 5×" — Basemate opens the Avantis position with TP/SL set, settled on Base.',
               accent: "text-primary",
             },
             {
               label: "TRENDING",
               headline: "Scout launches before they moon",
-              body: 'Ask "what\'s trending?" and get a live Bankr feed — top movers, market caps, and one-tap buy right from the response.',
+              body: 'Ask "what\'s trending?" and get a live Bankr feed with top movers and one-tap buy.',
               accent: "text-up",
             },
             {
               label: "EARN",
               headline: "Park idle USDC, earn yield",
-              body: "Idle stablecoins in the chat? Tell Basemate to earn and it finds the best rate on Base, executes, and confirms in one message.",
+              body: "Tell Basemate to earn and it finds the best rate on Base, executes, and confirms — one message.",
               accent: "text-primary",
             },
             {
               label: "LAUNCH",
               headline: "Ship a token from the chat",
-              body: "Hundreds of tokens have launched through Basemate. Describe it, confirm the details, and it's on-chain — no interface required.",
+              body: "Describe it, confirm the details, and it's on-chain — no launchpad interface required.",
               accent: "text-up",
             },
           ].map(({ label, headline, body, accent }) => (
