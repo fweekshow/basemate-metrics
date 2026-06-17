@@ -250,17 +250,18 @@ export default function HomePage() {
                 Add @basemate on Base
               </a>
             </div>
-            {/* mascot */}
+            {/* mascot — buff flat version on white sticker tile */}
             <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-              <Image
-                src="/brand/mascot/mate-win.png"
-                alt=""
-                width={160}
-                height={160}
-                className="select-none"
-                style={{ mixBlendMode: "screen" }}
-                draggable={false}
-              />
+              <div className="rounded-2xl bg-white p-3 shadow-[0_0_32px_rgba(25,251,68,0.3),0_0_0_1px_rgba(25,251,68,0.2)]">
+                <Image
+                  src="/brand/mascot/mate-win-buff.png"
+                  alt=""
+                  width={128}
+                  height={128}
+                  className="select-none"
+                  draggable={false}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -276,11 +277,11 @@ function ChatMockup() {
       {/* header */}
       <div className="flex items-center gap-3 border-b border-border/50 bg-card/80 px-4 py-3 backdrop-blur-md">
         <Image
-          src="/brand/logo/basemate-mark.png"
+          src="/brand/logo/basemate-logo-flat.png"
           alt="Basemate"
           width={28}
           height={28}
-          className="rounded-full"
+          className="rounded-lg"
         />
         <div>
           <p className="text-xs font-semibold text-foreground">Basemate</p>
@@ -290,33 +291,33 @@ function ChatMockup() {
 
       {/* messages */}
       <div className="space-y-3 px-3 py-4">
-        {/* user */}
+        {/* user — solid blue, no tail (design system flat bubble) */}
         <div className="flex justify-end">
-          <div className="max-w-[75%] rounded-[18px] rounded-br-[4px] bg-primary px-3.5 py-2.5 text-sm text-white">
+          <div className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white" style={{ background: "#0505FF" }}>
             long eth
           </div>
         </div>
 
-        {/* agent reply */}
+        {/* agent — white card, blue-tinted border */}
         <div className="flex justify-start">
-          <div className="max-w-[85%] rounded-[18px] rounded-bl-[4px] border border-border/50 bg-background px-3.5 py-2.5 text-sm text-foreground">
+          <div className="max-w-[85%] rounded-[20px] px-3.5 py-2.5 text-sm" style={{ background: "#ffffff", color: "#0F172A", border: "1.5px solid #E8E8FF", boxShadow: "0 1px 4px rgba(5,5,255,0.06)" }}>
             <p>Open <strong>ETH long, 5×</strong> with $200 collateral?</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs" style={{ color: "#64748B" }}>
               tactical tier · TP +20% / SL −10%
             </p>
           </div>
         </div>
 
-        {/* pill actions */}
+        {/* inline pill actions */}
         <div className="flex flex-wrap gap-2 pl-1">
           {["Long 5×", "Change size", "Not now"].map((a, i) => (
             <span
               key={a}
-              className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                i === 0
-                  ? "border-primary/50 bg-primary/15 text-primary"
-                  : "border-border/60 text-muted-foreground"
-              }`}
+              className="rounded-full px-3 py-1 text-xs font-semibold"
+              style={i === 0
+                ? { background: "#0505FF", color: "#fff" }
+                : { border: "1.5px solid rgba(203,213,225,0.3)", color: "#64748B" }
+              }
             >
               {a}
             </span>
@@ -325,18 +326,18 @@ function ChatMockup() {
 
         {/* user confirms */}
         <div className="flex justify-end">
-          <div className="max-w-[75%] rounded-[18px] rounded-br-[4px] bg-primary px-3.5 py-2.5 text-sm text-white">
+          <div className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white" style={{ background: "#0505FF" }}>
             long 5×
           </div>
         </div>
 
-        {/* agent win */}
+        {/* agent win — green accent */}
         <div className="flex justify-start">
-          <div className="max-w-[90%] rounded-[18px] rounded-bl-[4px] border border-up/25 bg-up/5 px-3.5 py-2.5 text-sm">
-            <p className="text-foreground">Done — settled on Base.</p>
+          <div className="max-w-[90%] rounded-[20px] px-3.5 py-2.5 text-sm" style={{ background: "#ffffff", color: "#0F172A", border: "1.5px solid rgba(25,251,68,0.3)", boxShadow: "0 0 12px rgba(25,251,68,0.15)" }}>
+            <p>Done — settled on Base.</p>
             <p
-              className="mt-1 text-base font-bold text-up"
-              style={{ fontFamily: "var(--font-mono)" }}
+              className="mt-1 text-base font-bold"
+              style={{ fontFamily: "var(--font-mono)", color: "#16A34A" }}
             >
               +82% on collateral ↗
             </p>

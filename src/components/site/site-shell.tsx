@@ -31,11 +31,11 @@ export function SiteShell({
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5 min-w-0">
             <Image
-              src={SITE.pfp}
+              src="/brand/logo/basemate-logo-flat.png"
               alt="@basemate"
               width={32}
               height={32}
-              className="rounded-full border border-primary/30"
+              className="rounded-lg"
               priority
             />
             <span className="truncate font-mono text-sm font-semibold tracking-tight">

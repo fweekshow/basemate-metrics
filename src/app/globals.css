@@ -48,51 +48,52 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-/* Always-dark trading-desk theme */
+/* Always-dark trading-desk theme — colors aligned with Basemate Design System v2 */
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.145 0.012 250);
-  --foreground: oklch(0.96 0.006 250);
+  --background: #00040A;
+  --foreground: #F8FAFC;
 
-  --card: oklch(0.185 0.014 250);
-  --card-foreground: oklch(0.96 0.006 250);
-  --popover: oklch(0.185 0.014 250);
-  --popover-foreground: oklch(0.96 0.006 250);
+  --card: #0D1117;
+  --card-foreground: #F8FAFC;
+  --popover: #0D1117;
+  --popover-foreground: #F8FAFC;
 
-  --primary: oklch(0.58 0.235 262);
-  --primary-foreground: oklch(0.98 0.01 250);
+  /* Brand blue: #0505FF (exact design system --blue-500) */
+  --primary: #0505FF;
+  --primary-foreground: #FFFFFF;
 
-  --secondary: oklch(0.26 0.02 250);
-  --secondary-foreground: oklch(0.96 0.006 250);
+  --secondary: #1A2030;
+  --secondary-foreground: #F8FAFC;
 
-  --muted: oklch(0.24 0.018 250);
-  --muted-foreground: oklch(0.66 0.025 250);
+  --muted: #151C28;
+  --muted-foreground: #64748B;
 
-  --accent: oklch(0.27 0.025 250);
-  --accent-foreground: oklch(0.96 0.006 250);
+  --accent: #1A2030;
+  --accent-foreground: #F8FAFC;
 
-  --destructive: oklch(0.62 0.21 18);
-  --border: oklch(0.32 0.025 250 / 45%);
-  --input: oklch(0.32 0.025 250 / 55%);
-  --ring: oklch(0.58 0.235 262 / 60%);
+  --destructive: #FF4D67;
+  --border: rgba(203, 213, 225, 0.12);
+  --input: rgba(203, 213, 225, 0.18);
+  --ring: rgba(5, 5, 255, 0.45);
 
-  /* semantic accents */
-  --up: oklch(0.78 0.17 158);
-  --down: oklch(0.66 0.2 18);
-  --cyan: oklch(0.78 0.13 200);
-  --violet: oklch(0.7 0.17 300);
-  --amber: oklch(0.82 0.16 78);
+  /* semantic accents — design system exact values */
+  --up: #19FB44;      /* neon green: win / long / PnL up */
+  --down: #FF4D67;    /* red: loss / short */
+  --cyan: #38BDF8;
+  --violet: #8B5CF6;
+  --amber: #FFC24D;
 
   /* chart ramp */
-  --chart-1: oklch(0.58 0.235 262);
-  --chart-2: oklch(0.78 0.13 200);
-  --chart-3: oklch(0.78 0.17 158);
-  --chart-4: oklch(0.7 0.17 300);
-  --chart-5: oklch(0.82 0.16 78);
+  --chart-1: #0505FF;
+  --chart-2: #38BDF8;
+  --chart-3: #19FB44;
+  --chart-4: #8B5CF6;
+  --chart-5: #FFC24D;
 
-  --scrollbar-thumb: oklch(0.32 0.025 250 / 55%);
-  --scrollbar-thumb-hover: oklch(0.58 0.235 262 / 50%);
+  --scrollbar-thumb: rgba(100, 116, 139, 0.4);
+  --scrollbar-thumb-hover: rgba(5, 5, 255, 0.45);
   --scrollbar-track: transparent;
 }
 
@@ -147,8 +148,8 @@
   }
 
   .glow-primary {
-    box-shadow: 0 0 0 1px oklch(0.58 0.235 262 / 25%),
-      0 0 24px -6px oklch(0.58 0.235 262 / 45%);
+    box-shadow: 0 0 0 1px rgba(5, 5, 255, 0.25),
+      0 0 24px -6px rgba(5, 5, 255, 0.45);
   }
 
   .glow-green {
