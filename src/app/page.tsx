@@ -255,9 +255,10 @@ export default function HomePage() {
               <Image
                 src="/brand/mascot/mate-win.png"
                 alt=""
-                width={148}
-                height={148}
-                className="drop-shadow-[0_0_32px_rgba(25,251,68,0.45)] select-none"
+                width={160}
+                height={160}
+                className="select-none"
+                style={{ mixBlendMode: "screen" }}
                 draggable={false}
               />
             </div>
