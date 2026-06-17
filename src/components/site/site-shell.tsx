@@ -7,9 +7,7 @@ import { SITE } from "@/lib/site";
 const nav = [
   { href: "/", label: "Home", external: false },
   { href: "/brand", label: "Brand", external: false },
-  { href: "/deck", label: "Deck", external: false },
   { href: "/pay", label: "Pay", external: false },
-  { href: SITE.appUrl, label: "App", external: true },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
 ] as const;
 
@@ -83,12 +81,9 @@ export function SiteShell({
             >
               Add on Base
             </a>
-            <a
-              href={SITE.appUrl}
-              className="py-2 hover:text-foreground transition-colors"
-            >
-              Miniapp
-            </a>
+            <Link href="/brand" className="py-2 hover:text-foreground transition-colors">
+              Brand
+            </Link>
             <Link href="/pay" className="py-2 hover:text-foreground transition-colors">
               Fund wallet
             </Link>
