@@ -223,33 +223,44 @@ export default function HomePage() {
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-8 sm:p-10">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-8 sm:p-12">
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-primary/10 blur-3xl"
+            className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
           />
-          <div className="relative">
-            <Image
-              src="/brand/mascot/mate-win.png"
-              alt=""
-              width={64}
-              height={64}
-              className="mb-4"
-            />
-            <h2 className="font-display mb-2 text-2xl font-bold sm:text-3xl">
-              Ready to trade in the chat?
-            </h2>
-            <p className="mb-6 max-w-xl text-muted-foreground">
-              Add @basemate to your Base App group. One message. One tap. One win.
-            </p>
-            <a
-              href={SITE.profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
-            >
-              Add @basemate on Base
-            </a>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-8 -bottom-8 h-40 w-40 rounded-full bg-up/5 blur-2xl"
+          />
+          <div className="relative flex items-center gap-8 sm:gap-12">
+            {/* text + cta */}
+            <div className="flex-1">
+              <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
+                Ready to trade in the chat?
+              </h2>
+              <p className="mb-6 max-w-md text-muted-foreground">
+                Add @basemate to your Base App group. One message. One tap. One win.
+              </p>
+              <a
+                href={SITE.profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
+              >
+                Add @basemate on Base
+              </a>
+            </div>
+            {/* mascot */}
+            <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
+              <Image
+                src="/brand/mascot/mate-win.png"
+                alt=""
+                width={148}
+                height={148}
+                className="drop-shadow-[0_0_32px_rgba(25,251,68,0.45)] select-none"
+                draggable={false}
+              />
+            </div>
           </div>
         </div>
       </section>
