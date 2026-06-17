@@ -1,6 +1,7 @@
 "use client";
 
-import { Activity, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Status } from "@/hooks/use-metrics";
 
@@ -45,28 +46,42 @@ export function Header({
     <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-6 gap-y-3 px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="grid size-9 place-items-center rounded-md border border-primary/40 bg-primary/10 glow-primary">
-            <Activity className="size-4 text-primary" />
-          </div>
-          <div className="leading-tight">
-            <div className="flex items-center gap-2">
-              <h1 className="font-mono text-sm font-semibold tracking-wide text-foreground">
-                basemate
-                <span className="text-muted-foreground"> / metrics</span>
-              </h1>
-              <span className="rounded border border-border px-1.5 py-px font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                {instanceId ?? "—"}
+          <a
+            href="https://basemate.app"
+            className="flex items-center gap-3 group"
+            aria-label="Back to basemate.app"
+          >
+            <Image
+              src="/brand/logo/basemate-logo-flat.png"
+              alt="Basemate"
+              width={36}
+              height={36}
+              className="rounded-lg transition-opacity group-hover:opacity-80"
+              priority
+            />
+            <div className="leading-tight">
+              <div className="flex items-center gap-2">
+                <h1 className="font-mono text-sm font-semibold tracking-wide text-foreground group-hover:text-primary transition-colors">
+                  basemate
+                  <span className="text-muted-foreground"> / metrics</span>
+                </h1>
+                <span className="rounded border border-border px-1.5 py-px font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {instanceId ?? "—"}
+                </span>
+              </div>
+              <span className="font-mono text-[11px] text-muted-foreground group-hover:text-foreground/60 transition-colors">
+                basemate.app ↗
               </span>
             </div>
-            <a
-              href="https://x.com/basemateagent"
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-cyan"
-            >
-              @basemateagent ↗
-            </a>
-          </div>
+          </a>
+          <a
+            href="https://x.com/basemateagent"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden sm:block font-mono text-[11px] text-muted-foreground transition-colors hover:text-cyan"
+          >
+            @basemateagent ↗
+          </a>
         </div>
 
         <div className="ml-auto flex items-center gap-5">
