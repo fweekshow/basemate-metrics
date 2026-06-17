@@ -5,13 +5,22 @@ import type { PortfolioPayload } from "@/lib/portfolio-types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function portfolioApiHost(): string | undefined {
+  return (
+    process.env.IMESSAGE_PORTFOLIO_API_HOST?.trim() ||
+    process.env.AGENT_API_HOST?.trim() ||
+    undefined
+  );
+}
+
 export async function GET(req: NextRequest) {
-  const host = process.env.IMESSAGE_PORTFOLIO_API_HOST?.trim();
+  const host = portfolioApiHost();
   if (!host) {
     return NextResponse.json(
       {
-        error: "IMESSAGE_PORTFOLIO_API_HOST is not configured",
-        detail: "Set IMESSAGE_PORTFOLIO_API_HOST to your deployed basemate-imessage URL.",
+        error: "Portfolio API host is not configured",
+        detail:
+          "Set AGENT_API_HOST (or IMESSAGE_PORTFOLIO_API_HOST) to your xmtp-agent / basemate-tba URL.",
       },
       { status: 500 },
     );
