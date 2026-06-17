@@ -17,6 +17,33 @@ const stats = [
   { value: "Avantis", label: "PERPS PARTNER" },
 ] as const;
 
+const features = [
+  {
+    label: "PERPS",
+    headline: "Long or short anything",
+    body: 'Say "long eth 5×" — Basemate opens the Avantis position with TP/SL set, settled on Base.',
+    color: "#0505FF",
+  },
+  {
+    label: "TRENDING",
+    headline: "Scout launches before they moon",
+    body: 'Ask "what\'s trending?" and get a live Bankr feed with top movers and one-tap buy.',
+    color: "#16A34A",
+  },
+  {
+    label: "EARN",
+    headline: "Park idle USDC, earn yield",
+    body: "Tell Basemate to earn and it finds the best rate on Base, executes, and confirms — one message.",
+    color: "#0505FF",
+  },
+  {
+    label: "LAUNCH",
+    headline: "Ship a token from the chat",
+    body: "Describe it, confirm the details, and it's on-chain — no launchpad interface required.",
+    color: "#16A34A",
+  },
+] as const;
+
 const roadmap = [
   { label: "Agent launched on Base App", done: true },
   { label: "Basemate token launched", done: true },
@@ -32,48 +59,50 @@ export default function HomePage() {
     <SiteShell>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative mx-auto max-w-5xl px-4 pb-16 pt-14 sm:px-6 sm:pt-20">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-16">
+      <section className="relative mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
+        <div className="flex flex-col gap-14 lg:flex-row lg:items-center lg:gap-16">
 
-          {/* Left — headline + CTA */}
-          <div className="flex-1 space-y-7">
-            <div
-              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-              style={{ fontFamily: "var(--font-mono)" }}
-            >
-              Base-native · on-chain · in the chat
+          {/* Left */}
+          <div className="flex-1 space-y-8">
+            <div className="flex items-center gap-2.5">
+              <Image
+                src="/brand/logo/basemate-logo-flat.png"
+                alt="Basemate"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
+              <span
+                className="text-sm font-bold text-foreground"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                Basemate
+              </span>
             </div>
 
             <h1
-              className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl"
+              className="font-display text-5xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-6xl"
               style={{ textWrap: "balance" }}
             >
-              Trade, earn, and launch.{" "}
-              <span className="text-primary">By just messaging.</span>
+              Trade, Earn,{" "}
+              <span className="text-primary">and Launch.</span>
             </h1>
 
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Basemate is the Base-native agent that lives in your chats.
-              Long a perp, swap tokens, earn yield, or scout the next launch —
-              every action is one tap away.
+              Basemate is the Base Agent that lives in your chats. Long COIN, Short ETH,
+              Swap Tokens, Earn Yield, Discover Trending Tokens or Launch your own token
+              and connect with Community all inside of chats.
             </p>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href={SITE.profileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
-              >
-                Add @basemate on Base
-              </a>
-              <Link
-                href="/pay"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-border/70 bg-transparent px-6 text-sm font-semibold text-foreground transition-all hover:bg-muted active:scale-[0.97]"
-              >
-                Fund your wallet
-              </Link>
-            </div>
+            <a
+              href={SITE.baseAppStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97] self-start"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              Download the Base App
+            </a>
           </div>
 
           {/* Right — chat mockup */}
@@ -84,18 +113,18 @@ export default function HomePage() {
       </section>
 
       {/* ── Stats strip ──────────────────────────────────────────── */}
-      <section className="border-y border-border/50 bg-card/20">
+      <section className="border-y border-border bg-muted/40">
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px px-4 sm:grid-cols-4 sm:px-6">
           {stats.map(({ value, label }) => (
             <div key={label} className="flex flex-col gap-1 px-4 py-8 sm:px-6">
               <span
-                className="text-3xl font-bold text-up"
+                className="text-2xl font-bold text-primary sm:text-3xl"
                 style={{ fontFamily: "var(--font-mono)" }}
               >
                 {value}
               </span>
               <span
-                className="text-xs font-medium tracking-widest text-muted-foreground"
+                className="text-xs font-medium text-muted-foreground"
                 style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
               >
                 {label}
@@ -105,45 +134,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── What you can do ──────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <h2 className="font-display mb-10 text-2xl font-bold sm:text-3xl">
+      {/* ── Features ─────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+        <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
           One agent. Everything on Base.
         </h2>
+        <p className="mb-10 text-muted-foreground">
+          Every action confirmed in the chat — no app-switching, no forms.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
-          {[
-            {
-              label: "PERPS",
-              headline: "Long or short anything",
-              body: 'Say "long eth 5×" — Basemate opens the Avantis position with TP/SL set, settled on Base.',
-              accent: "text-primary",
-            },
-            {
-              label: "TRENDING",
-              headline: "Scout launches before they moon",
-              body: 'Ask "what\'s trending?" and get a live Bankr feed with top movers and one-tap buy.',
-              accent: "text-up",
-            },
-            {
-              label: "EARN",
-              headline: "Park idle USDC, earn yield",
-              body: "Tell Basemate to earn and it finds the best rate on Base, executes, and confirms — one message.",
-              accent: "text-primary",
-            },
-            {
-              label: "LAUNCH",
-              headline: "Ship a token from the chat",
-              body: "Describe it, confirm the details, and it's on-chain — no launchpad interface required.",
-              accent: "text-up",
-            },
-          ].map(({ label, headline, body, accent }) => (
+          {features.map(({ label, headline, body, color }) => (
             <div
               key={label}
-              className="rounded-2xl border border-border/60 bg-card/60 p-6 transition-colors hover:bg-card/90"
+              className="group rounded-2xl border border-border bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <span
-                className={`mb-3 block text-xs font-semibold tracking-widest ${accent}`}
-                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+                className="mb-3 block text-xs font-bold tracking-widest"
+                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color }}
               >
                 {label}
               </span>
@@ -155,8 +162,8 @@ export default function HomePage() {
       </section>
 
       {/* ── Roadmap ──────────────────────────────────────────────── */}
-      <section className="border-t border-border/50 bg-card/10">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+      <section className="border-t border-border bg-muted/30">
+        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
           <div className="mb-10 flex items-end justify-between">
             <h2 className="font-display text-2xl font-bold sm:text-3xl">Roadmap</h2>
             <span
@@ -168,33 +175,26 @@ export default function HomePage() {
           </div>
 
           <div className="relative">
-            {/* vertical line */}
-            <div className="absolute left-[9px] top-2 bottom-2 w-px bg-border/60 sm:left-[11px]" />
-
+            <div className="absolute left-[9px] top-2 bottom-2 w-px bg-border sm:left-[11px]" />
             <ol className="space-y-0">
               {roadmap.map(({ label, done, final }, i) => (
                 <li key={i} className="relative flex items-start gap-5 pb-8 last:pb-0">
-                  {/* dot */}
                   <span
                     className={`relative z-10 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 sm:h-6 sm:w-6 ${
                       final
-                        ? "border-primary bg-primary/20 shadow-[0_0_12px_rgba(10,10,255,0.5)]"
+                        ? "border-primary bg-primary/10 shadow-[0_0_12px_rgba(5,5,255,0.3)]"
                         : done
-                        ? "border-up bg-up/15"
-                        : "border-border/60 bg-background"
+                        ? "border-up bg-up/10"
+                        : "border-border bg-background"
                     }`}
                   >
-                    {done && (
+                    {done && !final && (
                       <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-up" />
+                        <path d="M1 4l3 3 5-6" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
-                    {final && (
-                      <span className="h-2 w-2 rounded-full bg-primary" />
-                    )}
+                    {final && <span className="h-2 w-2 rounded-full bg-primary" />}
                   </span>
-
-                  {/* label */}
                   <span
                     className={`pt-0.5 text-sm leading-snug ${
                       final
@@ -207,7 +207,7 @@ export default function HomePage() {
                     {label}
                     {final && (
                       <span
-                        className="ml-2 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                        className="ml-2 rounded-full border border-primary/30 bg-primary/8 px-2 py-0.5 text-xs text-primary"
                         style={{ fontFamily: "var(--font-mono)" }}
                       >
                         NEXT
@@ -222,42 +222,55 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-8 sm:p-12">
+      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-12 sm:px-14 sm:py-16">
+          {/* subtle dot grid overlay */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+            className="pointer-events-none absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: "radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute -left-8 -bottom-8 h-40 w-40 rounded-full bg-up/5 blur-2xl"
+            className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"
           />
-          <div className="relative flex items-center gap-8 sm:gap-12">
-            {/* text + cta */}
+
+          <div className="relative flex flex-col gap-8 sm:flex-row sm:items-center">
             <div className="flex-1">
-              <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
+              <p
+                className="mb-2 text-xs font-bold tracking-widest text-white/60"
+                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+              >
+                ONE TAP · ONE WIN
+              </p>
+              <h2 className="font-display mb-4 text-3xl font-bold text-white sm:text-4xl">
                 Ready to trade in the chat?
               </h2>
-              <p className="mb-6 max-w-md text-muted-foreground">
-                Add @basemate to your Base App group. One message. One tap. One win.
+              <p className="mb-7 max-w-md text-white/75">
+                Add @basemate to your Base App group and start trading with a single message.
               </p>
               <a
-                href={SITE.profileUrl}
+                href={SITE.baseAppStoreUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97] self-start"
               >
-                Add @basemate on Base
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                Download the Base App
               </a>
             </div>
-            {/* mascot — buff flat version on white sticker tile */}
+
+            {/* Buff mascot in white sticker tile */}
             <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-              <div className="rounded-2xl bg-white p-3 shadow-[0_0_32px_rgba(25,251,68,0.3),0_0_0_1px_rgba(25,251,68,0.2)]">
+              <div className="rounded-2xl bg-white p-4 shadow-[0_0_40px_rgba(25,251,68,0.4),0_0_0_1px_rgba(25,251,68,0.3)]">
                 <Image
                   src="/brand/mascot/mate-win-buff.png"
                   alt=""
-                  width={128}
-                  height={128}
+                  width={120}
+                  height={120}
                   className="select-none"
                   draggable={false}
                 />
@@ -273,9 +286,9 @@ export default function HomePage() {
 
 function ChatMockup() {
   return (
-    <div className="w-full max-w-[340px] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl">
+    <div className="w-full max-w-[340px] overflow-hidden rounded-2xl border border-border bg-white shadow-[0_8px_40px_rgba(5,5,255,0.1),0_2px_8px_rgba(0,0,0,0.06)]">
       {/* header */}
-      <div className="flex items-center gap-3 border-b border-border/50 bg-card/80 px-4 py-3 backdrop-blur-md">
+      <div className="flex items-center gap-3 border-b border-border bg-white px-4 py-3">
         <Image
           src="/brand/logo/basemate-logo-flat.png"
           alt="Basemate"
@@ -285,62 +298,45 @@ function ChatMockup() {
         />
         <div>
           <p className="text-xs font-semibold text-foreground">Basemate</p>
-          <p className="text-[10px] text-up" style={{ fontFamily: "var(--font-mono)" }}>● LIVE ON BASE</p>
+          <p className="text-[10px] font-medium text-up" style={{ fontFamily: "var(--font-mono)" }}>● LIVE ON BASE</p>
         </div>
       </div>
 
       {/* messages */}
-      <div className="space-y-3 px-3 py-4">
-        {/* user — solid blue, no tail (design system flat bubble) */}
+      <div className="space-y-3 bg-muted/30 px-3 py-4">
+        {/* user */}
         <div className="flex justify-end">
           <div className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white" style={{ background: "#0505FF" }}>
-            long eth
+            Long SPCX
           </div>
         </div>
 
-        {/* agent — white card, blue-tinted border */}
+        {/* agent — confirmation card */}
         <div className="flex justify-start">
-          <div className="max-w-[85%] rounded-[20px] px-3.5 py-2.5 text-sm" style={{ background: "#ffffff", color: "#0F172A", border: "1.5px solid #E8E8FF", boxShadow: "0 1px 4px rgba(5,5,255,0.06)" }}>
-            <p>Open <strong>ETH long, 5×</strong> with $200 collateral?</p>
-            <p className="mt-1 text-xs" style={{ color: "#64748B" }}>
-              tactical tier · TP +20% / SL −10%
-            </p>
+          <div className="max-w-[88%] rounded-[20px] border border-border bg-white px-3.5 py-3 text-sm shadow-sm">
+            <p className="font-semibold text-foreground">Open SPCX Long 10× with $200 Collateral.</p>
+            <div className="mt-2.5">
+              <span
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary py-2 text-xs font-bold text-white"
+              >
+                Sign Transaction
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* inline pill actions */}
-        <div className="flex flex-wrap gap-2 pl-1">
-          {["Long 5×", "Change size", "Not now"].map((a, i) => (
-            <span
-              key={a}
-              className="rounded-full px-3 py-1 text-xs font-semibold"
-              style={i === 0
-                ? { background: "#0505FF", color: "#fff" }
-                : { border: "1.5px solid rgba(203,213,225,0.3)", color: "#64748B" }
-              }
-            >
-              {a}
-            </span>
-          ))}
-        </div>
-
-        {/* user confirms */}
+        {/* user taps sign */}
         <div className="flex justify-end">
           <div className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white" style={{ background: "#0505FF" }}>
-            long 5×
+            Sign Transaction
           </div>
         </div>
 
-        {/* agent win — green accent */}
+        {/* win response */}
         <div className="flex justify-start">
-          <div className="max-w-[90%] rounded-[20px] px-3.5 py-2.5 text-sm" style={{ background: "#ffffff", color: "#0F172A", border: "1.5px solid rgba(25,251,68,0.3)", boxShadow: "0 0 12px rgba(25,251,68,0.15)" }}>
-            <p>Done — settled on Base.</p>
-            <p
-              className="mt-1 text-base font-bold"
-              style={{ fontFamily: "var(--font-mono)", color: "#16A34A" }}
-            >
-              +82% on collateral ↗
-            </p>
+          <div className="max-w-[90%] rounded-[20px] border bg-white px-3.5 py-2.5 text-sm shadow-[0_0_12px_rgba(22,163,74,0.12)]" style={{ borderColor: "rgba(22,163,74,0.25)" }}>
+            <p className="font-semibold text-up">Transaction confirmed ✓</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">SPCX Long 10× · settled on Base</p>
           </div>
         </div>
       </div>

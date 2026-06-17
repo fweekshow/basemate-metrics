@@ -8,6 +8,7 @@ export const SITE = {
   profileUrl:
     "https://base.app/profile/0xd2d01aef95e4647e0139870a2030bf69a26f15cd",
   appUrl: "https://app.basemate.app",
+  baseAppStoreUrl: "https://apps.apple.com/app/base-the-social-app/id6557851534",
   metricsUrl: "https://basemate.app/metrics",
   twitter: "@basemateagent",
 } as const;

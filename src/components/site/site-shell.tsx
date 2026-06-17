@@ -20,11 +20,12 @@ export function SiteShell({
     <div className="relative min-h-full flex flex-col bg-background">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-grid opacity-40"
+        className="pointer-events-none absolute inset-0 bg-grid opacity-60"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,oklch(0.58_0.235_262/18%),transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-80"
+        style={{ background: "radial-gradient(ellipse at top, rgba(5,5,255,0.07) 0%, transparent 65%)" }}
       />
 
       <header className="relative z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -76,16 +77,15 @@ export function SiteShell({
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <a
-              href={SITE.profileUrl}
+              href={SITE.baseAppStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="py-2 hover:text-foreground transition-colors"
             >
-              Add on Base
+              Download Base App
             </a>
             <Link href="/brand" className="py-2 hover:text-foreground transition-colors">
               Brand
-            </Link>
-            <Link href="/pay" className="py-2 hover:text-foreground transition-colors">
-              Fund wallet
             </Link>
           </div>
         </div>

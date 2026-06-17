@@ -27,7 +27,7 @@ export default function PayPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             coming soon
           </div>
-          <h1 className="font-mono text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
             Fund your wallet
           </h1>
           <p className="mx-auto max-w-md text-base leading-relaxed text-muted-foreground">

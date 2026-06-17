@@ -4,7 +4,7 @@ import Image from "next/image";
 import { SiteShell } from "@/components/site/site-shell";
 
 export const metadata: Metadata = {
-  title: "Brand",
+  title: "Brand · Basemate",
   description: "Basemate brand guidelines — colors, typography, logo, mascots, and voice.",
 };
 
@@ -16,36 +16,36 @@ export default function BrandPage() {
         {/* ── Header ───────────────────────────────────────────── */}
         <div className="space-y-3">
           <span
-            className="text-xs font-medium tracking-widest text-muted-foreground"
+            className="text-xs font-bold tracking-widest text-muted-foreground"
             style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
           >
             BASEMATE BRAND GUIDELINES
           </span>
           <h1 className="font-display text-4xl font-bold sm:text-5xl">Brand Kit</h1>
           <p className="max-w-xl text-muted-foreground">
-            Dark-first. Electric blue is the brand. Neon green means win.
+            Light canvas. Electric blue is the brand. Neon green means win.
             Everything else gets out of the way.
           </p>
         </div>
 
         {/* ── Positioning ──────────────────────────────────────── */}
         <Section title="POSITIONING">
-          <div className="rounded-2xl border border-border/60 bg-card/40 p-6 sm:p-8 space-y-6">
+          <div className="rounded-2xl border border-border bg-white p-6 sm:p-8 shadow-sm space-y-6">
             <div>
-              <Label>One-line</Label>
-              <p className="mt-1 text-xl font-semibold leading-snug">
+              <Label>ONE-LINE</Label>
+              <p className="mt-2 text-xl font-semibold leading-snug">
                 The Base-native agent in your chats — trade, earn, and launch by just messaging.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               {[
                 "Your Base-native mate.",
                 "Trade in the chat. Win in the chat.",
                 "One message. One tap. One win.",
               ].map((t) => (
-                <div key={t} className="rounded-xl border border-border/50 bg-background/60 px-4 py-3">
+                <div key={t} className="rounded-xl border border-border bg-muted/40 px-4 py-3">
                   <Label>TAGLINE</Label>
-                  <p className="mt-1 font-semibold text-foreground italic">"{t}"</p>
+                  <p className="mt-1 font-semibold italic">"{t}"</p>
                 </div>
               ))}
             </div>
@@ -56,7 +56,7 @@ export default function BrandPage() {
                   {["native", "fast", "plainspoken", "degen-fluent", "trustworthy", "playful", "calm-under-volatility"].map((k) => (
                     <span
                       key={k}
-                      className="rounded-full border border-border/60 px-3 py-1 text-xs font-medium text-muted-foreground"
+                      className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted-foreground"
                       style={{ fontFamily: "var(--font-mono)" }}
                     >
                       {k}
@@ -87,21 +87,25 @@ export default function BrandPage() {
 
         {/* ── Logo ─────────────────────────────────────────────── */}
         <Section title="LOGO & MARK">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border/60 bg-card/40 p-8">
+          <div className="grid gap-4 sm:grid-cols-4">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-8 shadow-sm">
+              <Image src="/brand/logo/basemate-logo-flat.png" alt="Basemate flat logo" width={80} height={80} className="rounded-2xl" />
+              <Label>FLAT — PREFERRED</Label>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-[#0A0A14] p-8">
               <Image src="/brand/logo/basemate-mark.png" alt="Basemate mark" width={80} height={80} className="rounded-2xl" />
-              <Label>MARK — DARK BG</Label>
+              <Label className="text-white/40">MARK — DARK BG</Label>
             </div>
-            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border/60 bg-white p-8">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-8 shadow-sm">
               <Image src="/brand/logo/basemate-mark-light.jpg" alt="Basemate mark light" width={80} height={80} className="rounded-2xl" />
-              <Label className="text-black/50">MARK — LIGHT BG</Label>
+              <Label>MARK — LIGHT BG</Label>
             </div>
-            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border/60 bg-card/40 p-8">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-8 shadow-sm">
               <Image src="/brand/logo-construction.png" alt="Logo construction" width={120} height={120} className="rounded-xl" />
               <Label>CONSTRUCTION GRID</Label>
             </div>
           </div>
-          <div className="mt-4 rounded-xl border border-border/50 bg-card/20 p-4 text-sm text-muted-foreground space-y-1">
+          <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground space-y-1">
             <p>Minimum size: <Mono>24px</Mono> (favicon) · comfortable <Mono>64px</Mono> (avatar)</p>
             <p>Clear space: ≥ 10% of mark width on all sides</p>
             <p>Never place on a busy background. Never stretch or recolor the mark.</p>
@@ -110,17 +114,22 @@ export default function BrandPage() {
 
         {/* ── Mascots ──────────────────────────────────────────── */}
         <Section title="MASCOTS">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-3 gap-4">
             {[
-              { file: "mate-win.png", label: "WIN", note: "Realized PnL moments" },
-              { file: "mate-peace.png", label: "GM", note: "Greetings, idle states" },
-              { file: "mate-support.png", label: "SUPPORT", note: "Help, loading, coming soon" },
-              { file: "mate-rekt.png", label: "REKT", note: "Losses, errors" },
-            ].map(({ file, label, note }) => (
-              <div key={file} className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/40 p-5">
-                <Image src={`/brand/mascot/${file}`} alt={label} width={72} height={72} />
+              { file: "mate-win-buff.png", label: "Buff",  note: "Realized PnL · wins", whiteBg: true },
+              { file: "mate-girl.png",     label: "Girl",  note: "Kawaii energy",        whiteBg: true },
+              { file: "mate-rekt.png",     label: "Rekt",  note: "Losses · errors",      whiteBg: false },
+            ].map(({ file, label, note, whiteBg }) => (
+              <div key={file} className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
+                {whiteBg ? (
+                  <div className="rounded-xl bg-muted/40 p-2">
+                    <Image src={`/brand/mascot/${file}`} alt={label} width={80} height={80} />
+                  </div>
+                ) : (
+                  <Image src={`/brand/mascot/${file}`} alt={label} width={80} height={80} />
+                )}
                 <div className="text-center">
-                  <Mono className="text-xs text-primary">{label}</Mono>
+                  <Mono className="text-xs font-bold text-primary">{label}</Mono>
                   <p className="mt-0.5 text-xs text-muted-foreground">{note}</p>
                 </div>
               </div>
@@ -136,14 +145,14 @@ export default function BrandPage() {
           <div className="space-y-6">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { name: "CANVAS", hex: "#00040A", label: "App background", style: { background: "#00040A", border: "1px solid #1A2230" } },
-                { name: "BASE BLUE", hex: "#0A0AFF", label: "Brand mark, primary actions, user bubble", style: { background: "#0A0AFF" } },
-                { name: "WIN GREEN", hex: "#19FB44", label: "PnL up, long, success", style: { background: "#19FB44" } },
-                { name: "LOSS RED", hex: "#FF4D67", label: "PnL down, short, danger", style: { background: "#FF4D67" } },
-              ].map(({ name, hex, label, style }) => (
-                <div key={name} className="overflow-hidden rounded-xl border border-border/60">
-                  <div className="h-20" style={style} />
-                  <div className="bg-card/60 p-3">
+                { name: "CANVAS", hex: "#00040A", label: "Dark product bg", swatch: { background: "#00040A", border: "1px solid #1A2230" } },
+                { name: "BASE BLUE", hex: "#0505FF", label: "Brand mark · primary actions · user bubble", swatch: { background: "#0505FF" } },
+                { name: "WIN GREEN", hex: "#19FB44", label: "PnL up · long · success accent", swatch: { background: "#19FB44" } },
+                { name: "LOSS RED", hex: "#FF4D67", label: "PnL down · short · danger", swatch: { background: "#FF4D67" } },
+              ].map(({ name, hex, label, swatch }) => (
+                <div key={name} className="overflow-hidden rounded-xl border border-border shadow-sm">
+                  <div className="h-20" style={swatch} />
+                  <div className="bg-white p-3">
                     <Mono className="text-xs font-semibold text-foreground">{name}</Mono>
                     <Mono className="mt-0.5 block text-xs text-muted-foreground">{hex}</Mono>
                     <p className="mt-1 text-xs text-muted-foreground">{label}</p>
@@ -154,11 +163,11 @@ export default function BrandPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                { name: "LILAC", hex: "#BFB4FE", label: "Mono labels: REALIZED PNL · WIN · 24H", style: { background: "#BFB4FE" } },
-                { name: "VIOLET", hex: "#7C5CFF", label: "Secondary accent, risk tiers", style: { background: "#7C5CFF" } },
-              ].map(({ name, hex, label, style }) => (
-                <div key={name} className="flex items-center gap-4 overflow-hidden rounded-xl border border-border/60">
-                  <div className="h-full w-16 shrink-0 self-stretch" style={style} />
+                { name: "LILAC", hex: "#BFB4FE", label: "Mono labels: REALIZED PNL · WIN · 24H", swatch: { background: "#BFB4FE" } },
+                { name: "VIOLET", hex: "#7C5CFF", label: "Secondary accent, risk tiers", swatch: { background: "#7C5CFF" } },
+              ].map(({ name, hex, label, swatch }) => (
+                <div key={name} className="flex items-center gap-4 overflow-hidden rounded-xl border border-border shadow-sm">
+                  <div className="h-full w-16 shrink-0 self-stretch" style={swatch} />
                   <div className="py-3 pr-3">
                     <Mono className="text-xs font-semibold text-foreground">{name}</Mono>
                     <Mono className="mt-0.5 block text-xs text-muted-foreground">{hex}</Mono>
@@ -166,30 +175,6 @@ export default function BrandPage() {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="rounded-xl border border-border/50 bg-card/20 p-4">
-              <Label className="mb-3 block">NEUTRAL RAMP</Label>
-              <div className="flex gap-1 overflow-x-auto pb-1">
-                {[
-                  { hex: "#00040A", label: "0" },
-                  { hex: "#04070E", label: "50" },
-                  { hex: "#0A0F18", label: "100" },
-                  { hex: "#111723", label: "200" },
-                  { hex: "#1A2230", label: "300" },
-                  { hex: "#28323F", label: "400" },
-                  { hex: "#3A4757", label: "500" },
-                  { hex: "#5A6878", label: "600" },
-                  { hex: "#8593A3", label: "700" },
-                  { hex: "#B4C0CD", label: "800" },
-                  { hex: "#E6ECF2", label: "900" },
-                ].map(({ hex, label }) => (
-                  <div key={hex} className="flex shrink-0 flex-col items-center gap-1">
-                    <div className="h-8 w-8 rounded-md border border-white/10" style={{ background: hex }} />
-                    <span className="text-[9px] text-muted-foreground" style={{ fontFamily: "var(--font-mono)" }}>{label}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </Section>
@@ -220,10 +205,10 @@ export default function BrandPage() {
                 style: { fontFamily: "var(--font-mono)", fontSize: "1rem", fontWeight: 500, letterSpacing: "0.04em" },
               },
             ].map(({ family, role, use, sample, style }) => (
-              <div key={family} className="overflow-hidden rounded-2xl border border-border/60 bg-card/40">
+              <div key={family} className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
                 <div className="px-6 py-5">
                   <div className="mb-3 flex items-center gap-3">
-                    <Mono className="text-xs text-primary">{role}</Mono>
+                    <Mono className="text-xs font-bold text-primary">{role}</Mono>
                     <span className="text-xs text-muted-foreground">{family} · {use}</span>
                   </div>
                   <p style={style} className="text-foreground">{sample}</p>
@@ -231,7 +216,7 @@ export default function BrandPage() {
               </div>
             ))}
           </div>
-          <div className="mt-4 rounded-xl border border-border/50 bg-card/20 p-4 text-sm text-muted-foreground">
+          <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
             <strong className="text-foreground">Casing rule:</strong> Sentence case in chat. Crypto-native lowercase welcome (gm, wagmi).{" "}
             <Mono className="text-xs">MONO UPPERCASE</Mono> with wide tracking reserved for labels and status only.
           </div>
@@ -242,27 +227,27 @@ export default function BrandPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { name: "PILL", radius: "9999px", use: "Action buttons, chips, badges", demo: "rounded-full" },
-              { name: "CARD", radius: "20px", use: "Feature cards, sheets, panels", demo: "rounded-2xl" },
-              { name: "BUBBLE", radius: "22px / 4px tail", use: "Chat bubbles", demo: "rounded-[18px] rounded-bl-[4px]" },
+              { name: "SQUIRCLE CARD", radius: "20px", use: "Feature cards, sheets, panels", demo: "rounded-2xl" },
+              { name: "CHAT BUBBLE", radius: "22px / 4px tail", use: "Chat bubbles — no tails", demo: "rounded-[18px] rounded-bl-[4px]" },
             ].map(({ name, radius, use, demo }) => (
-              <div key={name} className="rounded-2xl border border-border/60 bg-card/40 p-5">
+              <div key={name} className="rounded-2xl border border-border bg-white p-5 shadow-sm">
                 <div className="mb-4 flex items-center justify-center">
-                  <div className={`h-12 w-24 border-2 border-primary/50 bg-primary/10 ${demo}`} />
+                  <div className={`h-12 w-24 border-2 border-primary bg-primary/8 ${demo}`} />
                 </div>
-                <Mono className="text-xs text-primary">{name}</Mono>
+                <Mono className="text-xs font-bold text-primary">{name}</Mono>
                 <p className="mt-1 text-xs text-muted-foreground"><Mono>{radius}</Mono></p>
                 <p className="mt-1 text-xs text-muted-foreground">{use}</p>
               </div>
             ))}
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
-            Soft squircle language drawn from the logo (~5% corner radius, 60% smoothing). Buttons are never rectangular web-form buttons — always pill or squircle.
+            Buttons are never rectangular web-form buttons — always pill or squircle. No speech-bubble tails.
           </p>
         </Section>
 
-        {/* ── Example exchange ─────────────────────────────────── */}
+        {/* ── Voice example ────────────────────────────────────── */}
         <Section title="VOICE EXAMPLE">
-          <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6">
+          <div className="rounded-2xl border border-border bg-white p-5 sm:p-6 shadow-sm">
             <Label className="mb-4 block">CANONICAL EXCHANGE</Label>
             <div className="space-y-2 font-mono text-sm">
               <div className="flex gap-3">
@@ -281,7 +266,7 @@ export default function BrandPage() {
                       <span
                         key={a}
                         className={`rounded-full border px-2.5 py-0.5 text-xs ${
-                          i === 0 ? "border-primary/50 text-primary" : "border-border/60 text-muted-foreground"
+                          i === 0 ? "border-primary/50 bg-primary/6 text-primary" : "border-border text-muted-foreground"
                         }`}
                       >
                         {a}
@@ -296,7 +281,7 @@ export default function BrandPage() {
               </div>
               <div className="flex gap-3">
                 <span className="shrink-0 text-muted-foreground">agent →</span>
-                <span className="text-up">Done — settled on Base in one tap.</span>
+                <span className="text-up font-semibold">Done — settled on Base in one tap.</span>
               </div>
             </div>
           </div>
@@ -311,7 +296,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="space-y-4">
       <h2
-        className="text-xs font-semibold tracking-widest text-muted-foreground"
+        className="text-xs font-bold tracking-widest text-muted-foreground"
         style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
       >
         {title}
@@ -324,7 +309,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <span
-      className={`text-xs font-medium tracking-widest text-muted-foreground ${className ?? ""}`}
+      className={`text-xs font-bold tracking-widest text-muted-foreground ${className ?? ""}`}
       style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.12em" }}
     >
       {children}
