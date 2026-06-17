@@ -80,7 +80,7 @@ function formatUsers(total: number): string {
 
 function buildStats(metrics: AnalyticsPayload | null) {
   return [
-    { value: "$2M+", label: "VOLUME TRADED", live: false },
+    { value: "$2M+", label: "TOKEN VOLUME TRADED", live: false },
     {
       value: metrics ? formatUsers(metrics.users.total) : "1000s",
       label: "USERS",
