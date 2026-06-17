@@ -6,12 +6,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
-  const host = process.env.AGENT_API_HOST?.trim();
+  const host = process.env.IMESSAGE_PORTFOLIO_API_HOST?.trim();
   if (!host) {
     return NextResponse.json(
       {
-        error: "AGENT_API_HOST is not configured",
-        detail: "Set AGENT_API_HOST to your basemate core API URL.",
+        error: "IMESSAGE_PORTFOLIO_API_HOST is not configured",
+        detail: "Set IMESSAGE_PORTFOLIO_API_HOST to your deployed basemate-imessage URL.",
       },
       { status: 500 },
     );
