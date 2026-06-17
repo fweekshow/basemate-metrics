@@ -56,7 +56,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="font-mono text-4xl font-bold tracking-tight sm:text-5xl">
+              <h1 className="font-mono text-4xl font-bold tracking-tight sm:text-5xl" style={{textWrap: "balance"}}>
                 What if communities{" "}
                 <span className="text-primary">found you?</span>
               </h1>

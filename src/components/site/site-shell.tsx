@@ -6,6 +6,8 @@ import { SITE } from "@/lib/site";
 
 const nav = [
   { href: "/", label: "Home", external: false },
+  { href: "/brand", label: "Brand", external: false },
+  { href: "/deck", label: "Deck", external: false },
   { href: "/pay", label: "Pay", external: false },
   { href: SITE.appUrl, label: "App", external: true },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
@@ -49,7 +51,7 @@ export function SiteShell({
                 <a
                   key={item.href}
                   href={item.href}
-                  className="rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
+                  className="rounded-md px-2.5 py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
                 >
                   {item.label}
                 </a>
@@ -57,7 +59,7 @@ export function SiteShell({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
+                  className="rounded-md px-2.5 py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
                 >
                   {item.label}
                 </Link>
@@ -77,17 +79,17 @@ export function SiteShell({
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <a
               href={SITE.profileUrl}
-              className="hover:text-foreground transition-colors"
+              className="py-2 hover:text-foreground transition-colors"
             >
               Add on Base
             </a>
             <a
               href={SITE.appUrl}
-              className="hover:text-foreground transition-colors"
+              className="py-2 hover:text-foreground transition-colors"
             >
               Miniapp
             </a>
-            <Link href="/pay" className="hover:text-foreground transition-colors">
+            <Link href="/pay" className="py-2 hover:text-foreground transition-colors">
               Fund wallet
             </Link>
           </div>
@@ -102,16 +104,18 @@ export function SiteCtaRow() {
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <Button
         render={<a href={SITE.profileUrl} target="_blank" rel="noopener noreferrer" />}
+        nativeButton={false}
         size="lg"
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto min-h-[44px]"
       >
         Add @basemate to your group
       </Button>
       <Button
         render={<a href={SITE.appUrl} target="_blank" rel="noopener noreferrer" />}
+        nativeButton={false}
         variant="outline"
         size="lg"
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto min-h-[44px]"
       >
         Open app.basemate.app
       </Button>
