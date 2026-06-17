@@ -33,6 +33,8 @@
   --color-down: var(--down);
   --color-cyan: var(--cyan);
   --color-violet: var(--violet);
+  --color-lilac: var(--lilac);
+  --color-bone: var(--bone);
   --color-amber: var(--amber);
 
   --color-chart-1: var(--chart-1);
@@ -77,9 +79,12 @@
   --ring: rgba(5, 5, 255, 0.3);
 
   --up: #16A34A;
+  --up-neon: #19FB44;
   --down: #FF4D67;
   --cyan: #0284C7;
   --violet: #7C5CFF;
+  --lilac: #BFB4FE;
+  --bone: #F4F5FA;
   --amber: #D97706;
 
   --chart-1: #0505FF;
@@ -152,6 +157,37 @@
   100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
 }
 .animate-pulse-ring { animation: pulse-ring 1.8s infinite; }
+
+@keyframes pulse-ring-primary {
+  0%   { box-shadow: 0 0 0 0 rgba(5, 5, 255, 0.45), 0 0 12px rgba(5, 5, 255, 0.3); }
+  70%  { box-shadow: 0 0 0 10px rgba(5, 5, 255, 0), 0 0 12px rgba(5, 5, 255, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(5, 5, 255, 0), 0 0 12px rgba(5, 5, 255, 0.3); }
+}
+.animate-pulse-ring-primary { animation: pulse-ring-primary 2s infinite; }
+.animate-pulse-ring-primary-once { animation: pulse-ring-primary 2s 1; }
+
+@keyframes roadmap-percent-flash {
+  0%, 100% { color: var(--up-neon); text-shadow: none; }
+  50% { text-shadow: 0 0 12px rgba(25, 251, 68, 0.6); }
+}
+.animate-roadmap-percent-flash { animation: roadmap-percent-flash 0.6s ease-out 1; }
+
+@keyframes roadmap-item-in {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes roadmap-check-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes roadmap-shimmer {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(400%); opacity: 0; }
+}
 
 @keyframes ticker-in {
   from { opacity: 0; transform: translateY(4px); }

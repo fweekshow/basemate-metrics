@@ -116,17 +116,17 @@ export default function BrandPage() {
         <Section title="MASCOTS">
           <div className="grid grid-cols-3 gap-4">
             {[
-              { file: "mate-win-buff.png", label: "Buff",  note: "Realized PnL · wins", whiteBg: true },
-              { file: "mate-girl.png",     label: "Girl",  note: "Kawaii energy",        whiteBg: true },
-              { file: "mate-rekt.png",     label: "Rekt",  note: "Losses · errors",      whiteBg: false },
-            ].map(({ file, label, note, whiteBg }) => (
-              <div key={file} className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
+              { src: "/brand/mascot/mate-win-buff.png", label: "Buff", note: "Realized PnL · wins", whiteBg: true },
+              { src: "/brand/logo/basemate-logo-flat.png", label: "Basemate", note: "Brand mark · nav & UI", whiteBg: true },
+              { src: "/brand/mascot/mate-girl.png", label: "Girl", note: "Kawaii energy", whiteBg: true },
+            ].map(({ src, label, note, whiteBg }) => (
+              <div key={src} className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
                 {whiteBg ? (
                   <div className="rounded-xl bg-muted/40 p-2">
-                    <Image src={`/brand/mascot/${file}`} alt={label} width={80} height={80} />
+                    <Image src={src} alt={label} width={80} height={80} className="rounded-xl" />
                   </div>
                 ) : (
-                  <Image src={`/brand/mascot/${file}`} alt={label} width={80} height={80} />
+                  <Image src={src} alt={label} width={80} height={80} />
                 )}
                 <div className="text-center">
                   <Mono className="text-xs font-bold text-primary">{label}</Mono>
@@ -243,6 +243,51 @@ export default function BrandPage() {
           <p className="mt-3 text-sm text-muted-foreground">
             Buttons are never rectangular web-form buttons — always pill or squircle. No speech-bubble tails.
           </p>
+        </Section>
+
+        {/* ── Site primitives ──────────────────────────────────── */}
+        <Section title="SITE PRIMITIVES">
+          <p className="text-sm text-muted-foreground">
+            Reusable marketing components in{" "}
+            <Mono className="text-xs">src/components/site/brand-primitives.tsx</Mono> —
+            bone panels, lilac mesh, mono eyebrows, phase labels.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border bg-white p-5 shadow-sm space-y-3">
+              <Label>MONO EYEBROW · LILAC</Label>
+              <p
+                className="text-[10px] font-bold tracking-[0.22em] text-[#BFB4FE]"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                BUILD LOG
+              </p>
+              <Label>PHASE LABELS</Label>
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { dot: "#BFB4FE", text: "#6B5FA8", label: "SHIPPED ON BASE APP" },
+                  { dot: "#0505FF", text: "#0505FF", label: "IN FLIGHT" },
+                  { dot: "#7C5CFF", text: "#7C5CFF", label: "NORTH STAR" },
+                ].map(({ dot, text, label }) => (
+                  <span key={label} className="inline-flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full" style={{ background: dot }} />
+                    <span
+                      className="text-[10px] font-bold tracking-[0.2em]"
+                      style={{ fontFamily: "var(--font-mono)", color: text }}
+                    >
+                      {label}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#EEF0FB] via-[#F4F5FA] to-[#F3F0FF] p-5 shadow-sm">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#BFB4FE]/60 via-[#BFB4FE]/20 to-transparent" />
+              <Label>BONE PANEL + LILAC ACCENT</Label>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Used on the home page Build Log — lilac top bar, bone gradient, scattered accent dots.
+              </p>
+            </div>
+          </div>
         </Section>
 
         {/* ── Voice example ────────────────────────────────────── */}
