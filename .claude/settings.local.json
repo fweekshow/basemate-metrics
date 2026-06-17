@@ -11,7 +11,21 @@
       "Bash(curl -s --max-time 8 http://localhost:3001/api/metrics)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 20 http://localhost:3001/)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(python -m json.tool)"
+      "Bash(python -m json.tool)",
+      "Bash(find /tmp/basemate-ds -type f | sort)",
+      "Bash(cp /tmp/basemate-ds/basemate-design-system/project/assets/logo/basemate-mark.png /Users/matthewmeakin/basemate-metrics/public/brand/logo/)",
+      "Bash(cp /tmp/basemate-ds/basemate-design-system/project/assets/logo/basemate-mark-light.jpg /Users/matthewmeakin/basemate-metrics/public/brand/logo/)",
+      "Bash(cp /tmp/basemate-ds/basemate-design-system/project/assets/mascot/*.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(cp /tmp/basemate-ds/basemate-design-system/project/assets/brand/logo-construction.png /Users/matthewmeakin/basemate-metrics/public/brand/)",
+      "Skill(gstack-upgrade)",
+      "Skill(gstack-upgrade:*)",
+      "Bash(/Users/matthewmeakin/.claude/skills/gstack/browse/dist/browse goto *)",
+      "Bash(/Users/matthewmeakin/.claude/skills/gstack/browse/dist/browse console *)",
+      "Bash(/Users/matthewmeakin/.claude/skills/gstack/browse/dist/browse screenshot *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Skill(design-review)",
+      "Skill(design-review:*)"
     ]
   }
 }
