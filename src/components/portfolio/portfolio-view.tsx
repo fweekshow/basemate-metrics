@@ -81,7 +81,12 @@ function CoinAvatar({ coin }: { coin: PortfolioCoin }) {
   );
 }
 
-function CoinsTab({ coins }: { coins: PortfolioCoin[] }) {
+function walletLabel(data: PortfolioPayload, walletAddress: string): string {
+  return data.user.walletLabels[walletAddress.toLowerCase()] ?? "Wallet";
+}
+
+function CoinsTab({ data }: { data: PortfolioPayload }) {
+  const { coins } = data;
   if (coins.length === 0) return <EmptyState label="No tracked Base coin balances yet." />;
   return (
     <div className="space-y-3">
@@ -97,6 +102,9 @@ function CoinsTab({ coins }: { coins: PortfolioCoin[] }) {
               <p className="font-mono text-xs text-muted-foreground">
                 {amount(coin.amount)} {coin.symbol}
               </p>
+              <p className="font-mono text-[11px] text-muted-foreground">
+                {walletLabel(data, coin.walletAddress)}
+              </p>
             </div>
             <div className="text-right font-mono text-sm font-semibold">{money(coin.valueUsd)}</div>
           </div>
@@ -111,7 +119,7 @@ function CoinsTab({ coins }: { coins: PortfolioCoin[] }) {
   );
 }
 
-function PerpCard({ position }: { position: PortfolioPerpPosition }) {
+function PerpCard({ data, position }: { data: PortfolioPayload; position: PortfolioPerpPosition }) {
   const side = position.side ? position.side.toUpperCase() : "POSITION";
   const leverage = position.leverage ? `${position.leverage}x` : "—";
   const promptLabel = `${position.pair} ${position.side ?? ""}`.trim();
@@ -127,6 +135,9 @@ function PerpCard({ position }: { position: PortfolioPerpPosition }) {
           </div>
           <p className="font-mono text-xs text-muted-foreground">
             {side} · {leverage}
+          </p>
+          <p className="font-mono text-[11px] text-muted-foreground">
+            {walletLabel(data, position.walletAddress)}
           </p>
         </div>
         <div className="text-right">
@@ -150,18 +161,19 @@ function PerpCard({ position }: { position: PortfolioPerpPosition }) {
   );
 }
 
-function PerpsTab({ positions }: { positions: PortfolioPerpPosition[] }) {
+function PerpsTab({ data }: { data: PortfolioPayload }) {
+  const { perpetuals: positions } = data;
   if (positions.length === 0) return <EmptyState label="No open or limit perp positions right now." />;
   return (
     <div className="space-y-3">
       {positions.map((position) => (
-        <PerpCard key={position.id} position={position} />
+        <PerpCard key={position.id} data={data} position={position} />
       ))}
     </div>
   );
 }
 
-function StakingCard({ position }: { position: PortfolioStakingPosition }) {
+function StakingCard({ data, position }: { data: PortfolioPayload; position: PortfolioStakingPosition }) {
   const protocol = position.protocol[0].toUpperCase() + position.protocol.slice(1);
   return (
     <Card className="p-4">
@@ -180,6 +192,9 @@ function StakingCard({ position }: { position: PortfolioStakingPosition }) {
       <p className="mt-3 font-mono text-xs text-muted-foreground">
         {amount(position.amount)} {position.asset} in {position.name}
       </p>
+      <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+        {walletLabel(data, position.walletAddress)}
+      </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <ActionLink prompt={`Increase my ${protocol} ${position.asset} position`}>Increase</ActionLink>
         <ActionLink prompt={`Close my ${protocol} ${position.asset} position`}>Close</ActionLink>
@@ -188,23 +203,24 @@ function StakingCard({ position }: { position: PortfolioStakingPosition }) {
   );
 }
 
-function StakingTab({ positions }: { positions: PortfolioStakingPosition[] }) {
+function StakingTab({ data }: { data: PortfolioPayload }) {
+  const { staking: positions } = data;
   if (positions.length === 0) {
     return <EmptyState label="No active Morpho, Moonwell, or Aave positions found." />;
   }
   return (
     <div className="space-y-3">
       {positions.map((position) => (
-        <StakingCard key={position.id} position={position} />
+        <StakingCard key={position.id} data={data} position={position} />
       ))}
     </div>
   );
 }
 
 function PortfolioContent({ data, activeTab }: { data: PortfolioPayload; activeTab: Tab }) {
-  if (activeTab === "coins") return <CoinsTab coins={data.coins} />;
-  if (activeTab === "perpetuals") return <PerpsTab positions={data.perpetuals} />;
-  return <StakingTab positions={data.staking} />;
+  if (activeTab === "coins") return <CoinsTab data={data} />;
+  if (activeTab === "perpetuals") return <PerpsTab data={data} />;
+  return <StakingTab data={data} />;
 }
 
 export function PortfolioView({ user, token }: { user: string; token: string }) {

@@ -48,6 +48,7 @@ export interface PortfolioPayload {
   user: {
     id: string;
     wallets: string[];
+    walletLabels: Record<string, string>;
     serverWallet: string;
   };
   totals: {
