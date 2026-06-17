@@ -177,7 +177,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="absolute left-[9px] top-2 bottom-2 w-px bg-border sm:left-[11px]" />
             <ol className="space-y-0">
-              {roadmap.map(({ label, done, final }, i) => (
+              {roadmap.map((item, i) => { const { label, done } = item; const final = 'final' in item && item.final; return (
                 <li key={i} className="relative flex items-start gap-5 pb-8 last:pb-0">
                   <span
                     className={`relative z-10 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 sm:h-6 sm:w-6 ${
@@ -215,7 +215,7 @@ export default function HomePage() {
                     )}
                   </span>
                 </li>
-              ))}
+              ); })}
             </ol>
           </div>
         </div>
