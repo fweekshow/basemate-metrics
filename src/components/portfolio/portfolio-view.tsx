@@ -36,20 +36,51 @@ function amount(value: string | number | null | undefined): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: n >= 1 ? 4 : 6 });
 }
 
-function messageLink(prompt: string): string {
-  const contact = process.env.NEXT_PUBLIC_IMESSAGE_BOT_CONTACT?.trim() ?? "";
-  const body = encodeURIComponent(prompt);
-  return contact ? `sms:${encodeURIComponent(contact)}&body=${body}` : `sms:&body=${body}`;
+async function copyPrompt(prompt: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(prompt);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = prompt;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    document.execCommand("copy");
+  } finally {
+    document.body.removeChild(textarea);
+  }
 }
 
 function ActionLink({ prompt, children }: { prompt: string; children: React.ReactNode }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleClick() {
+    await copyPrompt(prompt);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2600);
+  }
+
   return (
-    <a
-      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 flex-1")}
-      href={messageLink(prompt)}
-    >
-      {children}
-    </a>
+    <div className="relative flex-1">
+      <button
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 w-full")}
+        onClick={handleClick}
+        type="button"
+      >
+        {children}
+      </button>
+      {copied ? (
+        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 rounded-lg border border-border bg-popover px-3 py-2 text-center font-mono text-[11px] text-popover-foreground shadow-lg">
+          Prompt copied. Paste it to the bot.
+        </div>
+      ) : null}
+    </div>
   );
 }
 
