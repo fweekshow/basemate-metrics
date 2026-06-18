@@ -17,6 +17,7 @@ import type {
 import { cn } from "@/lib/utils";
 
 type Tab = "coins" | "perpetuals" | "staking";
+type ActionCopyHandler = (prompt: string) => Promise<void>;
 
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "coins", label: "COINS" },
@@ -57,30 +58,27 @@ async function copyPrompt(prompt: string): Promise<void> {
   }
 }
 
-function ActionLink({ prompt, children }: { prompt: string; children: React.ReactNode }) {
-  const [copied, setCopied] = useState(false);
-
+function ActionLink({
+  prompt,
+  onCopy,
+  children,
+}: {
+  prompt: string;
+  onCopy: ActionCopyHandler;
+  children: React.ReactNode;
+}) {
   async function handleClick() {
-    await copyPrompt(prompt);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2600);
+    await onCopy(prompt);
   }
 
   return (
-    <div className="relative flex-1">
-      <button
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 w-full")}
-        onClick={handleClick}
-        type="button"
-      >
-        {children}
-      </button>
-      {copied ? (
-        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 rounded-lg border border-border bg-popover px-3 py-2 text-center font-mono text-[11px] text-popover-foreground shadow-lg">
-          Prompt copied. Paste it to the bot.
-        </div>
-      ) : null}
-    </div>
+    <button
+      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 flex-1")}
+      onClick={handleClick}
+      type="button"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -116,7 +114,7 @@ function walletLabel(data: PortfolioPayload, walletAddress: string): string {
   return data.user.walletLabels[walletAddress.toLowerCase()] ?? "Wallet";
 }
 
-function CoinsTab({ data }: { data: PortfolioPayload }) {
+function CoinsTab({ data, onCopyAction }: { data: PortfolioPayload; onCopyAction: ActionCopyHandler }) {
   const { coins } = data;
   if (coins.length === 0) return <EmptyState label="No tracked Base coin balances yet." />;
   return (
@@ -140,9 +138,9 @@ function CoinsTab({ data }: { data: PortfolioPayload }) {
             <div className="text-right font-mono text-sm font-semibold">{money(coin.valueUsd)}</div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
-            <ActionLink prompt={`Buy more ${coin.symbol}`}>Buy more</ActionLink>
-            <ActionLink prompt={`Sell ${coin.symbol}`}>Sell</ActionLink>
-            <ActionLink prompt={`Sell all my ${coin.symbol}`}>Sell all</ActionLink>
+            <ActionLink onCopy={onCopyAction} prompt={`Buy more ${coin.symbol}`}>Buy more</ActionLink>
+            <ActionLink onCopy={onCopyAction} prompt={`Sell ${coin.symbol}`}>Sell</ActionLink>
+            <ActionLink onCopy={onCopyAction} prompt={`Sell all my ${coin.symbol}`}>Sell all</ActionLink>
           </div>
         </Card>
       ))}
@@ -150,7 +148,15 @@ function CoinsTab({ data }: { data: PortfolioPayload }) {
   );
 }
 
-function PerpCard({ data, position }: { data: PortfolioPayload; position: PortfolioPerpPosition }) {
+function PerpCard({
+  data,
+  position,
+  onCopyAction,
+}: {
+  data: PortfolioPayload;
+  position: PortfolioPerpPosition;
+  onCopyAction: ActionCopyHandler;
+}) {
   const side = position.side ? position.side.toUpperCase() : "POSITION";
   const leverage = position.leverage ? `${position.leverage}x` : "—";
   const promptLabel = `${position.pair} ${position.side ?? ""}`.trim();
@@ -185,26 +191,34 @@ function PerpCard({ data, position }: { data: PortfolioPayload; position: Portfo
         <div>Size: {money(position.sizeUsd)}</div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <ActionLink prompt={`Modify SL TP for my ${promptLabel} position`}>Modify SL/TP</ActionLink>
-        <ActionLink prompt={`Close my ${promptLabel} position`}>Close position</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Modify SL TP for my ${promptLabel} position`}>Modify SL/TP</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Close my ${promptLabel} position`}>Close position</ActionLink>
       </div>
     </Card>
   );
 }
 
-function PerpsTab({ data }: { data: PortfolioPayload }) {
+function PerpsTab({ data, onCopyAction }: { data: PortfolioPayload; onCopyAction: ActionCopyHandler }) {
   const { perpetuals: positions } = data;
   if (positions.length === 0) return <EmptyState label="No open or limit perp positions right now." />;
   return (
     <div className="space-y-3">
       {positions.map((position) => (
-        <PerpCard key={position.id} data={data} position={position} />
+        <PerpCard key={position.id} data={data} onCopyAction={onCopyAction} position={position} />
       ))}
     </div>
   );
 }
 
-function StakingCard({ data, position }: { data: PortfolioPayload; position: PortfolioStakingPosition }) {
+function StakingCard({
+  data,
+  position,
+  onCopyAction,
+}: {
+  data: PortfolioPayload;
+  position: PortfolioStakingPosition;
+  onCopyAction: ActionCopyHandler;
+}) {
   const protocol = position.protocol[0].toUpperCase() + position.protocol.slice(1);
   return (
     <Card className="p-4">
@@ -227,14 +241,14 @@ function StakingCard({ data, position }: { data: PortfolioPayload; position: Por
         {walletLabel(data, position.walletAddress)}
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <ActionLink prompt={`Increase my ${protocol} ${position.asset} position`}>Increase</ActionLink>
-        <ActionLink prompt={`Close my ${protocol} ${position.asset} position`}>Close</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Increase my ${protocol} ${position.asset} position`}>Increase</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Close my ${protocol} ${position.asset} position`}>Close</ActionLink>
       </div>
     </Card>
   );
 }
 
-function StakingTab({ data }: { data: PortfolioPayload }) {
+function StakingTab({ data, onCopyAction }: { data: PortfolioPayload; onCopyAction: ActionCopyHandler }) {
   const { staking: positions } = data;
   if (positions.length === 0) {
     return <EmptyState label="No active Morpho, Moonwell, or Aave positions found." />;
@@ -242,21 +256,36 @@ function StakingTab({ data }: { data: PortfolioPayload }) {
   return (
     <div className="space-y-3">
       {positions.map((position) => (
-        <StakingCard key={position.id} data={data} position={position} />
+        <StakingCard key={position.id} data={data} onCopyAction={onCopyAction} position={position} />
       ))}
     </div>
   );
 }
 
-function PortfolioContent({ data, activeTab }: { data: PortfolioPayload; activeTab: Tab }) {
-  if (activeTab === "coins") return <CoinsTab data={data} />;
-  if (activeTab === "perpetuals") return <PerpsTab data={data} />;
-  return <StakingTab data={data} />;
+function PortfolioContent({
+  data,
+  activeTab,
+  onCopyAction,
+}: {
+  data: PortfolioPayload;
+  activeTab: Tab;
+  onCopyAction: ActionCopyHandler;
+}) {
+  if (activeTab === "coins") return <CoinsTab data={data} onCopyAction={onCopyAction} />;
+  if (activeTab === "perpetuals") return <PerpsTab data={data} onCopyAction={onCopyAction} />;
+  return <StakingTab data={data} onCopyAction={onCopyAction} />;
 }
 
 export function PortfolioView({ user, token }: { user: string; token: string }) {
   const [activeTab, setActiveTab] = useState<Tab>("coins");
+  const [toastVisible, setToastVisible] = useState(false);
   const { data, status, error, refresh } = usePortfolio(user, token);
+
+  async function handleCopyAction(prompt: string) {
+    await copyPrompt(prompt);
+    setToastVisible(true);
+    window.setTimeout(() => setToastVisible(false), 2600);
+  }
 
   return (
     <main className="min-h-screen bg-grid bg-background">
@@ -314,7 +343,9 @@ export function PortfolioView({ user, token }: { user: string; token: string }) 
 
         {status === "loading" ? <EmptyState label="Loading portfolio..." /> : null}
         {status === "error" ? <EmptyState label={error ?? "Could not load this portfolio link."} /> : null}
-        {status === "ready" && data ? <PortfolioContent activeTab={activeTab} data={data} /> : null}
+        {status === "ready" && data ? (
+          <PortfolioContent activeTab={activeTab} data={data} onCopyAction={handleCopyAction} />
+        ) : null}
 
         {data?.errors.length ? (
           <p className="pb-6 text-center font-mono text-[11px] text-muted-foreground">
@@ -322,6 +353,11 @@ export function PortfolioView({ user, token }: { user: string; token: string }) 
           </p>
         ) : null}
       </div>
+      {toastVisible ? (
+        <div className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-xl border border-border bg-popover px-4 py-3 text-center font-mono text-xs text-popover-foreground shadow-xl">
+          Prompt copied. Paste it to the bot.
+        </div>
+      ) : null}
     </main>
   );
 }
