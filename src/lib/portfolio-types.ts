@@ -38,6 +38,7 @@ export interface PortfolioStakingPosition {
   asset: string;
   name: string;
   amount: number | null;
+  decimals: number | null;
   valueUsd: number | null;
   apy: number | null;
   healthFactor: number | null;

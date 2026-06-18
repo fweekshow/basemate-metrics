@@ -30,11 +30,13 @@ function money(value: number | null | undefined): string {
   return `$${usdc(value)}`;
 }
 
-function amount(value: string | number | null | undefined): string {
+function amount(value: string | number | null | undefined, decimals?: number | null): string {
   if (value == null) return "";
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return String(value);
-  return n.toLocaleString("en-US", { maximumFractionDigits: n >= 1 ? 4 : 6 });
+  const maxFractionDigits =
+    decimals != null ? Math.min(decimals, 6) : n >= 1 ? 4 : 6;
+  return n.toLocaleString("en-US", { maximumFractionDigits: maxFractionDigits });
 }
 
 async function copyPrompt(prompt: string): Promise<void> {
@@ -235,7 +237,7 @@ function StakingCard({
         </div>
       </div>
       <p className="mt-3 font-mono text-xs text-muted-foreground">
-        {amount(position.amount)} {position.asset} in {position.name}
+        {amount(position.amount, position.decimals)} {position.asset} in {position.name}
       </p>
       <p className="mt-1 font-mono text-[11px] text-muted-foreground">
         {walletLabel(data, position.walletAddress)}
