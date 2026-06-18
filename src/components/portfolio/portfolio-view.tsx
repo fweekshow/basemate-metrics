@@ -356,7 +356,7 @@ export function PortfolioView({ user, token }: { user: string; token: string }) 
         ) : null}
       </div>
       {toastVisible ? (
-        <div className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-xl border border-border bg-popover px-4 py-3 text-center bg-green-600 text-white font-mono text-xs text-popover-foreground shadow-xl">
+        <div className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-xl border border-border px-4 py-3 text-center bg-green-600 text-black font-mono text-xs text-popover-foreground shadow-xl">
           Prompt copied. Paste it to the bot.
         </div>
       ) : null}
