@@ -18,13 +18,36 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
+const siteDescription =
+  "AI-powered community discovery inside group chats on Base.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate-metrics.up.railway.app",
+  ),
   title: {
     default: "Basemate - Community Discovery",
     template: "%s · Basemate",
   },
-  description:
-    "AI-powered community discovery inside group chats on Base.",
+  description: siteDescription,
+  openGraph: {
+    title: "Basemate - Community Discovery",
+    description: siteDescription,
+    images: [
+      {
+        url: "/basemate-og.png",
+        width: 1536,
+        height: 1024,
+        alt: "Basemate",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Basemate - Community Discovery",
+    description: siteDescription,
+    images: ["/basemate-og.png"],
+  },
 };
 
 export default function RootLayout({

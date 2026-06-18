@@ -8,6 +8,20 @@ export const metadata: Metadata = {
   openGraph: {
     title: "View more details",
     description: "Your full Basemate portfolio — holdings, perps, and yield.",
+    images: [
+      {
+        url: "/basemate-og.png",
+        width: 1536,
+        height: 1024,
+        alt: "Basemate",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "View more details",
+    description: "Your full Basemate portfolio — holdings, perps, and yield.",
+    images: ["/basemate-og.png"],
   },
 };
 
