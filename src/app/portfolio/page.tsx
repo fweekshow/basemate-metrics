@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PortfolioView } from "@/components/portfolio/portfolio-view";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "basemate · portfolio",
@@ -22,6 +23,22 @@ export const metadata: Metadata = {
     title: "View more details",
     description: "Your full Basemate portfolio — holdings, perps, and yield.",
     images: ["/basemate-og.png"],
+  },
+  other: {
+    "fc:frame": JSON.stringify({
+      version: "next",
+      imageUrl: "/basemate-og.png",
+      button: {
+        title: `Launch Basemate`,
+        action: {
+          type: "launch_frame",
+          name: "Basemate",
+          url: SITE_URL + "/portfolio",
+          splashImageUrl: "/basemate-og.png",
+          splashBackgroundColor: "#000000",
+        },
+      },
+    }),
   },
 };
 

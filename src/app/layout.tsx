@@ -48,6 +48,22 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: ["/basemate-og.png"],
   },
+  other: {
+    "fc:frame": JSON.stringify({
+      version: "next",
+      imageUrl: "/basemate-og.png",
+      button: {
+        title: `Launch Basemate`,
+        action: {
+          type: "launch_frame",
+          name: "Basemate",
+          url: SITE_URL,
+          splashImageUrl: "/basemate-og.png",
+          splashBackgroundColor: "#000000",
+        },
+      },
+    }),
+  },
 };
 
 export default function RootLayout({
