@@ -56,6 +56,22 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [txnImage],
   },
+  other: {
+    "fc:frame": JSON.stringify({
+      version: "next",
+      imageUrl: txnImageUrl,
+      button: {
+        title: `View on Basemate`,
+        action: {
+          type: "launch_frame",
+          name: "Basemate",
+          url: URL,
+          splashImageUrl: txnImageUrl,
+          splashBackgroundColor: "#000000",
+        },
+      },
+    }),
+  },
 };
 
 export default async function TxnPage({
