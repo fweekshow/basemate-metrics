@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,9 +24,7 @@ const siteDescription =
   "AI-powered community discovery inside group chats on Base.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate-metrics.up.railway.app",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Basemate - Community Discovery",
     template: "%s · Basemate",

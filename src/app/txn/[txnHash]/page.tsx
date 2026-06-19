@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { SITE_URL } from "@/lib/site";
+
 const siteDescription =
   "AI-powered community discovery inside group chats on Base.";
 
@@ -19,9 +21,7 @@ const txnImage = {
 } as const;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate.app",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Basemate - Community Discovery",
     template: "%s · Basemate",
