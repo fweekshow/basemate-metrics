@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 
 import { basemateEmbedMetadata } from "@/lib/embed";
+import { getRequestOrigin } from "@/lib/request-origin";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -21,24 +22,28 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
-const embed = basemateEmbedMetadata({
-  title: `${SITE.name} — Community Discovery`,
-  description: SITE.description,
-  url: SITE.baseUrl,
-  buttonTitle: "Launch Basemate",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const origin = await getRequestOrigin();
+  const embed = basemateEmbedMetadata({
+    title: `${SITE.name} — ${SITE.manifestTagline}`,
+    description: SITE.description,
+    url: origin,
+    origin,
+    buttonTitle: "Launch Basemate",
+  });
 
-export const metadata: Metadata = {
-  ...embed,
-  other: {
-    ...embed.other,
-    "base:app_id": "698f0e4ae0d5d2cf831b5a8b",
-  },
-  title: {
-    default: `${SITE.name} — Community Discovery`,
-    template: `%s · ${SITE.name}`,
-  },
-};
+  return {
+    ...embed,
+    other: {
+      ...embed.other,
+      "base:app_id": "698f0e4ae0d5d2cf831b5a8b",
+    },
+    title: {
+      default: `${SITE.name} — ${SITE.manifestTagline}`,
+      template: `%s · ${SITE.name}`,
+    },
+  };
+}
 
 export default function RootLayout({
   children,

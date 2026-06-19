@@ -2,29 +2,59 @@ import type { Metadata } from "next";
 
 import { SITE } from "@/lib/site";
 
+function assetUrl(origin: string, path: string): string {
+  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 /** Primary embed / manifest share image (1200×800 PNG, 3:2). */
-export const BASEMATE_OG_IMAGE = `${SITE.baseUrl}/images/mini-share.png`;
+export function basemateOgImage(origin: string = SITE.appUrl): string {
+  return assetUrl(origin, "/images/mini-share.png");
+}
 
 /** Branded image shown on confirmed trade links in chat. */
-export const BASEMATE_TXN_OG_IMAGE = `${SITE.baseUrl}/images/mini-share.png`;
+export function basemateTxnOgImage(origin: string = SITE.appUrl): string {
+  return basemateOgImage(origin);
+}
 
 /** Splash while the frame / mini app loads (200×200). */
-export const BASEMATE_SPLASH_IMAGE = `${SITE.baseUrl}/images/splash.png`;
+export function basemateSplashImage(origin: string = SITE.appUrl): string {
+  return assetUrl(origin, "/images/splash.png");
+}
 
-/** Mini app icon (1024×1024 PNG) — root path matches Farcaster hosted manifest. */
-export const BASEMATE_ICON_IMAGE = `${SITE.baseUrl}/icon.png`;
+/** Mini app icon (1024×1024 PNG). */
+export function basemateIconImage(origin: string = SITE.baseUrl): string {
+  return assetUrl(origin, "/icon.png");
+}
+
+/** @deprecated use basemateOgImage() */
+export const BASEMATE_OG_IMAGE = basemateOgImage(SITE.baseUrl);
+/** @deprecated use basemateTxnOgImage() */
+export const BASEMATE_TXN_OG_IMAGE = basemateTxnOgImage(SITE.baseUrl);
+/** @deprecated use basemateSplashImage() */
+export const BASEMATE_SPLASH_IMAGE = basemateSplashImage(SITE.baseUrl);
+/** @deprecated use basemateIconImage() */
+export const BASEMATE_ICON_IMAGE = basemateIconImage(SITE.baseUrl);
 
 const SPLASH_BG = "#0A0A0A";
 /** Manifest / hosted mini app splash background (Basemate blue). */
 const MANIFEST_SPLASH_BG = "#0505FF";
 
-/** Signed domain association from Farcaster manifest tool (hosted id 019ee00b-481a-c102-e73e-c48b8425daf4). */
-const ACCOUNT_ASSOCIATION = {
+/** Signed for basemate.app (root). */
+const ROOT_ACCOUNT_ASSOCIATION = {
   header:
     "eyJmaWQiOjQ5ODU0NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDBGNTJDQjQzOTJEMkZFYjJhMEMxMjkwYTNlN0UyMUJjMjI0NTNBNzIifQ",
   payload: "eyJkb21haW4iOiJiYXNlbWF0ZS5hcHAifQ",
   signature:
     "FnoJkDXtebgEGTajV1i61vtQyMJMUl7Iia2tKkj+XjZuzfA5R2HVERjd6bpZkWdX80tXrU0A6ip4H4JuC3N6VRs=",
+} as const;
+
+/** Signed for app.basemate.app (Base App canonical / ex-auction-miniapp domain). */
+const APP_ACCOUNT_ASSOCIATION = {
+  header:
+    "eyJmaWQiOjQ5ODU0NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDBGNTJDQjQzOTJEMkZFYjJhMEMxMjkwYTNlN0UyMUJjMjI0NTNBNzIifQ",
+  payload: "eyJkb21haW4iOiJhcHAuYmFzZW1hdGUuYXBwIn0",
+  signature:
+    "y55IkgVCA832ark4Rr53DIMNzdSY6cJPUAD1wT/BUU9Ij3klBVh0W5KrG9syqsjIZizWodCcRZPSelnBHlMD8xs=",
 } as const;
 
 type FcEmbedOpts = {
@@ -35,8 +65,8 @@ type FcEmbedOpts = {
 };
 
 /** Matches Avantis: fc:miniapp with launch_miniapp + required action.url. */
-function fcMiniappContent(opts: FcEmbedOpts): string {
-  const splash = opts.splashImageUrl ?? BASEMATE_SPLASH_IMAGE;
+function fcMiniappContent(opts: FcEmbedOpts, splashFallback: string): string {
+  const splash = opts.splashImageUrl ?? splashFallback;
   return JSON.stringify({
     version: "1",
     imageUrl: opts.imageUrl,
@@ -54,8 +84,8 @@ function fcMiniappContent(opts: FcEmbedOpts): string {
 }
 
 /** Matches Avantis: fc:frame with launch_frame + required action.url. */
-function fcFrameContent(opts: FcEmbedOpts): string {
-  const splash = opts.splashImageUrl ?? BASEMATE_SPLASH_IMAGE;
+function fcFrameContent(opts: FcEmbedOpts, splashFallback: string): string {
+  const splash = opts.splashImageUrl ?? splashFallback;
   return JSON.stringify({
     version: "1",
     imageUrl: opts.imageUrl,
@@ -76,6 +106,7 @@ export function basemateEmbedMetadata(opts: {
   title: string;
   description: string;
   url: string;
+  origin?: string;
   imageUrl?: string;
   buttonTitle?: string;
   splashImageUrl?: string;
@@ -83,7 +114,9 @@ export function basemateEmbedMetadata(opts: {
   imageWidth?: number;
   imageHeight?: number;
 }): Metadata {
-  const image = opts.imageUrl ?? BASEMATE_OG_IMAGE;
+  const origin = opts.origin ?? opts.url.replace(/\/$/, "");
+  const image = opts.imageUrl ?? basemateOgImage(origin);
+  const splashFallback = basemateSplashImage(origin);
   const buttonTitle = opts.buttonTitle ?? "Open Basemate";
   const imageWidth = opts.imageWidth ?? 1200;
   const imageHeight = opts.imageHeight ?? 800;
@@ -91,17 +124,17 @@ export function basemateEmbedMetadata(opts: {
     pageUrl: opts.url,
     imageUrl: image,
     buttonTitle,
-    splashImageUrl: opts.splashImageUrl,
+    splashImageUrl: opts.splashImageUrl ?? splashFallback,
   };
 
   return {
     title: opts.title,
     description: opts.description,
-    metadataBase: new URL(SITE.baseUrl),
+    metadataBase: new URL(origin),
     alternates: { canonical: opts.url },
     other: {
-      "fc:miniapp": fcMiniappContent(fcOpts),
-      "fc:frame": fcFrameContent(fcOpts),
+      "fc:miniapp": fcMiniappContent(fcOpts, splashFallback),
+      "fc:frame": fcFrameContent(fcOpts, splashFallback),
     },
     openGraph: {
       title: opts.title,
@@ -132,27 +165,30 @@ export function basemateEmbedMetadata(opts: {
   };
 }
 
-export function basemateFarcasterManifest() {
+export function basemateFarcasterManifest(origin: string = SITE.appUrl) {
+  const isAppHost = origin === SITE.appUrl;
+  const accountAssociation = isAppHost ? APP_ACCOUNT_ASSOCIATION : ROOT_ACCOUNT_ASSOCIATION;
+
   return {
-    accountAssociation: ACCOUNT_ASSOCIATION,
+    accountAssociation,
     miniapp: {
       version: "1",
       name: SITE.name,
-      iconUrl: BASEMATE_ICON_IMAGE,
-      homeUrl: SITE.baseUrl,
-      imageUrl: `${SITE.baseUrl}/image.png`,
+      iconUrl: basemateIconImage(origin),
+      homeUrl: origin,
+      imageUrl: assetUrl(origin, "/image.png"),
       buttonTitle: "Open Basemate",
-      splashImageUrl: `${SITE.baseUrl}/splash.png`,
+      splashImageUrl: assetUrl(origin, "/splash.png"),
       splashBackgroundColor: MANIFEST_SPLASH_BG,
       primaryCategory: "finance",
       tags: ["base", "trading", "agent", "perps"],
       subtitle: "Trade, Earn and Learn",
       description: "Basemate",
-      tagline: SITE.tagline,
+      tagline: SITE.manifestTagline,
       ogTitle: SITE.name,
       ogDescription: SITE.manifestOgDescription,
-      ogImageUrl: `${SITE.baseUrl}/image.png`,
-      heroImageUrl: `${SITE.baseUrl}/image.png`,
+      ogImageUrl: assetUrl(origin, "/image.png"),
+      heroImageUrl: assetUrl(origin, "/image.png"),
     },
   };
 }
@@ -167,6 +203,6 @@ export function basescanTxUrl(hash: string): string {
   return `https://basescan.org/tx/${hash}`;
 }
 
-export function basemateTxnUrl(hash: string): string {
-  return `${SITE.baseUrl}/txn/${hash}`;
+export function basemateTxnUrl(hash: string, origin: string = SITE.appUrl): string {
+  return `${origin}/txn/${hash}`;
 }

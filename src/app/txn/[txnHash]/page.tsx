@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 
 import { TxnRedirect } from "@/components/txn-redirect";
 import {
-  BASEMATE_TXN_OG_IMAGE,
   basemateEmbedMetadata,
+  basemateTxnOgImage,
   basemateTxnUrl,
   basescanTxUrl,
   isValidTxHash,
 } from "@/lib/embed";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 type PageProps = {
   params: Promise<{ txnHash: string }>;
@@ -20,12 +21,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Transaction · Basemate" };
   }
 
-  const url = basemateTxnUrl(txnHash);
+  const origin = await getRequestOrigin();
+  const url = basemateTxnUrl(txnHash, origin);
   return basemateEmbedMetadata({
     title: "Trade confirmed · Basemate",
     description: "Trade executed on Base via Basemate.",
     url,
-    imageUrl: BASEMATE_TXN_OG_IMAGE,
+    origin,
+    imageUrl: basemateTxnOgImage(origin),
     buttonTitle: "View on BaseScan",
     imageWidth: 1200,
     imageHeight: 800,
