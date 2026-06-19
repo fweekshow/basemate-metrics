@@ -153,20 +153,27 @@ function CoinsTab({ data, onCopyAction }: { data: PortfolioPayload; onCopyAction
 function PerpCard({
   data,
   position,
+  displayIndex,
   onCopyAction,
 }: {
   data: PortfolioPayload;
   position: PortfolioPerpPosition;
+  displayIndex: number;
   onCopyAction: ActionCopyHandler;
 }) {
   const side = position.side ? position.side.toUpperCase() : "POSITION";
   const leverage = position.leverage ? `${position.leverage}x` : "—";
   const promptLabel = `${position.pair} ${position.side ?? ""}`.trim();
+  const tradeRef =
+    position.pairIndex != null && position.tradeIndex != null
+      ? ` (pairIndex: ${position.pairIndex}, tradeIndex: ${position.tradeIndex})`
+      : "";
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
+            <span className="font-mono text-xs font-semibold text-primary">#{displayIndex}</span>
             <h2 className="font-display text-lg font-semibold">{position.pair}</h2>
             <span className="rounded-full bg-secondary px-2 py-1 font-mono text-[10px] uppercase text-muted-foreground">
               {position.kind}
@@ -180,7 +187,8 @@ function PerpCard({
           </p>
         </div>
         <div className="text-right">
-          <p className="font-mono text-sm font-semibold">{money(position.valueUsd)}</p>
+          <p className="font-mono text-sm font-semibold">{money(position.collateralUsd)}</p>
+          <p className="font-mono text-[11px] text-muted-foreground">spent</p>
           <p className={cn("font-mono text-xs", (position.pnlUsd ?? 0) >= 0 ? "text-up" : "text-down")}>
             PnL {money(position.pnlUsd)}
           </p>
@@ -189,12 +197,12 @@ function PerpCard({
       <div className="mt-4 grid grid-cols-2 gap-2 font-mono text-xs text-muted-foreground">
         <div>SL: {position.stopLoss ?? "not set"}</div>
         <div>TP: {position.takeProfit ?? "not set"}</div>
-        <div>Collateral: {money(position.collateralUsd)}</div>
-        <div>Size: {money(position.sizeUsd)}</div>
+        <div>Notional: {money(position.sizeUsd)}</div>
+        <div>Leverage: {leverage}</div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <ActionLink onCopy={onCopyAction} prompt={`Modify SL TP for my ${promptLabel} position`}>Modify SL/TP</ActionLink>
-        <ActionLink onCopy={onCopyAction} prompt={`Close my ${promptLabel} position`}>Close position</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Modify SL TP for my ${promptLabel} perp${tradeRef}`}>Modify SL/TP</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Close my ${promptLabel} perp${tradeRef}`}>Close position</ActionLink>
       </div>
     </Card>
   );
@@ -205,8 +213,8 @@ function PerpsTab({ data, onCopyAction }: { data: PortfolioPayload; onCopyAction
   if (positions.length === 0) return <EmptyState label="No open or limit perp positions right now." />;
   return (
     <div className="space-y-3">
-      {positions.map((position) => (
-        <PerpCard key={position.id} data={data} onCopyAction={onCopyAction} position={position} />
+      {positions.map((position, idx) => (
+        <PerpCard key={position.id} data={data} displayIndex={idx + 1} onCopyAction={onCopyAction} position={position} />
       ))}
     </div>
   );
