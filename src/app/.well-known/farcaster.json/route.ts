@@ -1,13 +1,9 @@
-import { basemateFarcasterManifest } from "@/lib/embed";
-
 export const dynamic = "force-static";
 
-/** Self-hosted manifest (hosted id 019ee00b-481a-c102-e73e-c48b8425daf4). */
+const HOSTED_MANIFEST_URL =
+  "https://api.farcaster.xyz/miniapps/hosted-manifest/019ee014-736b-e298-cefa-47bb3a409b5f";
+
+/** 307 to Farcaster hosted manifest — required for domain verification to complete. */
 export function GET() {
-  return Response.json(basemateFarcasterManifest(), {
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=300",
-    },
-  });
+  return Response.redirect(HOSTED_MANIFEST_URL, 307);
 }
