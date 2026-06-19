@@ -3,6 +3,7 @@ export const SITE = {
   tagline: "Base-native trading agent",
   description:
     "Trade perps, swap, earn yield, and scout launches — all by messaging. The Base-native agent that lives in your chats.",
+  baseUrl: "https://basemate.app",
   pfp:
     "https://res.cloudinary.com/dg5qvbxjp/image/upload/v1770196704/IMG_9007_iv7vkm.png",
   profileUrl:

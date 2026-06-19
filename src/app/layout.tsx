@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+
+import { basemateEmbedMetadata } from "@/lib/embed";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,12 +22,16 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  ...basemateEmbedMetadata({
+    title: `${SITE.name} — Community Discovery`,
+    description: SITE.description,
+    url: SITE.baseUrl,
+    buttonTitle: "Launch Basemate",
+  }),
   title: {
-    default: "Basemate - Community Discovery",
-    template: "%s · Basemate",
+    default: `${SITE.name} — Community Discovery`,
+    template: `%s · ${SITE.name}`,
   },
-  description:
-    "AI-powered community discovery inside group chats on Base.",
 };
 
 export default function RootLayout({
