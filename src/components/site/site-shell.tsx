@@ -106,13 +106,13 @@ export function SiteCtaRow() {
         Add @basemate to your group
       </Button>
       <Button
-        render={<a href={SITE.appUrl} target="_blank" rel="noopener noreferrer" />}
+        render={<a href={SITE.baseUrl} target="_blank" rel="noopener noreferrer" />}
         nativeButton={false}
         variant="outline"
         size="lg"
         className="w-full sm:w-auto min-h-[44px]"
       >
-        Open app.basemate.app
+        Open basemate.app
       </Button>
     </div>
   );
