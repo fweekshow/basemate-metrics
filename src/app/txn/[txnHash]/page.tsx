@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     url,
     imageUrl: BASEMATE_TXN_OG_IMAGE,
     buttonTitle: "View on BaseScan",
-    imageWidth: 1536,
-    imageHeight: 1024,
+    imageWidth: 1200,
+    imageHeight: 800,
   });
 }
 

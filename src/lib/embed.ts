@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 
 import { SITE } from "@/lib/site";
 
-/** Primary embed image for site / frame previews (1200×630). */
-export const BASEMATE_OG_IMAGE = `${SITE.baseUrl}/basemate-og.png`;
+/** Primary embed / manifest share image (1200×800 PNG, 3:2). */
+export const BASEMATE_OG_IMAGE = `${SITE.baseUrl}/images/mini-share.png`;
 
 /** Branded image shown on confirmed trade links in chat. */
-export const BASEMATE_TXN_OG_IMAGE = `${SITE.baseUrl}/txnmate.jpeg`;
+export const BASEMATE_TXN_OG_IMAGE = `${SITE.baseUrl}/images/mini-share.png`;
 
-/** Splash while the frame / mini app loads (square-friendly logo). */
-export const BASEMATE_SPLASH_IMAGE = BASEMATE_OG_IMAGE;
+/** Splash while the frame / mini app loads (200×200). */
+export const BASEMATE_SPLASH_IMAGE = `${SITE.baseUrl}/images/splash.png`;
+
+/** Mini app icon (1024×1024 PNG). */
+export const BASEMATE_ICON_IMAGE = `${SITE.baseUrl}/images/icon.png`;
 
 const SPLASH_BG = "#0A0A0A";
 
@@ -65,14 +68,14 @@ export function basemateEmbedMetadata(opts: {
   imageUrl?: string;
   buttonTitle?: string;
   splashImageUrl?: string;
-  /** og:image dimensions — txn card is 1536×1024; default OG is 1200×630. */
+  /** og:image dimensions — default share card is 1200×800 (3:2). */
   imageWidth?: number;
   imageHeight?: number;
 }): Metadata {
   const image = opts.imageUrl ?? BASEMATE_OG_IMAGE;
   const buttonTitle = opts.buttonTitle ?? "Open Basemate";
   const imageWidth = opts.imageWidth ?? 1200;
-  const imageHeight = opts.imageHeight ?? 630;
+  const imageHeight = opts.imageHeight ?? 800;
   const fcOpts: FcEmbedOpts = {
     pageUrl: opts.url,
     imageUrl: image,
@@ -120,10 +123,10 @@ export function basemateEmbedMetadata(opts: {
 
 export function basemateFarcasterManifest() {
   return {
-    frame: {
+    miniapp: {
       version: "1",
       name: SITE.name,
-      iconUrl: BASEMATE_OG_IMAGE,
+      iconUrl: BASEMATE_ICON_IMAGE,
       homeUrl: SITE.baseUrl,
       imageUrl: BASEMATE_OG_IMAGE,
       buttonTitle: "Open Basemate",
@@ -131,9 +134,13 @@ export function basemateFarcasterManifest() {
       splashBackgroundColor: SPLASH_BG,
       primaryCategory: "finance",
       tags: ["base", "trading", "agent", "perps"],
+      subtitle: SITE.tagline,
+      description: SITE.description,
+      tagline: SITE.tagline,
       ogTitle: SITE.name,
       ogDescription: SITE.description,
       ogImageUrl: BASEMATE_OG_IMAGE,
+      heroImageUrl: BASEMATE_OG_IMAGE,
     },
   };
 }
