@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
+import { TxnRedirect } from "@/components/txn/txn-redirect";
 import { SITE_URL } from "@/lib/site";
 
 const siteDescription =
   "AI-powered community discovery inside group chats on Base.";
 
-const txnImagePath = "/txnmate.jpeg";
+const txnImageUrl = new URL("/txnmate.jpeg", SITE_URL).href;
 const txnImageWidth = 1536;
 const txnImageHeight = 1024;
 const txnImageAlt = "Basemate transaction";
 
 const txnImage = {
-  url: txnImagePath,
-  secureUrl: txnImagePath,
+  url: txnImageUrl,
+  secureUrl: txnImageUrl,
   width: txnImageWidth,
   height: txnImageHeight,
   alt: txnImageAlt,
@@ -30,25 +30,17 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: txnImagePath,
+        url: txnImageUrl,
         type: "image/jpeg",
         sizes: `${txnImageWidth}x${txnImageHeight}`,
       },
     ],
-    shortcut: [{ url: txnImagePath, type: "image/jpeg" }],
+    shortcut: [{ url: txnImageUrl, type: "image/jpeg" }],
     apple: [
       {
-        url: txnImagePath,
+        url: txnImageUrl,
         type: "image/jpeg",
         sizes: `${txnImageWidth}x${txnImageHeight}`,
-      },
-    ],
-    other: [
-      {
-        rel: "mask-icon",
-        url: txnImagePath,
-        type: "image/jpeg",
-        color: "#0052ff",
       },
     ],
   },
@@ -72,5 +64,7 @@ export default async function TxnPage({
   params: Promise<{ txnHash: string }>;
 }) {
   const { txnHash } = await params;
-  redirect(`https://basescan.org/tx/${txnHash}`);
+  const basescanUrl = `https://basescan.org/tx/${encodeURIComponent(txnHash)}`;
+
+  return <TxnRedirect url={basescanUrl} />;
 }
