@@ -181,7 +181,7 @@ export function formatVolumeKpi(usdc: number): string {
 }
 
 export function formatChatTradingSub(_trading?: ResolvedChatTrading): string {
-  return "Notional · perps & swaps";
+  return "Notional";
 }
 
 /** @deprecated use formatChatTradingSub */
