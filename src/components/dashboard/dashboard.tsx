@@ -133,7 +133,7 @@ export function Dashboard() {
                 sub={`+${data.tokenLaunches.last24h.success} 24h`}
               />
               <StatCard
-                label="Base App Chats · Perps & Swaps"
+                label="Notional"
                 value={
                   chatTrading
                     ? formatVolumeKpi(chatTrading.notionalLifetime)
