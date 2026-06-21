@@ -141,11 +141,7 @@ export function Dashboard() {
                 }
                 accent="up"
                 icon={ArrowDownUp}
-                sub={
-                  chatTrading
-                    ? formatChatTradingSub(chatTrading)
-                    : "Notional · excludes yield"
-                }
+                sub={formatChatTradingSub(chatTrading ?? undefined)}
               />
             </div>
 
@@ -217,17 +213,17 @@ export function Dashboard() {
               </Panel>
             </div>
 
-            {/* Bottom band */}
+            {/* Bottom band — full 12-col width to align with bento above */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-12">
               <Panel
                 title="Top Button Actions"
                 subtitle="most-clicked agent actions"
-                className="lg:col-span-4 max-h-[250px] overflow-y-auto"
+                className={`max-h-[250px] overflow-y-auto ${data.legacyGroups ? "lg:col-span-3" : "lg:col-span-5"}`}
               >
                 <TopActions actions={data.engagement.topButtonActions} />
               </Panel>
 
-              <Panel title="Groups" className="lg:col-span-2">
+              <Panel title="Groups" className="lg:col-span-3">
                 <div className="flex h-full flex-col justify-start gap-1">
                   <MiniStat label="Agent in" value={full(data.groups.agentInGroup)} accent="text-up" />
                   <MiniStat label="Total known" value={full(data.groups.totalKnown)} />
@@ -238,7 +234,7 @@ export function Dashboard() {
               </Panel>
 
               {data.legacyGroups ? (
-                <Panel title="Legacy Groups" className="lg:col-span-2">
+                <Panel title="Legacy Groups" className="lg:col-span-3">
                   <div className="flex h-full flex-col justify-start gap-1">
                     <MiniStat
                       label="Active groups"
@@ -257,16 +253,7 @@ export function Dashboard() {
                 </Panel>
               ) : null}
 
-              <Panel title="Keywords / Ads" className="lg:col-span-2">
-                <div className="flex h-full flex-col justify-start gap-1">
-                  <MiniStat label="Active" value={full(data.keywords.active)} accent="text-amber" />
-                  <MiniStat label="Impressions" value={full(data.keywords.totalImpressions)} />
-                  <MiniStat label="Impr. 24h" value={full(data.keywords.impressionsLast24h)} />
-                  <MiniStat label="Spent USDC" value={`$${usdc(data.keywords.totalSpentUsdc)}`} accent="text-up" />
-                </div>
-              </Panel>
-
-              <Panel title="Revenue & Outreach" className="lg:col-span-4">
+              <Panel title="Revenue & Outreach" className={data.legacyGroups ? "lg:col-span-3" : "lg:col-span-4"}>
                 <div className="flex h-full flex-col justify-start gap-1">
                   <MiniStat label="Boost revenue" value={`$${usdc(data.boost.totalRevenueUsdc)}`} accent="text-up" />
                   <MiniStat label="Boost payments" value={full(data.boost.paymentCount)} />

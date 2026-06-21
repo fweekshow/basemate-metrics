@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveBankrLifetimeVolumeUsdc } from "@/lib/bankr-lifetime";
 import type { AnalyticsPayload } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,12 @@ export async function GET() {
     }
 
     const data = (await res.json()) as AnalyticsPayload;
+
+    const lifetime = await resolveBankrLifetimeVolumeUsdc().catch(() => null);
+    if (lifetime != null && data.protocolFlow?.bankr) {
+      data.protocolFlow.bankr.tradingVolumeLifetimeUsdc = lifetime;
+    }
+
     return NextResponse.json(data, {
       headers: { "cache-control": "no-store" },
     });

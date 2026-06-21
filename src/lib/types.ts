@@ -69,6 +69,21 @@ export interface PerpStrategies {
   volume24hUsdc: string;
 }
 
+/** Server/CDP wallets powering iMessage + Base app automations. */
+export interface BasemateWalletsMetric {
+  activeWallets: number;
+  cdpWallets: number;
+  publishedStrategies: number;
+  perpOpensLifetime: number;
+  perpOpens24h: number;
+  openPositions: number;
+  activeSubscriptions: number;
+  marginLifetimeUsdc: string;
+  margin24hUsdc: string;
+  notionalLifetimeUsdc: string;
+  notional24hUsdc: string;
+}
+
 export interface FeatureEngagementBucket {
   clicksLifetime: number;
   clicks24h: number;
@@ -160,6 +175,7 @@ export interface AnalyticsPayload {
   };
   tradingVolume?: TradingVolume;
   worldCupBetting?: WorldCupBetting;
+  basemateWallets?: BasemateWalletsMetric;
   perpStrategies?: PerpStrategies;
   featureEngagement?: FeatureEngagement;
 }

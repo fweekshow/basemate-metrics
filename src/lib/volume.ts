@@ -180,13 +180,8 @@ export function formatVolumeKpi(usdc: number): string {
   return `$${usdc.toFixed(usdc % 1 === 0 ? 0 : 2)}`;
 }
 
-export function formatChatTradingSub(trading: ResolvedChatTrading): string {
-  const margin =
-    trading.perpMarginLifetime +
-    trading.serverMarginLifetime +
-    trading.swapsLifetime;
-  if (margin <= 0) return "Notional · perps & swaps";
-  return `${formatVolumeKpi(margin)} margin · notional in headline`;
+export function formatChatTradingSub(_trading?: ResolvedChatTrading): string {
+  return "Notional · perps & swaps";
 }
 
 /** @deprecated use formatChatTradingSub */
