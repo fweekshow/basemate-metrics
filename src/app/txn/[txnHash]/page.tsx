@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { TxnRedirect } from "@/components/txn-redirect";
+import { TxnRedirect } from "@/components/txn/txn-redirect";
 import {
   basemateEmbedMetadata,
   basemateTxnOgImage,

@@ -25,7 +25,27 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Skill(design-review)",
-      "Skill(design-review:*)"
+      "Skill(design-review:*)",
+      "Bash(git commit *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -L \"https://api.anthropic.com/v1/design/h/b9Uiwr90mUTBAZu2Ysi7Cg\" -o basemate-design-v2.zip)",
+      "Bash(python3 -c ' *)",
+      "Bash(sips -g hasAlpha -g pixelWidth -g pixelHeight /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-win-buff.png)",
+      "Bash(cp /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-win-buff.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(cp /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-peace.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(cp /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-rekt.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(cp /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-support.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(cp /tmp/basemate-ds-v2/basemate-design-system/project/assets/mascot/mate-win.png /Users/matthewmeakin/basemate-metrics/public/brand/mascot/)",
+      "Bash(/Users/matthewmeakin/.claude/skills/gstack/browse/dist/browse responsive *)",
+      "Bash(mkdir -p /Users/matthewmeakin/.claude/skills/basemate-design)",
+      "Bash(cp -r /tmp/basemate-ds-v2/basemate-design-system/project/. /Users/matthewmeakin/.claude/skills/basemate-design/)",
+      "Read(//Users/matthewmeakin/.claude/skills/**)",
+      "Bash(unzip -o \"/Users/matthewmeakin/Downloads/Basemate Design System-handoff-2.zip\" -d basemate-ds)",
+      "Bash(cp \"/tmp/basemate-ds/basemate-design-system/project/uploads/B295844A-DA46-45ED-A425-D095D4B91FA9.PNG\" /Users/matthewmeakin/basemate-metrics/public/brand/mascot/mate-girl.png)",
+      "Bash(cp \"/tmp/basemate-ds/basemate-design-system/project/uploads/6CB5C5B0-D444-43D3-B86D-685E973FA585.PNG\" /Users/matthewmeakin/basemate-metrics/public/brand/mascot/mate-win-3d.png)",
+      "Bash(npx tsc *)",
+      "Bash(git push *)"
     ]
   }
 }

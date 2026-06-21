@@ -1,3 +1,7 @@
+/** Canonical public origin for OG tags, sitemaps, and absolute links. */
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate.app";
+
 export const SITE = {
   name: "Basemate",
   tagline: "Trade, Earn and Learn",
