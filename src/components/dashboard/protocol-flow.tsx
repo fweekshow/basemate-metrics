@@ -2,6 +2,7 @@ import { ArrowDownUp, Landmark, Layers, Rocket, TrendingUp } from "lucide-react"
 import type { AnalyticsPayload, ProtocolFlowMetric } from "@/lib/types";
 import { compact, full, usdc } from "@/lib/format";
 import { Panel } from "./primitives";
+import { WorldCupBettingPanel } from "./world-cup-betting";
 
 function MiniStat({
   label,
@@ -22,6 +23,20 @@ function MiniStat({
       </span>
     </div>
   );
+}
+
+const EMPTY_FLOW_METRIC: ProtocolFlowMetric = {
+  users: 0,
+  clicks: 0,
+  clicks24h: 0,
+  confirmedVolumeUsdc: "0",
+  volume24hUsdc: "0",
+  confirmedTxCount: 0,
+};
+
+function parseVol(value: string | undefined): number {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function YieldProtocolPanel({
@@ -53,11 +68,52 @@ function YieldProtocolPanel({
   );
 }
 
-export function ProtocolFlowBand({
-  flow,
+function SwapsProtocolPanel({
+  uniswap,
+  aerodrome,
 }: {
-  flow: NonNullable<AnalyticsPayload["protocolFlow"]>;
+  uniswap: ProtocolFlowMetric;
+  aerodrome: ProtocolFlowMetric;
 }) {
+  const lifetime =
+    parseVol(uniswap.confirmedVolumeUsdc) +
+    parseVol(aerodrome.confirmedVolumeUsdc);
+  const last24h =
+    parseVol(uniswap.volume24hUsdc) + parseVol(aerodrome.volume24hUsdc);
+  const txCount = uniswap.confirmedTxCount + aerodrome.confirmedTxCount;
+
+  return (
+    <Panel title="Swaps" subtitle="uniswap + aerodrome · chat spot trades">
+      <div className="flex h-full flex-col justify-start gap-1">
+        <MiniStat
+          label="Volume lifetime"
+          value={`$${usdc(String(lifetime))}`}
+          accent="text-up"
+        />
+        <MiniStat
+          label="Volume 24h"
+          value={`$${usdc(String(last24h))}`}
+          accent="text-up"
+        />
+        <MiniStat
+          label="Uniswap lifetime"
+          value={`$${usdc(uniswap.confirmedVolumeUsdc)}`}
+        />
+        <MiniStat
+          label="Aerodrome lifetime"
+          value={`$${usdc(aerodrome.confirmedVolumeUsdc)}`}
+        />
+        <MiniStat label="Tx count" value={full(txCount)} />
+      </div>
+    </Panel>
+  );
+}
+
+export function ProtocolFlowBand({ data }: { data: AnalyticsPayload }) {
+  const flow = data.protocolFlow!;
+  const uniswap = flow.uniswap ?? EMPTY_FLOW_METRIC;
+  const aerodrome = flow.aerodrome ?? EMPTY_FLOW_METRIC;
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-0.5">
@@ -66,11 +122,11 @@ export function ProtocolFlowBand({
           Protocol flow through basemate
         </h2>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <YieldProtocolPanel name="Moonwell" metric={flow.moonwell} />
         <YieldProtocolPanel name="Morpho" metric={flow.morpho} />
         <YieldProtocolPanel name="Aave" metric={flow.aave} />
-        <Panel title="Avantis" subtitle="perps + copy trading">
+        <Panel title="Avantis" subtitle="user perps · margin & notional">
           <div className="flex h-full flex-col justify-start gap-1">
             <MiniStat
               label="Users"
@@ -80,27 +136,30 @@ export function ProtocolFlowBand({
             <MiniStat label="Clicks" value={full(flow.avantis.clicks)} />
             <MiniStat label="Clicks 24h" value={full(flow.avantis.clicks24h)} />
             <MiniStat
-              label="Direct lifetime"
+              label="Margin lifetime"
               value={`$${usdc(flow.avantis.confirmedVolumeUsdc)}`}
+            />
+            <MiniStat
+              label="Notional lifetime"
+              value={`$${usdc(flow.avantis.confirmedNotionalUsdc ?? flow.avantis.confirmedVolumeUsdc)}`}
               accent="text-up"
             />
             <MiniStat
-              label="Direct 24h"
+              label="Margin 24h"
               value={`$${usdc(flow.avantis.volume24hUsdc)}`}
-              accent="text-up"
             />
             <MiniStat
-              label="Copy lifetime"
-              value={`$${usdc(flow.avantis.copyVolumeUsdc)}`}
+              label="Notional 24h"
+              value={`$${usdc(flow.avantis.notional24hUsdc ?? flow.avantis.volume24hUsdc)}`}
               accent="text-up"
-            />
-            <MiniStat
-              label="Copy 24h"
-              value={`$${usdc(flow.avantis.copyVolume24hUsdc)}`}
             />
           </div>
         </Panel>
-        <Panel title="Bankr" subtitle="launches + DexScreener market stats">
+        <SwapsProtocolPanel uniswap={uniswap} aerodrome={aerodrome} />
+        <Panel title="World Cup" subtitle="placed bets · basemate wagered">
+          <WorldCupBettingPanel data={data} />
+        </Panel>
+        <Panel title="Bankr" subtitle="launched tokens · secondary market volume">
           <div className="flex h-full flex-col justify-start gap-1">
             <MiniStat
               label="Launches lifetime"
@@ -109,12 +168,12 @@ export function ProtocolFlowBand({
             />
             <MiniStat label="Launches 24h" value={full(flow.bankr.launches24h)} />
             <MiniStat
-              label="Lifetime volume"
+              label="Market vol lifetime"
               value={`$${compact(flow.bankr.tradingVolumeLifetimeUsdc ?? 0)}`}
               accent="text-up"
             />
             <MiniStat
-              label="Volume 24h"
+              label="Market vol 24h"
               value={`$${usdc(flow.bankr.tradingVolume24hUsdc)}`}
               accent="text-up"
             />
@@ -140,8 +199,9 @@ export function ProtocolFlowPlaceholder() {
           <Rocket className="size-4" />
         </div>
         <p className="font-mono text-[12px] text-muted-foreground">
-          Moonwell · Morpho · Aave · Avantis · Bankr metrics appear after the
-          agent API ships protocolFlow in /api/agent/analytics
+          Moonwell · Morpho · Aave · Avantis · Swaps · World Cup · Bankr
+          metrics appear after the agent API ships protocolFlow in
+          /api/agent/analytics
         </p>
       </div>
     </Panel>

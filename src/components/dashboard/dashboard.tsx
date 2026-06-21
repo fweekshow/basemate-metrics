@@ -1,20 +1,21 @@
 "use client";
 
 import {
+  ArrowDownUp,
   Bell,
   Coins,
   Flame,
   MessageSquare,
   MousePointerClick,
   Rocket,
-  Send,
   Sparkles,
   Users,
   Wallet,
 } from "lucide-react";
 import { useMetrics } from "@/hooks/use-metrics";
-import type { MetricSample } from "@/lib/types";
+import type { AnalyticsPayload, MetricSample } from "@/lib/types";
 import { compact, full, pct, usdc } from "@/lib/format";
+import { formatChatTradingSub, formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 import { Header } from "./header";
 import {
   ActivityComparison,
@@ -62,6 +63,8 @@ function MiniStat({
 export function Dashboard() {
   const { data, samples, status, error, lastUpdated, pollMs, refresh } =
     useMetrics();
+
+  const chatTrading = data ? resolveChatTrading(data) : null;
 
   return (
     <div className="relative min-h-screen bg-grid">
@@ -130,16 +133,24 @@ export function Dashboard() {
                 sub={`+${data.tokenLaunches.last24h.success} 24h`}
               />
               <StatCard
-                label="Recs Sent"
-                value={full(data.recommendations.sent)}
-                accent="cyan"
-                icon={Send}
-                sub={`+${data.recommendations.sentLast24h} 24h · ${data.recommendations.pending} pending`}
+                label="Base App Chats · Perps & Swaps"
+                value={
+                  chatTrading
+                    ? formatVolumeKpi(chatTrading.notionalLifetime)
+                    : "—"
+                }
+                accent="up"
+                icon={ArrowDownUp}
+                sub={
+                  chatTrading
+                    ? formatChatTradingSub(chatTrading)
+                    : "Notional · excludes yield"
+                }
               />
             </div>
 
             {data.protocolFlow ? (
-              <ProtocolFlowBand flow={data.protocolFlow} />
+              <ProtocolFlowBand data={data} />
             ) : (
               <ProtocolFlowPlaceholder />
             )}
@@ -255,7 +266,7 @@ export function Dashboard() {
                 </div>
               </Panel>
 
-              <Panel title="Revenue & Outreach" className="lg:col-span-2">
+              <Panel title="Revenue & Outreach" className="lg:col-span-4">
                 <div className="flex h-full flex-col justify-start gap-1">
                   <MiniStat label="Boost revenue" value={`$${usdc(data.boost.totalRevenueUsdc)}`} accent="text-up" />
                   <MiniStat label="Boost payments" value={full(data.boost.paymentCount)} />

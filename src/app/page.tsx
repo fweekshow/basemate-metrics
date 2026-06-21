@@ -80,7 +80,6 @@ function formatUsers(total: number): string {
 
 function buildStats(metrics: AnalyticsPayload | null) {
   return [
-    { value: "$2M+", label: "TOKEN VOLUME TRADED", live: false },
     {
       value: metrics ? formatUsers(metrics.users.total) : "1000s",
       label: "USERS",
@@ -170,7 +169,7 @@ export default async function HomePage() {
               </span>
             </div>
           ) : null}
-          <div className="grid grid-cols-2 gap-px sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px sm:grid-cols-3">
             {stats.map(({ value, label }) => (
               <div key={label} className="flex flex-col gap-1 px-4 py-8 sm:px-6">
                 <span
