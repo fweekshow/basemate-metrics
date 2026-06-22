@@ -164,6 +164,10 @@ function PerpCard({
   const side = position.side ? position.side.toUpperCase() : "POSITION";
   const leverage = position.leverage ? `${position.leverage}x` : "—";
   const promptLabel = `${position.pair} ${position.side ?? ""}`.trim();
+  const closeTradeRef =
+    position.pairIndex != null && position.tradeIndex != null
+      ? ` with pairIndex ${position.pairIndex} and tradeIndex ${position.tradeIndex}`
+      : "";
   const tradeRef =
     position.pairIndex != null && position.tradeIndex != null
       ? ` (pairIndex: ${position.pairIndex}, tradeIndex: ${position.tradeIndex})`
@@ -202,7 +206,7 @@ function PerpCard({
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <ActionLink onCopy={onCopyAction} prompt={`Modify SL TP for my ${promptLabel} perp${tradeRef}`}>Modify SL/TP</ActionLink>
-        <ActionLink onCopy={onCopyAction} prompt={`Close my ${promptLabel} perp${tradeRef}`}>Close position</ActionLink>
+        <ActionLink onCopy={onCopyAction} prompt={`Close my ${promptLabel} perp${closeTradeRef}`}>Close position</ActionLink>
       </div>
     </Card>
   );
