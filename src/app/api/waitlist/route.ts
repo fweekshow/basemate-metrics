@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,6 +15,19 @@ type WaitlistEntry = {
   email: string;
   platform: string;
 };
+
+type WaitlistPayload = WaitlistEntry & {
+  source: "waitlist";
+  createdAt: string;
+};
+
+function isPostgresUrl(value: string) {
+  return value.startsWith("postgres://") || value.startsWith("postgresql://");
+}
+
+function isHttpUrl(value: string) {
+  return value.startsWith("http://") || value.startsWith("https://");
+}
 
 function parseEntry(body: unknown): WaitlistEntry | { error: string } {
   if (typeof body !== "object" || body === null) {
@@ -44,6 +58,49 @@ function parseEntry(body: unknown): WaitlistEntry | { error: string } {
   };
 }
 
+async function saveToPostgres(connectionString: string, payload: WaitlistPayload) {
+  const sql = neon(connectionString);
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS waitlist_entries (
+      id BIGSERIAL PRIMARY KEY,
+      full_name TEXT NOT NULL,
+      country_code TEXT NOT NULL,
+      country_iso TEXT NOT NULL,
+      mobile TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT NOT NULL,
+      platform TEXT NOT NULL,
+      source TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    INSERT INTO waitlist_entries (
+      full_name,
+      country_code,
+      country_iso,
+      mobile,
+      phone,
+      email,
+      platform,
+      source,
+      created_at
+    ) VALUES (
+      ${payload.fullName},
+      ${payload.countryCode},
+      ${payload.countryIso},
+      ${payload.mobile},
+      ${payload.phone},
+      ${payload.email},
+      ${payload.platform},
+      ${payload.source},
+      ${payload.createdAt}
+    )
+  `;
+}
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -57,12 +114,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  // The SQL/storage endpoint is supplied via env var (set in Railway Variables).
-  // Until it's configured, log the entry so the form is usable in dev.
+  const payload: WaitlistPayload = {
+    ...parsed,
+    source: "waitlist",
+    createdAt: new Date().toISOString(),
+  };
+
+  const databaseUrl = process.env.DATABASE_URL?.trim();
   const endpoint = process.env.WAITLIST_ENDPOINT?.trim();
+  const postgresUrl =
+    databaseUrl ?? (endpoint && isPostgresUrl(endpoint) ? endpoint : undefined);
+
+  if (postgresUrl) {
+    try {
+      await saveToPostgres(postgresUrl, payload);
+      return NextResponse.json({ ok: true });
+    } catch (err) {
+      console.error("[waitlist] failed to save entry:", err);
+      return NextResponse.json(
+        { error: "Could not save your spot. Please try again." },
+        { status: 502 },
+      );
+    }
+  }
+
   if (!endpoint) {
     console.log("[waitlist] no WAITLIST_ENDPOINT set — entry:", parsed);
     return NextResponse.json({ ok: true });
+  }
+
+  if (!isHttpUrl(endpoint)) {
+    console.error("[waitlist] WAITLIST_ENDPOINT must be an HTTP URL.");
+    return NextResponse.json(
+      { error: "Waitlist storage is not configured correctly." },
+      { status: 500 },
+    );
   }
 
   try {
@@ -76,7 +162,7 @@ export async function POST(request: Request) {
           ? { authorization: `Bearer ${process.env.WAITLIST_API_KEY}` }
           : {}),
       },
-      body: JSON.stringify({ ...parsed, source: "waitlist", createdAt: new Date().toISOString() }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
