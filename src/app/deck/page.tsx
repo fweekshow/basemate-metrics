@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DeckRedirect } from "./deck-redirect";
+import { DeckViewer } from "./deck-viewer";
 
 const BASE_URL = "https://basemate.app";
 
@@ -26,5 +26,5 @@ export const metadata: Metadata = {
 };
 
 export default function DeckPage() {
-  return <DeckRedirect />;
+  return <DeckViewer />;
 }
