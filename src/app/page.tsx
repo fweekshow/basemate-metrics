@@ -127,7 +127,7 @@ export default async function HomePage() {
               className="font-display text-5xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-6xl"
               style={{ textWrap: "balance" }}
             >
-              Trade, Earn, <span className="text-primary">and Launch.</span>
+              Trade, Earn, <span className="bm-emphasis">and Launch.</span>
             </h1>
 
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">

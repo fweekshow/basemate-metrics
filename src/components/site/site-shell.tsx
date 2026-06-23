@@ -26,7 +26,7 @@ export function SiteShell({
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-80"
-        style={{ background: "radial-gradient(ellipse at top, rgba(5,5,255,0.07) 0%, transparent 65%)" }}
+        style={{ background: "radial-gradient(ellipse at top, rgba(5,5,255,0.05) 0%, transparent 65%)" }}
       />
 
       <header className="relative z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">

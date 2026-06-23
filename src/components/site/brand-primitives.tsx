@@ -64,7 +64,7 @@ export function PhaseLabel({
 }) {
   const styles = {
     lilac: { dot: "bg-lilac", text: "text-[#6B5FA8]" },
-    green: { dot: "bg-[var(--up-neon)]", text: "text-[#16A34A]" },
+    green: { dot: "bg-[var(--up)]", text: "text-[#16A34A]" },
     blue: { dot: "bg-primary", text: "text-primary" },
     violet: { dot: "bg-violet", text: "text-violet" },
   }[color];

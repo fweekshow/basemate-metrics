@@ -1,3 +1,37 @@
+/* ── Clash Display — brand display font ── */
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/fonts/ClashDisplay-Regular.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal; font-weight: 500; font-display: swap;
+  src: url('/fonts/ClashDisplay-Medium.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal; font-weight: 600; font-display: swap;
+  src: url('/fonts/ClashDisplay-Semibold.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url('/fonts/ClashDisplay-Bold.otf') format('opentype');
+}
+
+/* ── Playfair Display — editorial italic accent ── */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: italic; font-weight: 400; font-display: swap;
+  src: url('https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: italic; font-weight: 500; font-display: swap;
+  src: url('https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-500-italic.woff2') format('woff2');
+}
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,7 +39,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: var(--font-space-grotesk);
+  --font-display: 'Clash Display', var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -53,39 +88,54 @@
 :root {
   --radius: 0.875rem;
 
-  --background: #FFFFFF;
-  --foreground: #0A0A14;
+  --background: #EAE8F5;
+  --foreground: #0A0A1A;
 
   --card: #FFFFFF;
-  --card-foreground: #0A0A14;
+  --card-foreground: #0A0A1A;
   --popover: #FFFFFF;
-  --popover-foreground: #0A0A14;
+  --popover-foreground: #0A0A1A;
 
   --primary: #0505FF;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F1F2F8;
-  --secondary-foreground: #0A0A14;
+  --secondary: #F1F0FA;
+  --secondary-foreground: #0A0A1A;
 
-  --muted: #F4F5FA;
-  --muted-foreground: #6B7280;
+  --muted: #F1F0FA;
+  --muted-foreground: #44446A;
 
-  --accent: #EEF0FB;
+  --accent: #E8E7F5;
   --accent-foreground: #0505FF;
 
   --destructive: #FF4D67;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: rgba(0, 0, 0, 0.06);
+  --border: rgba(10, 10, 26, 0.10);
+  --input: rgba(10, 10, 26, 0.06);
   --ring: rgba(5, 5, 255, 0.3);
 
   --up: #16A34A;
-  --up-neon: #19FB44;
   --down: #FF4D67;
   --cyan: #0284C7;
   --violet: #7C5CFF;
   --lilac: #BFB4FE;
-  --bone: #F4F5FA;
+  --bone: #F1F0FA;
   --amber: #D97706;
+
+  /* DS v2 surface + foreground aliases */
+  --fg-1: #0A0A1A;
+  --fg-2: #44446A;
+  --fg-3: rgba(10, 10, 26, 0.45);
+  --fg-4: rgba(10, 10, 26, 0.30);
+  --bg: #EAE8F5;
+  --surface-1: #FFFFFF;
+  --surface-2: #F1F0FA;
+  --surface-3: #FFFFFF;
+  --surface-4: #DEDCEE;
+  --border-1: rgba(10, 10, 26, 0.10);
+  --border-2: rgba(10, 10, 26, 0.16);
+
+  --shadow-card: 0 1px 2px rgba(10, 10, 26, 0.05), 0 10px 30px rgba(40, 30, 90, 0.07);
+  --shadow-modal: 0 24px 64px rgba(40, 30, 90, 0.18);
 
   --chart-1: #0505FF;
   --chart-2: #0284C7;
@@ -93,7 +143,15 @@
   --chart-4: #7C5CFF;
   --chart-5: #D97706;
 
-  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  /* data-viz (charts/metrics only) */
+  --viz-blue: #0505FF;
+  --viz-cyan: #0284C7;
+  --viz-green: #16A34A;
+  --viz-violet: #7C5CFF;
+  --viz-amber: #D97706;
+  --viz-red: #FF4D67;
+
+  --scrollbar-thumb: rgba(10, 10, 26, 0.15);
   --scrollbar-thumb-hover: rgba(5, 5, 255, 0.35);
   --scrollbar-track: transparent;
 }
@@ -129,8 +187,8 @@
 @layer utilities {
   .bg-grid {
     background-image:
-      linear-gradient(to right, rgba(5, 5, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(5, 5, 255, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgba(5, 5, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(5, 5, 255, 0.04) 1px, transparent 1px);
     background-size: 44px 44px;
   }
 
@@ -138,12 +196,29 @@
     box-shadow: 0 0 0 1px rgba(5, 5, 255, 0.2), 0 0 24px -6px rgba(5, 5, 255, 0.3);
   }
 
-  .glow-green {
-    box-shadow: 0 0 28px rgba(25, 251, 68, 0.35);
+  /* Grain texture overlay — apply to a ::before pseudo on dark surfaces */
+  .bm-grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    border-radius: inherit;
   }
 
   .font-display {
-    font-family: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
+    font-family: 'Clash Display', var(--font-geist-sans), system-ui, sans-serif;
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  /* Editorial italic accent — blue, Playfair italic, for one/two words in a display headline */
+  .bm-emphasis {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    color: var(--primary);
   }
 
   .text-glow {
@@ -167,8 +242,8 @@
 .animate-pulse-ring-primary-once { animation: pulse-ring-primary 2s 1; }
 
 @keyframes roadmap-percent-flash {
-  0%, 100% { color: var(--up-neon); text-shadow: none; }
-  50% { text-shadow: 0 0 12px rgba(25, 251, 68, 0.6); }
+  0%, 100% { color: var(--up); }
+  50% { color: var(--primary); }
 }
 .animate-roadmap-percent-flash { animation: roadmap-percent-flash 0.6s ease-out 1; }
 

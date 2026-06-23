@@ -140,7 +140,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full border border-lilac/30 bg-lilac/15">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#19FB44] to-[#16A34A] transition-[width] duration-700 ease-out"
+                    className="h-full rounded-full bg-gradient-to-r from-[#16A34A] to-[#2EBD77] transition-[width] duration-700 ease-out"
                     style={{ width: visible ? `${displayPercent}%` : "0%" }}
                   />
                 </div>

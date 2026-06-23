@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basemate × WC2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: #00040A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 40px 20px;
+}
+
+/* ── Canvas ── */
+.canvas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.glow-green {
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(25,251,68,0.10) 0%, transparent 65%);
+  top: -80px; right: -60px;
+  pointer-events: none;
+}
+.glow-blue {
+  position: absolute;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(5,5,255,0.14) 0%, transparent 65%);
+  bottom: 40px; left: -40px;
+  pointer-events: none;
+}
+
+/* ── Eyebrow ── */
+.eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #19FB44;
+  position: relative;
+}
+
+/* ── Phone frame ── */
+.phone {
+  width: 360px;
+  background: #00040A;
+  border-radius: 48px;
+  position: relative;
+  overflow: hidden;
+  /* Frame layers: inner bezel + outer rim */
+  box-shadow:
+    0 0 0 2px #1a1a2e,
+    0 0 0 4px #0d0d1a,
+    0 0 0 6px #151525,
+    0 50px 100px rgba(0,0,0,0.85),
+    0 0 80px rgba(5,5,255,0.06);
+}
+
+/* ── Status bar ── */
+.status-bar {
+  height: 52px;
+  background: #00040A;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+.dynamic-island {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: 10px;
+  width: 114px; height: 30px;
+  background: #000;
+  border-radius: 16px;
+}
+.status-time {
+  font-family: 'Geist', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.02em;
+  position: relative; z-index: 1;
+}
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative; z-index: 1;
+}
+
+/* ── Chat header ── */
+.chat-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,4,10,0.92);
+  backdrop-filter: blur(16px);
+}
+.avatar-wrap {
+  width: 40px; height: 40px;
+  border-radius: 13px;
+  background: #0505FF;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-wrap img { width: 40px; height: 40px; object-fit: cover; }
+.header-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+.header-sub {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 2px;
+}
+.online-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #19FB44;
+  box-shadow: 0 0 6px rgba(25,251,68,0.6);
+}
+.header-status {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #3a4a5e;
+  text-transform: uppercase;
+}
+
+/* ── Message feed ── */
+.feed {
+  padding: 14px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 480px;
+}
+
+.date-pill {
+  align-self: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: #3a4a5e;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.row { display: flex; gap: 6px; align-items: flex-end; }
+.row.user { justify-content: flex-end; }
+.row.agent { justify-content: flex-start; }
+
+.agent-sm {
+  width: 26px; height: 26px;
+  border-radius: 9px;
+  background: #0505FF;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.agent-sm img { width: 26px; height: 26px; object-fit: cover; }
+
+.bubble {
+  max-width: 252px;
+  border-radius: 18px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  font-family: 'Geist', sans-serif;
+}
+.bubble.agent {
+  background: #0b1420;
+  color: #c8d4e0;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-bottom-left-radius: 6px;
+}
+.bubble.user {
+  background: #0505FF;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+.bubble b { color: #fff; font-weight: 600; }
+.bubble.agent b { color: #e2eaf4; }
+
+/* ── Inline actions ── */
+.actions {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 9px;
+}
+.pill {
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Geist', sans-serif;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  line-height: 1;
+}
+.pill.primary   { background: #0505FF; color: #fff; }
+.pill.success   { background: #19FB44; color: #052E16; font-weight: 600; }
+.pill.secondary { background: rgba(255,255,255,0.06); color: #7a8fa8; border: 1px solid rgba(255,255,255,0.09); }
+.pill.ghost     { background: transparent; color: #3a4a5e; border: 1px solid rgba(255,255,255,0.07); }
+
+/* ── Trending card ── */
+.trend-card {
+  background: #090f1c;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 12px 14px;
+  max-width: 240px;
+  margin-top: 5px;
+}
+.trend-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3a4a5e;
+  margin-bottom: 8px;
+}
+.t-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+.t-row + .t-row { border-top: 1px solid rgba(255,255,255,0.04); }
+.t-name {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2eaf4;
+}
+.t-vol {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: #3a4a5e;
+  margin-top: 1px;
+}
+.t-change {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: right;
+}
+.t-change.up   { color: #19FB44; }
+.t-change.flat { color: #3a4a5e; }
+
+/* ── Composer ── */
+.composer {
+  padding: 10px 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,4,10,0.95);
+}
+.c-input {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  color: #3a4a5e;
+}
+.c-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #0505FF;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Bottom brand ── */
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+.brand-mark {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: #0505FF;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-mark img { width: 30px; height: 30px; object-fit: cover; }
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: #fff;
+}
+.brand-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2a3a4e;
+  margin-top: 6px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="glow-green"></div>
+  <div class="glow-blue"></div>
+
+  <div class="eyebrow">WC2026 · on Base · right now</div>
+
+  <div class="phone">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div class="dynamic-island"></div>
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <!-- Signal -->
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+          <rect x="0" y="8" width="3" height="4" rx="1" fill="white"/>
+          <rect x="4.5" y="5.5" width="3" height="6.5" rx="1" fill="white"/>
+          <rect x="9" y="3" width="3" height="9" rx="1" fill="white"/>
+          <rect x="13.5" y="0" width="3" height="12" rx="1" fill="white" opacity="0.25"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="white">
+          <path d="M7.5 9a1.5 1.5 0 1 1 0 2 1.5 1.5 0 0 1 0-2zm0-3.5a4.5 4.5 0 0 1 3.18 1.32l-1.06 1.06A3 3 0 0 0 7.5 7a3 3 0 0 0-2.12.88L4.32 6.82A4.5 4.5 0 0 1 7.5 5.5zm0-3a7.5 7.5 0 0 1 5.3 2.2l-1.06 1.05A6 6 0 0 0 7.5 4 6 6 0 0 0 3.26 5.75L2.2 4.7A7.5 7.5 0 0 1 7.5 2.5z"/>
+        </svg>
+        <!-- Battery -->
+        <div style="display:flex;align-items:center;">
+          <div style="width:23px;height:12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:3.5px;padding:2px;display:flex;align-items:center;">
+            <div style="width:88%;height:100%;background:#fff;border-radius:1.5px;"></div>
+          </div>
+          <div style="width:2px;height:5px;background:rgba(255,255,255,0.3);border-radius:0 1px 1px 0;margin-left:1px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat header -->
+    <div class="chat-header">
+      <div class="avatar-wrap">
+        <img src="brand/mascot/mate-win-buff.png" alt="Basemate"
+          onerror="this.style.display='none'; this.parentNode.innerHTML='<svg width=24 height=24 viewBox=\'0 0 24 24\' fill=\'white\'><circle cx=12 cy=12 r=9 opacity=.35/><circle cx=12 cy=12 r=5/></svg>'">
+      </div>
+      <div style="flex:1;">
+        <div class="header-name">Basemate</div>
+        <div class="header-sub">
+          <div class="online-dot"></div>
+          <span class="header-status">on Base · online</span>
+        </div>
+      </div>
+      <!-- Kebab -->
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#3a4a5e">
+        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+      </svg>
+    </div>
+
+    <!-- Feed -->
+    <div class="feed">
+
+      <div class="date-pill">WC2026 Group Stage · Jun 21</div>
+
+      <!-- Agent opening -->
+      <div class="row agent">
+        <div class="agent-sm">
+          <img src="brand/mascot/mate-win-buff.png" alt=""
+            onerror="this.style.display='none'">
+        </div>
+        <div class="bubble agent">
+          gm — Base is <b>pumping</b> today. Match day always spikes on-chain volume. I'm watching it for you.
+          <div class="actions">
+            <button class="pill primary">What's trending</button>
+            <button class="pill secondary">Long ETH</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User -->
+      <div class="row user">
+        <div class="bubble user">what's hot rn</div>
+      </div>
+
+      <!-- Agent with card -->
+      <div class="row agent">
+        <div class="agent-sm">
+          <img src="brand/mascot/mate-win-buff.png" alt=""
+            onerror="this.style.display='none'">
+        </div>
+        <div>
+          <div class="bubble agent" style="border-radius:18px 18px 4px 18px; margin-bottom:5px;">
+            WC2026 hype is moving Base. Here's what's flying:
+          </div>
+
+          <!-- Trending card -->
+          <div class="trend-card">
+            <div class="trend-label">Trending on Base · 1H</div>
+            <div class="t-row">
+              <div>
+                <div class="t-name">ETH</div>
+                <div class="t-vol">$291M vol</div>
+              </div>
+              <div class="t-change up">+4.2%</div>
+            </div>
+            <div class="t-row">
+              <div>
+                <div class="t-name">YUKI</div>
+                <div class="t-vol">$4.2M vol</div>
+              </div>
+              <div class="t-change up">+18.7%</div>
+            </div>
+            <div class="t-row">
+              <div>
+                <div class="t-name">ATBASH</div>
+                <div class="t-vol">$217K vol</div>
+              </div>
+              <div class="t-change up">+9.3%</div>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top:8px;">
+            <button class="pill success">Ape in</button>
+            <button class="pill secondary">See all</button>
+            <button class="pill ghost">Not now</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="c-input">Message Basemate…</div>
+      <button class="c-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+
+  </div><!-- /phone -->
+
+  <!-- Bottom brand -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div class="brand-row">
+      <div class="brand-mark">
+        <img src="brand/logo/basemate-mark.png" alt="Basemate"
+          onerror="this.style.display='none'">
+      </div>
+      <span class="brand-name">Basemate</span>
+    </div>
+    <div class="brand-sub">Your Base-native mate · Trade in the chat</div>
+  </div>
+
+</div>
+</body>
+</html>
