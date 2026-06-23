@@ -142,7 +142,7 @@ export function WaitlistForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-5 rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-8 lg:p-9"
+      className="flex h-full w-full flex-col gap-5 rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-8 lg:p-9"
     >
       <div className="space-y-2">
         <label htmlFor="fullName" className={labelClass}>

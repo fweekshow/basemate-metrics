@@ -27,12 +27,6 @@ const SETS = [
   },
 ] as const;
 
-const TRACTION = [
-  { value: "8,700+", label: "USERS" },
-  { value: "700", label: "TOKENS LAUNCHED" },
-  { value: "$110K+", label: "NOTIONAL VOLUME" },
-] as const;
-
 export const metadata: Metadata = {
   title: "Waitlist · Basemate",
   description:
@@ -50,7 +44,7 @@ export default function WaitlistPage() {
   return (
     <SiteShell>
       <section className="mx-auto max-w-5xl px-4 pt-10 pb-16 sm:px-6 sm:pt-12 sm:pb-20">
-        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="grid items-stretch gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="space-y-6 lg:-mt-2">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -92,26 +86,9 @@ export default function WaitlistPage() {
             </div>
           </div>
 
-          <WaitlistForm />
-        </div>
-
-        <div className="mt-10 grid grid-cols-3 gap-3 border-t border-border pt-8 sm:mt-12">
-          {TRACTION.map(({ value, label }) => (
-            <div key={label} className="text-center sm:text-left">
-              <div
-                className="font-display text-xl font-bold text-primary sm:text-2xl"
-                style={{ fontFeatureSettings: "'tnum' 1" }}
-              >
-                {value}
-              </div>
-              <div
-                className="mt-0.5 text-[10px] font-medium tracking-[0.14em] text-muted-foreground"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {label}
-              </div>
-            </div>
-          ))}
+          <div className="lg:-mt-2 lg:flex">
+            <WaitlistForm />
+          </div>
         </div>
       </section>
     </SiteShell>
