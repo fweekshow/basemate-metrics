@@ -117,9 +117,9 @@ export function WaitlistForm() {
   if (status === "success") {
     return (
       <div className="flex flex-col items-center gap-6 rounded-3xl border border-border bg-white p-8 text-center shadow-sm sm:p-10">
-        <div className="rounded-2xl bg-white p-3 shadow-[0_0_40px_rgba(25,251,68,0.35),0_0_0_1px_rgba(25,251,68,0.25)]">
+        <div className="rounded-2xl bg-primary p-4 shadow-[0_0_40px_rgba(5,5,255,0.35),0_0_0_1px_rgba(5,5,255,0.3)]">
           <Image
-            src="/brand/mascot/mate-win-buff.png"
+            src="/brand/logo/basemate-mark-transparent.png"
             alt=""
             width={96}
             height={96}

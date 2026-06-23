@@ -264,18 +264,18 @@ export default async function HomePage() {
               </a>
             </div>
 
-            <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-              <div className="rounded-2xl bg-white p-4 shadow-[0_0_40px_rgba(25,251,68,0.4),0_0_0_1px_rgba(25,251,68,0.3)]">
-                <Image
-                  src="/brand/mascot/mate-win-buff.png"
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="select-none"
-                  draggable={false}
-                />
+              <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
+                <div className="rounded-2xl p-4 shadow-[0_0_40px_rgba(5,5,255,0.3)]" style={{ background: "rgba(255,255,255,0.15)" }}>
+                  <Image
+                    src="/brand/logo/basemate-mark-transparent.png"
+                    alt=""
+                    width={120}
+                    height={120}
+                    className="select-none"
+                    draggable={false}
+                  />
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </section>
