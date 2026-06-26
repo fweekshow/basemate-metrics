@@ -94,6 +94,13 @@ function PayPageInner() {
         case "onramp_api.load_success":
           setStatus("ready");
           break;
+        case "onramp_api.apple_pay_button_pressed":
+          // Button pressed — Apple Pay sheet is showing, stay "ready" until commit or cancel
+          break;
+        case "onramp_api.cancel":
+          // User dismissed the Apple Pay sheet — back to ready so they can try again
+          setStatus("ready");
+          break;
         case "onramp_api.commit_success":
           setStatus("commit");
           break;
@@ -173,6 +180,17 @@ function PayPageInner() {
             <div className="flex flex-col items-center gap-2">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               <p className="text-xs text-muted-foreground">Preparing Apple Pay&hellip;</p>
+              {/* Fallback for local dev where CSP blocks the iframe */}
+              {process.env.NODE_ENV === "development" && (
+                <a
+                  href={paymentLinkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                >
+                  Open Apple Pay (dev fallback)
+                </a>
+              )}
             </div>
           )}
           <iframe
