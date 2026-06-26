@@ -88,8 +88,10 @@ function PayPageInner() {
 
       switch (eventName) {
         case "onramp_api.initialized":
+        case "onramp_api.load_pending":
           break;
         case "onramp_api.ready":
+        case "onramp_api.load_success":
           setStatus("ready");
           break;
         case "onramp_api.commit_success":
