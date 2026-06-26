@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 
 type PaySessionResponse = {
@@ -57,6 +58,8 @@ function eventMessage(payload: OnrampEvent) {
 }
 
 export function PayClient({ sessionToken }: { sessionToken: string }) {
+  const router = useRouter();
+  const redirectedRef = useRef(false);
   const [loadState, setLoadState] = useState<LoadState>(() =>
     sessionToken
       ? { status: "loading" }
@@ -107,11 +110,17 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
 
       setOnrampStatus(message);
       setLastError(payload.eventName.endsWith("_error") ? message : null);
+
+      if (payload.eventName === "onramp_api.polling_success" && !redirectedRef.current) {
+        redirectedRef.current = true;
+        setLoadState({ status: "idle" });
+        router.replace("/pay/success");
+      }
     }
 
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [router]);
 
   const expiresAt = useMemo(() => {
     if (loadState.status !== "ready") return null;
