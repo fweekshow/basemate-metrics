@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const PDF_URL = "/deck.pdf";
+import type { DeckConfig } from "@/lib/decks";
 
 function useIsMobileViewport() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
@@ -20,7 +20,7 @@ function useIsMobileViewport() {
   return isMobile;
 }
 
-function DeckToolbar() {
+function DeckToolbar({ deck }: { deck: DeckConfig }) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
       <Link href="/" className="flex min-w-0 items-center gap-2.5">
@@ -32,12 +32,12 @@ function DeckToolbar() {
           className="rounded-lg"
         />
         <span className="truncate font-display text-sm font-semibold text-foreground">
-          Pitch Deck
+          {deck.toolbarLabel}
         </span>
       </Link>
       <div className="flex shrink-0 items-center gap-2">
         <a
-          href={PDF_URL}
+          href={deck.pdfUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-9 items-center rounded-full border border-border bg-white px-4 text-xs font-medium text-foreground transition-colors hover:bg-muted"
@@ -45,8 +45,8 @@ function DeckToolbar() {
           Open
         </a>
         <a
-          href={PDF_URL}
-          download="Basemate-Pitch-Deck.pdf"
+          href={deck.pdfUrl}
+          download={deck.downloadName}
           className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-medium text-white transition-opacity hover:opacity-90"
         >
           Download
@@ -56,10 +56,10 @@ function DeckToolbar() {
   );
 }
 
-function MobileDeckPrompt() {
+function MobileDeckPrompt({ deck }: { deck: DeckConfig }) {
   return (
     <main className="flex min-h-dvh flex-col bg-background">
-      <DeckToolbar />
+      <DeckToolbar deck={deck} />
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-12 text-center">
         <div
           className="flex size-20 items-center justify-center rounded-3xl bg-white shadow-sm"
@@ -75,16 +75,15 @@ function MobileDeckPrompt() {
         </div>
         <div className="max-w-sm space-y-2">
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-            Basemate Pitch Deck
+            {deck.title}
           </h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Your AI financial advisor is in your texts. Trade, earn, and grow — all
-            in iMessage.
+            {deck.description}
           </p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-3">
           <a
-            href={PDF_URL}
+            href={deck.pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-12 items-center justify-center rounded-full bg-primary text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -92,8 +91,8 @@ function MobileDeckPrompt() {
             View deck
           </a>
           <a
-            href={PDF_URL}
-            download="Basemate-Pitch-Deck.pdf"
+            href={deck.pdfUrl}
+            download={deck.downloadName}
             className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-white text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             Download PDF
@@ -104,25 +103,25 @@ function MobileDeckPrompt() {
   );
 }
 
-function DesktopDeckEmbed() {
+function DesktopDeckEmbed({ deck }: { deck: DeckConfig }) {
   return (
     <main className="flex h-dvh flex-col bg-background">
-      <DeckToolbar />
+      <DeckToolbar deck={deck} />
       <div className="relative min-h-0 flex-1 bg-muted/30">
         <iframe
-          src={`${PDF_URL}#toolbar=1&navpanes=0&view=FitH`}
-          title="Basemate Pitch Deck"
+          src={`${deck.pdfUrl}#toolbar=1&navpanes=0&view=FitH`}
+          title={deck.title}
           className="absolute inset-0 h-full w-full border-0"
         />
         <object
-          data={PDF_URL}
+          data={deck.pdfUrl}
           type="application/pdf"
           className="absolute inset-0 hidden h-full w-full"
           aria-hidden
         >
           <p className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
             PDF viewer unavailable.{" "}
-            <a href={PDF_URL} className="ml-1 text-primary underline">
+            <a href={deck.pdfUrl} className="ml-1 text-primary underline">
               Open the deck
             </a>
           </p>
@@ -132,7 +131,7 @@ function DesktopDeckEmbed() {
   );
 }
 
-export function DeckViewer() {
+export function DeckViewer({ deck }: { deck: DeckConfig }) {
   const isMobile = useIsMobileViewport();
 
   if (isMobile === null) {
@@ -144,8 +143,8 @@ export function DeckViewer() {
   }
 
   if (isMobile) {
-    return <MobileDeckPrompt />;
+    return <MobileDeckPrompt deck={deck} />;
   }
 
-  return <DesktopDeckEmbed />;
+  return <DesktopDeckEmbed deck={deck} />;
 }
