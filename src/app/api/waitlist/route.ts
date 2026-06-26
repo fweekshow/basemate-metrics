@@ -21,16 +21,29 @@ type WaitlistPayload = WaitlistEntry & {
   createdAt: string;
 };
 
-function getWaitlistDatabaseUrl() {
-  return (
-    process.env.WAITLIST_DATABASE_URL?.trim() ||
-    process.env.DATABASE_URL?.trim() ||
-    undefined
-  );
-}
-
 function isPostgresUrl(value: string) {
   return value.startsWith("postgres://") || value.startsWith("postgresql://");
+}
+
+function isNeonPostgresUrl(value: string) {
+  try {
+    const hostname = new URL(value).hostname;
+    return hostname === "neon.tech" || hostname.endsWith(".neon.tech");
+  } catch {
+    return false;
+  }
+}
+
+function getWaitlistDatabaseUrl() {
+  const candidates = [
+    process.env.WAITLIST_DATABASE_URL?.trim(),
+    process.env.NEON_DATABASE_URL?.trim(),
+    process.env.DATABASE_URL?.trim(),
+  ].filter((value): value is string => Boolean(value));
+
+  return candidates.find(
+    (value) => isPostgresUrl(value) && isNeonPostgresUrl(value),
+  );
 }
 
 function isHttpUrl(value: string) {
@@ -131,7 +144,10 @@ export async function POST(request: Request) {
   const databaseUrl = getWaitlistDatabaseUrl();
   const endpoint = process.env.WAITLIST_ENDPOINT?.trim();
   const postgresUrl =
-    databaseUrl ?? (endpoint && isPostgresUrl(endpoint) ? endpoint : undefined);
+    databaseUrl ??
+    (endpoint && isPostgresUrl(endpoint) && isNeonPostgresUrl(endpoint)
+      ? endpoint
+      : undefined);
 
   if (postgresUrl) {
     try {
@@ -146,9 +162,20 @@ export async function POST(request: Request) {
     }
   }
 
+  if (endpoint && isPostgresUrl(endpoint)) {
+    console.error("[waitlist] WAITLIST_ENDPOINT must be a Neon Postgres URL.");
+    return NextResponse.json(
+      { error: "Waitlist database is not configured correctly." },
+      { status: 500 },
+    );
+  }
+
   if (!endpoint) {
-    console.log("[waitlist] no WAITLIST_ENDPOINT set — entry:", parsed);
-    return NextResponse.json({ ok: true });
+    console.error("[waitlist] no Neon database URL configured.");
+    return NextResponse.json(
+      { error: "Waitlist database is not configured." },
+      { status: 500 },
+    );
   }
 
   if (!isHttpUrl(endpoint)) {
