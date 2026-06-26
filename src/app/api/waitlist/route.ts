@@ -21,6 +21,14 @@ type WaitlistPayload = WaitlistEntry & {
   createdAt: string;
 };
 
+function getWaitlistDatabaseUrl() {
+  return (
+    process.env.WAITLIST_DATABASE_URL?.trim() ||
+    process.env.DATABASE_URL?.trim() ||
+    undefined
+  );
+}
+
 function isPostgresUrl(value: string) {
   return value.startsWith("postgres://") || value.startsWith("postgresql://");
 }
@@ -58,7 +66,7 @@ function parseEntry(body: unknown): WaitlistEntry | { error: string } {
   };
 }
 
-async function saveToPostgres(connectionString: string, payload: WaitlistPayload) {
+async function saveToNeon(connectionString: string, payload: WaitlistPayload) {
   const sql = neon(connectionString);
 
   await sql`
@@ -120,14 +128,14 @@ export async function POST(request: Request) {
     createdAt: new Date().toISOString(),
   };
 
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  const databaseUrl = getWaitlistDatabaseUrl();
   const endpoint = process.env.WAITLIST_ENDPOINT?.trim();
   const postgresUrl =
     databaseUrl ?? (endpoint && isPostgresUrl(endpoint) ? endpoint : undefined);
 
   if (postgresUrl) {
     try {
-      await saveToPostgres(postgresUrl, payload);
+      await saveToNeon(postgresUrl, payload);
       return NextResponse.json({ ok: true });
     } catch (err) {
       console.error("[waitlist] failed to save entry:", err);
