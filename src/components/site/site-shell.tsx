@@ -6,7 +6,6 @@ import { SITE } from "@/lib/site";
 
 const nav = [
   { href: "/", label: "Home", external: false },
-  { href: "/brand", label: "Brand", external: false },
   { href: "/waitlist", label: "Waitlist", external: false },
   { href: "/pay", label: "Pay", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },

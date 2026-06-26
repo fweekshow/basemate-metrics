@@ -143,16 +143,16 @@ function PayPageInner() {
         </div>
       )}
 
-      {/* loading state — fetching the payment link */}
-      {status === "loading" && (
+      {/* loading state — only show while fetching the session (before URL arrives) */}
+      {status === "loading" && !paymentLinkUrl && (
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">Loading Apple Pay&hellip;</p>
         </div>
       )}
 
-      {/* ready / iframe state — Apple Pay button is shown inside the iframe */}
-      {(status === "ready" || (paymentLinkUrl && status === "loading")) && paymentLinkUrl && (
+      {/* iframe state — hidden spinner until ready event fires */}
+      {paymentLinkUrl && (status === "loading" || status === "ready") && (
         <div className="flex w-full max-w-sm flex-col items-center gap-4">
           {status === "loading" && (
             <div className="flex flex-col items-center gap-2">
