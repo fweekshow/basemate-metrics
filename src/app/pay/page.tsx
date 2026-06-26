@@ -56,11 +56,24 @@ function PayPageInner() {
     };
   }, [token]);
 
+  // Fallback: if iframe doesn't respond in 20s, show error
+  useEffect(() => {
+    if (!paymentLinkUrl) return;
+    const timer = setTimeout(() => {
+      if (status === "loading") {
+        setErrorMessage("Apple Pay took too long to load. The link may have expired — ask Basemate for a new one.");
+        setStatus("error");
+      }
+    }, 20_000);
+    return () => clearTimeout(timer);
+  }, [paymentLinkUrl, status]);
+
   // Listen for postMessage events from the Coinbase iframe
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
-      // Only accept messages from pay.coinbase.com
-      if (event.origin !== "https://pay.coinbase.com") return;
+      // Accept messages from pay.coinbase.com (and localhost for sandbox testing)
+      if (event.origin !== "https://pay.coinbase.com" && !event.origin.includes("localhost")) return;
+      console.log("[pay] postMessage:", event.origin, event.data);
 
       let parsed: CoinbasePostMessage;
       try {
