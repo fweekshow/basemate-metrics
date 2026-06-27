@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Pool, type PoolConfig } from "pg";
-import { getAddress, verifyMessage } from "viem";
+import { createPublicClient, getAddress, http, type Hex } from "viem";
+import { base } from "viem/chains";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -9,6 +10,11 @@ export const runtime = "nodejs";
 const TOKEN_RE = /^[a-f0-9]{32}$/i;
 const SSL_DISABLED_VALUES = new Set(["0", "false", "disable", "disabled", "no", "off"]);
 const SSL_ENABLED_VALUES = new Set(["1", "true", "enable", "enabled", "require", "yes", "on"]);
+
+const basePublicClient = createPublicClient({
+  chain: base,
+  transport: http(process.env.BASE_RPC_URL ?? "https://mainnet.base.org"),
+});
 
 type SetupSessionRow = {
   sender_id: string;
@@ -56,6 +62,15 @@ function getPool(databaseUrl: string): Pool {
 
 function databaseUrl() {
   return process.env.SHARED_GROUPS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
+}
+
+async function verifySetupProof(address: `0x${string}`, message: string, signature: Hex) {
+  try {
+    return await basePublicClient.verifyMessage({ address, message, signature });
+  } catch (err) {
+    console.warn("[wallet/setup] failed to verify setup signature:", err);
+    return false;
+  }
 }
 
 async function ensureTables(pool: Pool) {
@@ -129,7 +144,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const verified = await verifyMessage({ address, message, signature: signature as `0x${string}` });
+    const verified = await verifySetupProof(address, message, signature as Hex);
     if (!verified) {
       return NextResponse.json({ error: "Could not verify wallet signature." }, { status: 401 });
     }
