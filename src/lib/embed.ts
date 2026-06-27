@@ -206,3 +206,23 @@ export function basescanTxUrl(hash: string): string {
 export function basemateTxnUrl(hash: string, origin: string = SITE.appUrl): string {
   return `${origin}/txn/${hash}`;
 }
+
+/**
+ * A "prolink" is the compressed, URL-safe payload produced by
+ * `@base-org/account/prolink`. The `/sign` page decodes it client-side and
+ * replays the `wallet_sendCalls` request through the Base Account SDK, so this
+ * is a conservative charset + length guard to reject obviously bad input before
+ * we hand it to the decoder.
+ */
+const PROLINK_RE = /^[A-Za-z0-9._~%+/=-]+$/;
+
+export function isValidProlink(prolink: string): boolean {
+  return prolink.length > 0 && prolink.length <= 12000 && PROLINK_RE.test(prolink);
+}
+
+/** Basemate page that decodes a prolink and signs it with the user's Base Account. */
+export function basemateSignUrl(prolink: string, origin: string = SITE.baseUrl): string {
+  const link = new URL("/sign", origin);
+  link.searchParams.set("p", prolink);
+  return link.toString();
+}
