@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { NextRequest, NextResponse } from "next/server";
 import { Pool, type PoolConfig } from "pg";
 import { createPublicClient, getAddress, http, type Hex } from "viem";
@@ -64,6 +66,11 @@ function databaseUrl() {
   return process.env.SHARED_GROUPS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
 }
 
+function accountNameFor(senderId: string): string {
+  const hash = createHash("sha256").update(senderId).digest("hex");
+  return `im-${hash.slice(0, 30)}`;
+}
+
 async function verifySetupProof(address: `0x${string}`, message: string, signature: Hex) {
   try {
     return await basePublicClient.verifyMessage({ address, message, signature });
@@ -83,6 +90,19 @@ async function ensureTables(pool: Pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`,
   );
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS imessage_wallets (
+      sender_id TEXT PRIMARY KEY,
+      account_name TEXT NOT NULL,
+      address TEXT NOT NULL,
+      first_seen_at TIMESTAMP DEFAULT NOW(),
+      last_active_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_imessage_wallets_address
+      ON imessage_wallets(address);
+    ALTER TABLE imessage_wallets
+      ADD COLUMN IF NOT EXISTS base_app_address TEXT;
+  `);
 }
 
 export async function GET(req: NextRequest) {
@@ -171,12 +191,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "This setup link was already used. Ask Basemate for a new one." }, { status: 409 });
       }
 
-      await client.query(
-        `UPDATE imessage_wallets
-         SET base_app_address = $2, last_active_at = NOW()
-         WHERE sender_id = $1`,
-        [session.sender_id, address],
+      const saved = await client.query<{ base_app_address: string | null }>(
+        `INSERT INTO imessage_wallets (sender_id, account_name, address, base_app_address)
+         VALUES ($1, $2, '', $3)
+         ON CONFLICT (sender_id) DO UPDATE
+         SET base_app_address = EXCLUDED.base_app_address,
+             last_active_at = NOW()
+         RETURNING base_app_address`,
+        [session.sender_id, accountNameFor(session.sender_id), address],
       );
+      if (saved.rows[0]?.base_app_address !== address) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({ error: "Could not save your Base Account." }, { status: 503 });
+      }
       await client.query(
         `UPDATE base_account_setup_sessions
          SET completed_at = NOW()
