@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createBaseAccountSDK } from "@base-org/account";
+import { useEffect, useState } from "react";
+import type { ProviderInterface } from "@base-org/account";
 import { AlertCircle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 
 type SetupState =
@@ -22,20 +22,23 @@ type WalletConnectResult = {
   }>;
 };
 
+async function getBaseAccountProvider(): Promise<ProviderInterface> {
+  const { createBaseAccountSDK } = await import("@base-org/account/browser");
+
+  return createBaseAccountSDK({
+    appName: "Basemate",
+    appChainIds: [8453],
+    preference: {
+      telemetry: false,
+    },
+  }).getProvider();
+}
+
 export function WalletSetupClient({ sessionToken }: { sessionToken: string }) {
   const [state, setState] = useState<SetupState>(() =>
     sessionToken
       ? { status: "checking" }
       : { status: "error", message: "Missing setup session. Open the latest link from Basemate." },
-  );
-
-  const sdk = useMemo(
-    () =>
-      createBaseAccountSDK({
-        appName: "Basemate",
-        appChainIds: [8453],
-      }),
-    [],
   );
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export function WalletSetupClient({ sessionToken }: { sessionToken: string }) {
     if (!sessionToken) return;
     setState({ status: "connecting" });
     try {
-      const provider = sdk.getProvider();
+      const provider = await getBaseAccountProvider();
       await provider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: "0x2105" }],
