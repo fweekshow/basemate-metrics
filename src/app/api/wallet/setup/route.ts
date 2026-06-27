@@ -63,7 +63,7 @@ function getPool(databaseUrl: string): Pool {
 }
 
 function databaseUrl() {
-  return process.env.SHARED_GROUPS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
+  return process.env.DATABASE_URL?.trim();
 }
 
 function accountNameFor(senderId: string): string {
