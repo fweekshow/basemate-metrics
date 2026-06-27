@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import { SiteShell } from "@/components/site/site-shell";
 import { SignTransaction } from "@/components/sign/sign-transaction";
-import { isValidProlink } from "@/lib/embed";
 import { decodeSignRequest } from "@/lib/sign";
 
 export const metadata: Metadata = {
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
 
 type SignPageProps = {
   searchParams: Promise<{
-    p?: string | string[];
+    tx?: string | string[];
   }>;
 };
 
@@ -25,10 +24,10 @@ function firstParam(value: string | string[] | undefined): string {
 
 export default async function SignPage({ searchParams }: SignPageProps) {
   const params = await searchParams;
-  const prolink = firstParam(params.p);
-  if (!isValidProlink(prolink)) notFound();
+  const tx = firstParam(params.tx);
+  if (!tx) notFound();
 
-  const request = await decodeSignRequest(prolink);
+  const request = decodeSignRequest(tx);
   if (!request) notFound();
 
   return (

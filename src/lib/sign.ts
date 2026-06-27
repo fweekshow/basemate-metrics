@@ -1,13 +1,13 @@
-import { decodeProlink } from "@base-org/account/prolink";
+import { inflateRawSync } from "node:zlib";
 
-/** A single EIP-5792 call, as carried inside a `wallet_sendCalls` prolink. */
+/** A single EIP-5792 call, as carried inside a `/sign` tx payload. */
 export type SignCall = {
   to: `0x${string}`;
   data?: `0x${string}`;
   value?: `0x${string}`;
 };
 
-/** The `wallet_sendCalls` request a `/sign` prolink decodes to. */
+/** The `wallet_sendCalls` request a `/sign` tx payload decodes to. */
 export type SignRequest = {
   version: string;
   chainId: `0x${string}`;
@@ -16,42 +16,66 @@ export type SignRequest = {
   calls: SignCall[];
 };
 
+const HEX_RE = /^0x[0-9a-fA-F]*$/;
+const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+
+/** Even-length hex (`0x` + pairs) — calldata must be whole bytes. */
+function isByteHex(value: unknown): value is `0x${string}` {
+  return typeof value === "string" && HEX_RE.test(value) && value.length % 2 === 0;
+}
+
+function isQuantityHex(value: unknown): value is `0x${string}` {
+  return typeof value === "string" && HEX_RE.test(value);
+}
+
+function decodeBase64Url(payload: string): string {
+  const b64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+  return inflateRawSync(Buffer.from(b64, "base64")).toString("utf8");
+}
+
 /**
- * Decode a prolink into the `wallet_sendCalls` request we replay in the browser.
+ * Decode a `tx` payload into the `wallet_sendCalls` request we replay in the
+ * browser. Built by {@link buildBaseAppTxLink} in the backend as
+ * `base64url(deflateRaw(json))`.
  *
- * Runs on the server (Node prolink decoder) so the client bundle only ships the
- * Base Account SDK. Returns `null` for anything that isn't a well-formed
- * `wallet_sendCalls` payload — callers should treat that as a 404.
+ * Runs on the server so the client bundle only ships the Base Account SDK.
+ * Returns `null` for anything malformed — callers should treat that as a 404.
+ * We reject odd-length calldata up front: that's exactly the corruption the old
+ * prolink encoding produced, and Coinbase rejects it at signing time.
  */
-export async function decodeSignRequest(prolink: string): Promise<SignRequest | null> {
-  let decoded: Awaited<ReturnType<typeof decodeProlink>>;
+export function decodeSignRequest(payload: string): SignRequest | null {
+  let parsed: unknown;
   try {
-    decoded = await decodeProlink(prolink);
+    parsed = JSON.parse(decodeBase64Url(payload));
   } catch {
     return null;
   }
 
-  if (decoded.method !== "wallet_sendCalls") return null;
+  if (!parsed || typeof parsed !== "object") return null;
+  const { version, chainId, from, calls } = parsed as Record<string, unknown>;
 
-  const call = Array.isArray(decoded.params)
-    ? (decoded.params[0] as Record<string, unknown> | undefined)
-    : undefined;
-  if (!call) return null;
-
-  const { version, chainId, from, calls } = call as {
-    version?: unknown;
-    chainId?: unknown;
-    from?: unknown;
-    calls?: unknown;
-  };
-
-  if (typeof chainId !== "string" || typeof from !== "string") return null;
+  if (!isQuantityHex(chainId)) return null;
+  if (!ADDRESS_RE.test(from as string)) return null;
   if (!Array.isArray(calls) || calls.length === 0) return null;
+
+  const normalized: SignCall[] = [];
+  for (const raw of calls) {
+    if (!raw || typeof raw !== "object") return null;
+    const { to, data, value } = raw as Record<string, unknown>;
+    if (!ADDRESS_RE.test(to as string)) return null;
+    if (data !== undefined && !isByteHex(data)) return null;
+    if (value !== undefined && !isQuantityHex(value)) return null;
+    normalized.push({
+      to: to as `0x${string}`,
+      data: (data as `0x${string}`) ?? "0x",
+      value: (value as `0x${string}`) ?? "0x0",
+    });
+  }
 
   return {
     version: typeof version === "string" ? version : "2.0.0",
     chainId: chainId as `0x${string}`,
     from: from as `0x${string}`,
-    calls: calls as SignCall[],
+    calls: normalized,
   };
 }
