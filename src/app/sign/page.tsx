@@ -15,12 +15,15 @@ export const metadata: Metadata = {
 type SignPageProps = {
   searchParams: Promise<{
     tx?: string | string[];
+    sid?: string | string[];
   }>;
 };
 
 function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
+
+const SID_RE = /^[a-f0-9]{32}$/i;
 
 export default async function SignPage({ searchParams }: SignPageProps) {
   const params = await searchParams;
@@ -30,9 +33,13 @@ export default async function SignPage({ searchParams }: SignPageProps) {
   const request = decodeSignRequest(tx);
   if (!request) notFound();
 
+  // Optional — links predating tx confirmations won't carry one.
+  const sidParam = firstParam(params.sid);
+  const sid = SID_RE.test(sidParam) ? sidParam : undefined;
+
   return (
     <SiteShell>
-      <SignTransaction request={request} />
+      <SignTransaction request={request} sid={sid} />
     </SiteShell>
   );
 }

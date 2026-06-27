@@ -68,7 +68,24 @@ function humanizeError(err: unknown): string {
   return message || "Something went wrong reaching your Base Account. Please try again.";
 }
 
-export function SignTransaction({ request }: { request: SignRequest }) {
+/**
+ * Report the signed tx hash so the backend can confirm it on-chain and DM the
+ * user in iMessage. Best-effort — failures here never affect the signed tx.
+ */
+async function reportSignedTx(sid: string, txHash: string): Promise<void> {
+  try {
+    await fetch("/api/sign/report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sid, txHash }),
+      keepalive: true,
+    });
+  } catch {
+    // Ignore — the user already signed; confirmation delivery is a bonus.
+  }
+}
+
+export function SignTransaction({ request, sid }: { request: SignRequest; sid?: string }) {
   const [phase, setPhase] = useState<Phase>({ status: "idle" });
 
   // The SDK touches browser-only storage on init, so build it lazily on the
@@ -125,11 +142,13 @@ export function SignTransaction({ request }: { request: SignRequest }) {
       setPhase({ status: "success" });
 
       const txHash = await waitForReceipt(provider, callsId);
+      // Hand the hash to the backend so it can confirm + DM the user in iMessage.
+      if (sid && txHash) void reportSignedTx(sid, txHash);
       setPhase({ status: "success", txHash });
     } catch (err) {
       setPhase({ status: "error", message: humanizeError(err) });
     }
-  }, [getSdk, request]);
+  }, [getSdk, request, sid]);
 
   const working = phase.status === "working";
 
