@@ -43,6 +43,22 @@ function getPool(databaseUrl: string): Pool {
   return poolCache.pool;
 }
 
+async function ensureTokenTable(pool: Pool): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS base_mcp_oauth (
+      sender_id       TEXT PRIMARY KEY,
+      account_address TEXT,
+      access_token    TEXT NOT NULL,
+      refresh_token   TEXT,
+      expires_at      TIMESTAMPTZ NOT NULL,
+      scope           TEXT,
+      client_id       TEXT NOT NULL,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+}
+
 /** Must match the key derivation in basemate-v2 baseMcpOAuth.adapter.ts. */
 function encryptionKey(): Buffer {
   const secret = process.env.BASE_MCP_OAUTH_ENC_KEY?.trim();
@@ -67,8 +83,19 @@ function redirectUri(): string {
   return process.env.BASE_MCP_REDIRECT_URI?.trim() || "https://basemate.app/api/mcp/callback";
 }
 
+function publicSiteOrigin(req: NextRequest): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+
+  try {
+    return new URL(redirectUri()).origin;
+  } catch {
+    return req.nextUrl.origin;
+  }
+}
+
 function connectedRedirect(req: NextRequest, error?: string): NextResponse {
-  const url = new URL("/mcp/connected", req.nextUrl.origin);
+  const url = new URL("/mcp/connected", publicSiteOrigin(req));
   if (error) url.searchParams.set("error", error);
   return NextResponse.redirect(url);
 }
@@ -104,7 +131,7 @@ export async function GET(req: NextRequest) {
   if (!code || !state) return connectedRedirect(req, "missing_code");
 
   const clientId = process.env.BASE_MCP_CLIENT_ID?.trim();
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+  const databaseUrl = process.env.SHARED_GROUPS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
   if (!clientId || !databaseUrl) return connectedRedirect(req, "not_configured");
 
   try {
@@ -167,6 +194,7 @@ export async function GET(req: NextRequest) {
 
     const expiresAt = new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000);
     const pool2 = getPool(databaseUrl);
+    await ensureTokenTable(pool2);
     await pool2.query(
       `INSERT INTO base_mcp_oauth
          (sender_id, account_address, access_token, refresh_token, expires_at, scope, client_id, updated_at)
