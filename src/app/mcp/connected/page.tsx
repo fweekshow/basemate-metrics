@@ -1,16 +1,30 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { SiteShell } from "@/components/site/site-shell";
-import { SITE } from "@/lib/site";
+import { SITE, SITE_URL } from "@/lib/site";
+
+const BASEMATE_LOGO_URL = new URL("/brand/logo/basemate-logo-flat.png", SITE_URL).toString();
 
 export const metadata: Metadata = {
-  title: "Base MCP Connected · Basemate",
-  description: "Your Base Account is connected to Basemate.",
+  title: "Base Account Connected · Basemate",
+  description: "Your Base Account is connected to Basemate for transaction approvals.",
   openGraph: {
-    title: "Base MCP Connected · Basemate",
-    description: "Your Base Account is connected to Basemate.",
+    title: "Base Account Connected · Basemate",
+    description: "Your Base Account is connected to Basemate for transaction approvals.",
     type: "website",
-    images: [SITE.pfp],
+    images: [
+      {
+        url: BASEMATE_LOGO_URL,
+        alt: "Basemate logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Base Account Connected · Basemate",
+    description: "Your Base Account is connected to Basemate for transaction approvals.",
+    images: [BASEMATE_LOGO_URL],
   },
 };
 
@@ -36,6 +50,15 @@ export default async function McpConnectedPage({ searchParams }: ConnectedPagePr
   return (
     <SiteShell>
       <div className="relative z-10 mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+        <div className="rounded-3xl border border-border/70 bg-card/80 p-4 shadow-card">
+          <Image
+            src="/brand/logo/basemate-logo-flat.png"
+            alt={`${SITE.name} logo`}
+            width={180}
+            height={48}
+            priority
+          />
+        </div>
         {errorMessage ? (
           <>
             <h1 className="text-2xl font-semibold text-foreground">Connection failed</h1>
