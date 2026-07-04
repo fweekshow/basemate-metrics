@@ -2,12 +2,29 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CrossmintHostedCheckout, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
 import { AlertCircle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 
-type PaySessionResponse = {
+type CoinbasePaySession = {
+  provider: "coinbase";
   paymentLinkUrl: string;
   expiresAt: string;
 };
+
+type CrossmintPaySession = {
+  provider: "crossmint";
+  flow: "onramp" | "offramp";
+  orderId: string;
+  clientSecret: string;
+  clientSideApiKey: string;
+  receiptEmail: string | null;
+  walletAddress: string | null;
+  amount: string | null;
+  chain: string | null;
+  expiresAt: string;
+};
+
+type PaySessionResponse = CoinbasePaySession | CrossmintPaySession;
 
 type OnrampEvent = {
   eventName?: string;
@@ -30,6 +47,23 @@ const EVENT_COPY: Record<string, string> = {
   "onramp_api.polling_start": "Payment submitted. Waiting for funds to settle on Base...",
   "onramp_api.polling_success": "Success. Your USDC has been sent to your Basemate wallet.",
 };
+
+const PROVIDER_COPY = {
+  coinbase: {
+    description:
+      "Use Apple Pay to buy USDC on Base without leaving this page. By continuing, you agree to Coinbase's Guest Checkout Terms, User Agreement, and Privacy Policy.",
+    loading: "Loading Coinbase payment link...",
+    ready: "Coinbase checkout is ready.",
+    title: "Coinbase Apple Pay Onramp",
+  },
+  crossmint: {
+    description:
+      "Use card, Apple Pay, or Google Pay to buy USDC on Base. Continue to Crossmint to complete checkout, KYC, and delivery to your connected Base Account.",
+    loading: "Loading Crossmint checkout...",
+    ready: "Continue to Crossmint to complete checkout.",
+    title: "Crossmint Onramp",
+  },
+} as const;
 
 function parseOnrampEvent(event: MessageEvent): OnrampEvent | null {
   if (typeof event.data === "string") {
@@ -87,6 +121,7 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
       .then((body) => {
         if (cancelled) return;
         setLoadState({ status: "ready", session: body });
+        setOnrampStatus(PROVIDER_COPY[body.provider].ready);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -130,6 +165,9 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
     }).format(new Date(loadState.session.expiresAt));
   }, [loadState]);
 
+  const provider = loadState.status === "ready" ? loadState.session.provider : null;
+  const copy = provider ? PROVIDER_COPY[provider] : PROVIDER_COPY.crossmint;
+
   return (
     <section className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl text-center">
@@ -138,21 +176,50 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
         </div>
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Fund your Basemate wallet</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Use Apple Pay to buy USDC on Base without leaving this page. By continuing, you agree to Coinbase&apos;s
-          Guest Checkout Terms, User Agreement, and Privacy Policy.
+          {copy.description}
         </p>
       </div>
 
       <div className="rounded-3xl border border-border/70 bg-card p-3 shadow-[var(--shadow-card)] sm:p-4">
-        {loadState.status === "ready" ? (
+        {loadState.status === "ready" && loadState.session.provider === "coinbase" ? (
           <iframe
-            title="Coinbase Apple Pay Onramp"
+            title={PROVIDER_COPY.coinbase.title}
             src={loadState.session.paymentLinkUrl}
             allow="payment"
             sandbox="allow-scripts allow-same-origin"
             referrerPolicy="no-referrer"
             className="h-[620px] w-full rounded-2xl border border-border bg-white sm:h-[680px]"
           />
+        ) : loadState.status === "ready" && loadState.session.provider === "crossmint" ? (
+          <div className="flex min-h-[420px] flex-col items-center justify-center gap-5 rounded-2xl border border-dashed border-border bg-muted/40 px-6 text-center">
+            <div className="max-w-md space-y-2">
+              <h2 className="text-lg font-semibold">{PROVIDER_COPY.crossmint.title}</h2>
+              <p className="text-sm text-muted-foreground">
+                This opens Crossmint in the same tab with your order already prepared.
+              </p>
+            </div>
+            <CrossmintProvider apiKey={loadState.session.clientSideApiKey}>
+              <CrossmintHostedCheckout
+                orderId={loadState.session.orderId}
+                clientSecret={loadState.session.clientSecret}
+                payment={{
+                  crypto: { enabled: false },
+                  fiat: { enabled: true },
+                  defaultMethod: "fiat",
+                  receiptEmail: loadState.session.receiptEmail ?? undefined,
+                }}
+                appearance={{
+                  display: "same-tab",
+                  rules: {
+                    DestinationInput: { display: "hidden" },
+                    ReceiptEmailInput: { display: "hidden" },
+                  },
+                }}
+              >
+                Continue to Crossmint
+              </CrossmintHostedCheckout>
+            </CrossmintProvider>
+          </div>
         ) : (
           <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-muted/40 px-6 text-center">
             {loadState.status === "error" ? (
@@ -163,7 +230,7 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
             ) : (
               <>
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm font-medium">Loading Coinbase payment link...</p>
+                <p className="text-sm font-medium">{copy.loading}</p>
               </>
             )}
           </div>

@@ -6,7 +6,16 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 type FundSessionRow = {
+  provider: string;
+  flow: string;
   payment_link_url: string;
+  order_id: string | null;
+  client_secret: string | null;
+  client_side_api_key: string | null;
+  receipt_email: string | null;
+  wallet_address: string | null;
+  amount: string | null;
+  chain: string | null;
   expires_at: string;
   consumed_at: string | null;
 };
@@ -69,7 +78,18 @@ export async function GET(req: NextRequest) {
   try {
     const pool = getPool(databaseUrl);
     const result = await pool.query<FundSessionRow>(
-      `SELECT payment_link_url, expires_at, consumed_at
+      `SELECT provider,
+              flow,
+              payment_link_url,
+              order_id,
+              client_secret,
+              client_side_api_key,
+              receipt_email,
+              wallet_address,
+              amount,
+              chain,
+              expires_at,
+              consumed_at
        FROM fund_sessions
        WHERE token = $1
        LIMIT 1`,
@@ -90,8 +110,31 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    if (session.provider === "crossmint") {
+      if (!session.order_id || !session.client_secret || !session.client_side_api_key) {
+        return NextResponse.json({ error: "Crossmint payment session is incomplete." }, { status: 500 });
+      }
+
+      return NextResponse.json(
+        {
+          provider: "crossmint",
+          flow: session.flow === "offramp" ? "offramp" : "onramp",
+          orderId: session.order_id,
+          clientSecret: session.client_secret,
+          clientSideApiKey: session.client_side_api_key,
+          receiptEmail: session.receipt_email,
+          walletAddress: session.wallet_address,
+          amount: session.amount,
+          chain: session.chain,
+          expiresAt: session.expires_at,
+        },
+        { headers: { "cache-control": "no-store" } },
+      );
+    }
+
     return NextResponse.json(
       {
+        provider: "coinbase",
         paymentLinkUrl: session.payment_link_url,
         expiresAt: session.expires_at,
       },
