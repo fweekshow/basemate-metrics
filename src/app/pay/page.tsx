@@ -11,10 +11,10 @@ export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Pay · Basemate",
-  description: "Fund your Basemate wallet with Apple Pay or Google Pay.",
+  description: "Move money in and out of your Basemate wallet.",
   openGraph: {
     title: "Pay · Basemate",
-    description: "Fund your Basemate wallet with Apple Pay or Google Pay.",
+    description: "Move money in and out of your Basemate wallet.",
     type: "website",
     images: [SITE.pfp],
   },
@@ -44,6 +44,7 @@ export default async function PayPage({
   const params = await searchParams;
   const token = Array.isArray(params.s) ? params.s[0] : params.s;
   const session = token ? await resolveFundSession(token) : null;
+  const flow = session?.paymentLinkUrl ? flowForPaymentUrl(session.paymentLinkUrl) : "onramp";
 
   return (
     <SiteShell>
@@ -54,16 +55,19 @@ export default async function PayPage({
           </div>
           <div className="space-y-2">
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              Fund your Basemate wallet
+              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate wallet"}
             </h1>
             <p className="text-base leading-relaxed text-muted-foreground">
-              Use Apple Pay or Google Pay to buy USDC on Base without leaving this page.
+              {flow === "offramp"
+                ? "Continue to Coinbase to sell USDC on Base and send the proceeds to fiat."
+                : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page."}
             </p>
           </div>
         </header>
 
         {session?.paymentLinkUrl ? (
           <OnrampPaymentFrame
+            flow={flow}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
             expiresAt={session.expiresAt}
           />
@@ -123,6 +127,17 @@ function paymentLinkOptionsForSession(session: FundSessionResponse): FundPayment
       url: session.paymentLinkUrl,
     },
   ];
+}
+
+function flowForPaymentUrl(url: string): "onramp" | "offramp" {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "pay.coinbase.com" && parsed.pathname.startsWith("/v3/sell/")
+      ? "offramp"
+      : "onramp";
+  } catch {
+    return "onramp";
+  }
 }
 
 function isFundPaymentLinkOption(value: unknown): value is FundPaymentLinkOption {

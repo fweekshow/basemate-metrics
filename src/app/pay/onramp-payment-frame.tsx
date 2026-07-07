@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 interface OnrampPaymentFrameProps {
+  flow: "onramp" | "offramp";
   paymentLinkOptions: FundPaymentLinkOption[];
   expiresAt: string;
 }
@@ -50,6 +51,7 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
 };
 
 export function OnrampPaymentFrame({
+  flow,
   paymentLinkOptions,
   expiresAt,
 }: OnrampPaymentFrameProps) {
@@ -88,6 +90,34 @@ export function OnrampPaymentFrame({
   }, []);
 
   if (!selectedOption) return null;
+
+  if (flow === "offramp") {
+    return (
+      <div className="mx-auto grid w-full max-w-xl gap-4">
+        <div className="flex flex-col items-center gap-5 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Continue to Coinbase</h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Coinbase cash-out links are single use. Tap the button when you are ready to complete the sell flow.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.assign(selectedOption.url);
+            }}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98]"
+          >
+            Cash out with Coinbase
+          </button>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-center text-sm text-muted-foreground">
+          Link expires {expiresLabel}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto grid w-full max-w-3xl gap-4">
