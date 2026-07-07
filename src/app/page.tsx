@@ -20,6 +20,7 @@ const features = [
     body: "Basemate opens an Avantis position with TP/SL, leverage, and amount all preset.",
     color: "#0505FF",
   },
+  
   {
     label: "TRENDING",
     headline: "Scout launches before they moon",
