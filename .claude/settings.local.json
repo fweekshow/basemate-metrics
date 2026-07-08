@@ -45,7 +45,11 @@
       "Bash(cp \"/tmp/basemate-ds/basemate-design-system/project/uploads/B295844A-DA46-45ED-A425-D095D4B91FA9.PNG\" /Users/matthewmeakin/basemate-metrics/public/brand/mascot/mate-girl.png)",
       "Bash(cp \"/tmp/basemate-ds/basemate-design-system/project/uploads/6CB5C5B0-D444-43D3-B86D-685E973FA585.PNG\" /Users/matthewmeakin/basemate-metrics/public/brand/mascot/mate-win-3d.png)",
       "Bash(npx tsc *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(ls ~/.claude/skills/basemate-design/ 2>/dev/null)",
+      "Read(//c/Users/user/.claude//**)",
+      "Read(//c/Users/user/.claude/**)",
+      "PowerShell(taskkill /PID 13764 /F)"
     ]
   }
 }

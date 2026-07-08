@@ -6,6 +6,7 @@ import { SITE } from "@/lib/site";
 
 const nav = [
   { href: "/", label: "Home", external: false },
+  { href: "/relay", label: "Relay", external: false },
   { href: "/waitlist", label: "Waitlist", external: false },
   { href: "/pay", label: "Pay", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
@@ -86,6 +87,9 @@ export function SiteShell({
             </a>
             <Link href="/brand" className="py-2 hover:text-foreground transition-colors">
               Brand
+            </Link>
+            <Link href="/relay" className="py-2 hover:text-foreground transition-colors">
+              Relay
             </Link>
           </div>
         </div>
