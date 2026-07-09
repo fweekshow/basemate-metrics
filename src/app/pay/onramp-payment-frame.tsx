@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react";
 
 interface OnrampPaymentFrameProps {
   flow: "onramp" | "offramp";
@@ -15,47 +15,11 @@ interface FundPaymentLinkOption {
   url: string;
 }
 
-interface OnrampPostMessage {
-  eventName?: string;
-  data?: {
-    errorCode?: string;
-    errorMessage?: string;
-  };
-}
-
-const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; message: string }> = {
-  "onramp_api.load_pending": {
-    tone: "pending",
-    message: "Loading payment button...",
-  },
-  "onramp_api.load_success": {
-    tone: "success",
-    message: "Payment button is ready.",
-  },
-  "onramp_api.commit_success": {
-    tone: "success",
-    message: "Payment started. Keep this page open while Coinbase confirms the transfer.",
-  },
-  "onramp_api.polling_start": {
-    tone: "pending",
-    message: "Confirming your purchase...",
-  },
-  "onramp_api.polling_success": {
-    tone: "success",
-    message: "Done. Your USDC is on its way to your Basemate wallet.",
-  },
-  "onramp_api.cancel": {
-    tone: "error",
-    message: "Payment cancelled.",
-  },
-};
-
 export function OnrampPaymentFrame({
   flow,
   paymentLinkOptions,
   expiresAt,
 }: OnrampPaymentFrameProps) {
-  const [status, setStatus] = useState(EVENT_COPY["onramp_api.load_pending"]);
   const [selectedMethod, setSelectedMethod] = useState(
     paymentLinkOptions[0]?.method ?? "apple_pay",
   );
@@ -63,31 +27,6 @@ export function OnrampPaymentFrame({
     paymentLinkOptions.find((option) => option.method === selectedMethod) ??
     paymentLinkOptions[0];
   const expiresLabel = useMemo(() => formatExpiry(expiresAt), [expiresAt]);
-
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (!isCoinbasePayOrigin(event.origin)) return;
-
-      const message = parseOnrampMessage(event.data);
-      if (!message?.eventName) return;
-
-      if (message.eventName.endsWith("_error")) {
-        setStatus({
-          tone: "error",
-          message:
-            message.data?.errorMessage ||
-            "Coinbase could not start this payment. Try creating a new fund link.",
-        });
-        return;
-      }
-
-      const next = EVENT_COPY[message.eventName];
-      if (next) setStatus(next);
-    }
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
 
   if (!selectedOption) return null;
 
@@ -131,7 +70,6 @@ export function OnrampPaymentFrame({
                 type="button"
                 onClick={() => {
                   setSelectedMethod(option.method);
-                  setStatus(EVENT_COPY["onramp_api.load_pending"]);
                 }}
                 className={[
                   "rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
@@ -147,58 +85,67 @@ export function OnrampPaymentFrame({
         </div>
       ) : null}
 
-      <div className="rounded-3xl border border-border/70 bg-card/80 p-3 shadow-sm">
-        <iframe
-          key={selectedOption.url}
-          src={selectedOption.url}
-          title={`Coinbase Onramp ${selectedOption.label} payment`}
-          allow="payment"
-          sandbox="allow-scripts allow-same-origin"
-          referrerPolicy="no-referrer"
-          className="h-[680px] w-full rounded-2xl border-0 bg-background"
-        />
+      <div className="mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-sm">
+        <div className="border-b border-border/70 bg-muted/30 px-6 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Coinbase checkout
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            Continue with {selectedOption.label}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Basemate prepared your USDC purchase on Base. Coinbase will handle the payment details in a secure checkout.
+          </p>
+        </div>
+
+        <div className="grid gap-5 p-6">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Payment method</span>
+              <span className="font-medium">{selectedOption.label}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Network</span>
+              <span className="font-medium">Base</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Link expires</span>
+              <span className="font-medium">{expiresLabel}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.location.assign(selectedOption.url);
+            }}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98]"
+          >
+            Continue with {selectedOption.label}
+            <ExternalLink className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-start gap-3 rounded-2xl bg-primary/5 p-4 text-sm">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <p className="leading-6 text-muted-foreground">
+              You will leave Basemate briefly to complete checkout with Coinbase. Use your latest link before it expires.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <StatusIcon tone={status.tone} />
+          <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
           <div>
-            <p className="font-medium text-foreground">{status.message}</p>
-            <p>Use the {selectedOption.label} button, then keep this page open until it finishes.</p>
+            <p className="font-medium text-foreground">Checkout is ready.</p>
+            <p>Tap the {selectedOption.label} button to continue securely with Coinbase.</p>
           </div>
         </div>
         <p className="shrink-0 text-xs">Link expires {expiresLabel}</p>
       </div>
     </div>
   );
-}
-
-function StatusIcon({ tone }: { tone: "pending" | "success" | "error" }) {
-  if (tone === "success") return <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />;
-  if (tone === "error") return <XCircle className="mt-0.5 h-5 w-5 text-destructive" />;
-  return <Loader2 className="mt-0.5 h-5 w-5 animate-spin text-primary" />;
-}
-
-function parseOnrampMessage(data: unknown): OnrampPostMessage | null {
-  if (typeof data === "string") {
-    try {
-      return parseOnrampMessage(JSON.parse(data));
-    } catch {
-      return null;
-    }
-  }
-
-  if (!data || typeof data !== "object") return null;
-  return data as OnrampPostMessage;
-}
-
-function isCoinbasePayOrigin(origin: string): boolean {
-  try {
-    const url = new URL(origin);
-    return url.protocol === "https:" && url.hostname === "pay.coinbase.com";
-  } catch {
-    return false;
-  }
 }
 
 function formatExpiry(expiresAt: string): string {
