@@ -56,12 +56,14 @@ export function OnrampPaymentFrame({
   expiresAt,
 }: OnrampPaymentFrameProps) {
   const [status, setStatus] = useState(EVENT_COPY["onramp_api.load_pending"]);
+  const [isFrameLoading, setIsFrameLoading] = useState(true);
   const [selectedMethod, setSelectedMethod] = useState(
     paymentLinkOptions[0]?.method ?? "apple_pay",
   );
   const selectedOption =
     paymentLinkOptions.find((option) => option.method === selectedMethod) ??
     paymentLinkOptions[0];
+  const selectedOptionUrl = selectedOption?.url;
   const expiresLabel = useMemo(() => formatExpiry(expiresAt), [expiresAt]);
 
   useEffect(() => {
@@ -88,6 +90,10 @@ export function OnrampPaymentFrame({
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
+
+  useEffect(() => {
+    if (selectedOptionUrl) setIsFrameLoading(true);
+  }, [selectedOptionUrl]);
 
   if (!selectedOption) return null;
 
@@ -130,8 +136,10 @@ export function OnrampPaymentFrame({
                 key={option.method}
                 type="button"
                 onClick={() => {
+                  if (selected) return;
                   setSelectedMethod(option.method);
                   setStatus(EVENT_COPY["onramp_api.load_pending"]);
+                  setIsFrameLoading(true);
                 }}
                 className={[
                   "rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
@@ -147,7 +155,7 @@ export function OnrampPaymentFrame({
         </div>
       ) : null}
 
-      <div className="rounded-3xl border border-border/70 bg-card/80 p-3 shadow-sm">
+      <div className="relative rounded-3xl border border-border/70 bg-card/80 p-3 shadow-sm">
         <iframe
           key={selectedOption.url}
           src={selectedOption.url}
@@ -155,8 +163,23 @@ export function OnrampPaymentFrame({
           allow="payment"
           sandbox="allow-scripts allow-same-origin"
           referrerPolicy="no-referrer"
-          className="h-[680px] w-full rounded-2xl border-0 bg-background"
+          onLoad={() => setIsFrameLoading(false)}
+          className={[
+            "h-[680px] w-full rounded-2xl border-0 bg-background transition-opacity duration-200",
+            isFrameLoading ? "opacity-0" : "opacity-100",
+          ].join(" ")}
         />
+        {isFrameLoading ? (
+          <div
+            aria-live="polite"
+            className="absolute inset-3 flex flex-col items-center justify-center gap-3 rounded-2xl bg-background text-center"
+          >
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-foreground">
+              Loading {selectedOption.label} checkout...
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
