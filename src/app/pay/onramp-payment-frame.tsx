@@ -50,6 +50,8 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
   },
 };
 
+const FRAME_LOAD_TIMEOUT_MS = 12_000;
+
 export function OnrampPaymentFrame({
   flow,
   paymentLinkOptions,
@@ -57,6 +59,9 @@ export function OnrampPaymentFrame({
 }: OnrampPaymentFrameProps) {
   const [status, setStatus] = useState(EVENT_COPY["onramp_api.load_pending"]);
   const [isFrameLoading, setIsFrameLoading] = useState(true);
+  const [hasFrameLoaded, setHasFrameLoaded] = useState(false);
+  const [hasFrameLoadDelayed, setHasFrameLoadDelayed] = useState(false);
+  const [frameRetryNonce, setFrameRetryNonce] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState(
     paymentLinkOptions[0]?.method ?? "apple_pay",
   );
@@ -80,11 +85,19 @@ export function OnrampPaymentFrame({
             message.data?.errorMessage ||
             "Coinbase could not start this payment. Try creating a new fund link.",
         });
+        setIsFrameLoading(false);
+        setHasFrameLoadDelayed(false);
         return;
       }
 
       const next = EVENT_COPY[message.eventName];
-      if (next) setStatus(next);
+      if (next) {
+        setStatus(next);
+        if (message.eventName === "onramp_api.load_success") {
+          setIsFrameLoading(false);
+          setHasFrameLoadDelayed(false);
+        }
+      }
     }
 
     window.addEventListener("message", handleMessage);
@@ -92,8 +105,18 @@ export function OnrampPaymentFrame({
   }, []);
 
   useEffect(() => {
-    if (selectedOptionUrl) setIsFrameLoading(true);
-  }, [selectedOptionUrl]);
+    if (!selectedOptionUrl) return;
+
+    setIsFrameLoading(true);
+    setHasFrameLoaded(false);
+    setHasFrameLoadDelayed(false);
+
+    const timeoutId = window.setTimeout(() => {
+      setHasFrameLoadDelayed(true);
+    }, FRAME_LOAD_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedOptionUrl, frameRetryNonce]);
 
   if (!selectedOption) return null;
 
@@ -140,6 +163,8 @@ export function OnrampPaymentFrame({
                   setSelectedMethod(option.method);
                   setStatus(EVENT_COPY["onramp_api.load_pending"]);
                   setIsFrameLoading(true);
+                  setHasFrameLoaded(false);
+                  setHasFrameLoadDelayed(false);
                 }}
                 className={[
                   "rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
@@ -157,27 +182,58 @@ export function OnrampPaymentFrame({
 
       <div className="relative rounded-3xl border border-border/70 bg-card/80 p-3 shadow-sm">
         <iframe
-          key={selectedOption.url}
+          key={`${selectedOption.url}-${frameRetryNonce}`}
           src={selectedOption.url}
           title={`Coinbase Onramp ${selectedOption.label} payment`}
           allow="payment"
           sandbox="allow-scripts allow-same-origin"
           referrerPolicy="no-referrer"
-          onLoad={() => setIsFrameLoading(false)}
+          onLoad={() => {
+            setHasFrameLoaded(true);
+          }}
           className={[
             "h-[680px] w-full rounded-2xl border-0 bg-background transition-opacity duration-200",
-            isFrameLoading ? "opacity-0" : "opacity-100",
+            isFrameLoading && !hasFrameLoaded && !hasFrameLoadDelayed ? "opacity-0" : "opacity-100",
           ].join(" ")}
         />
         {isFrameLoading ? (
           <div
             aria-live="polite"
-            className="absolute inset-3 flex flex-col items-center justify-center gap-3 rounded-2xl bg-background text-center"
+            className="fixed left-1/2 top-4 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border/70 bg-background/95 px-4 py-3 text-center shadow-lg backdrop-blur"
           >
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm font-medium text-foreground">
-              Loading {selectedOption.label} checkout...
-            </p>
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">
+                {hasFrameLoadDelayed
+                  ? `${selectedOption.label} checkout is taking longer than usual.`
+                  : `Loading ${selectedOption.label} checkout...`}
+              </p>
+              {hasFrameLoadDelayed ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFrameLoading(true);
+                      setHasFrameLoaded(false);
+                      setHasFrameLoadDelayed(false);
+                      setFrameRetryNonce((nonce) => nonce + 1);
+                    }}
+                    className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition hover:brightness-110"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(selectedOption.url, "_blank", "noopener,noreferrer");
+                    }}
+                    className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-muted"
+                  >
+                    Open directly
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
