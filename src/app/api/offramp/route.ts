@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isIP } from "node:net";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export async function GET(request: Request) {
   if (!apiHost) return json({ error: "Cash-out service is not configured." }, 503);
 
   try {
+    const endUserIp = clientIp(request);
     const response = await fetch(
       new URL("/api/agent/offramp/launch", apiHost.replace(/\/$/, "")),
       {
@@ -28,6 +30,7 @@ export async function GET(request: Request) {
         headers: {
           accept: "application/json",
           "content-type": "application/json",
+          ...(endUserIp ? { "x-basemate-client-ip": endUserIp } : {}),
         },
         body: JSON.stringify({ token }),
       },
@@ -50,6 +53,21 @@ export async function GET(request: Request) {
   } catch {
     return json({ error: "Could not reach the cash-out service." }, 502);
   }
+}
+
+function clientIp(request: Request): string | null {
+  const candidates = [
+    request.headers.get("cf-connecting-ip"),
+    request.headers.get("x-vercel-forwarded-for"),
+    request.headers.get("fly-client-ip"),
+    request.headers.get("x-real-ip"),
+    request.headers.get("x-forwarded-for")?.split(",")[0],
+  ];
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (value && isIP(value)) return value;
+  }
+  return null;
 }
 
 export async function POST(request: Request) {
