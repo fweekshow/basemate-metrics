@@ -114,17 +114,13 @@ export function OfframpFlow({
     return () => window.clearInterval(timer);
   }, [mode, refresh, session]);
 
-  async function launch() {
+  function launch() {
     setAction("launch");
     setError(null);
-    try {
-      const payload = await call("launch");
-      if (!payload.coinbaseUrl) throw new Error("Coinbase did not return a cash-out URL.");
-      window.location.assign(payload.coinbaseUrl);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not open Coinbase.");
-      setAction(null);
-    }
+    const launchUrl = new URL("/api/offramp", window.location.origin);
+    launchUrl.searchParams.set("action", "launch");
+    launchUrl.searchParams.set("token", token);
+    window.location.assign(launchUrl);
   }
 
   async function approve() {
