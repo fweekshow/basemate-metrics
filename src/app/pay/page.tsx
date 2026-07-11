@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AlertCircle, Wallet } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
+import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
 import { SITE } from "@/lib/site";
 
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 
 type PayPageSearchParams = Promise<{
   s?: string | string[];
+  o?: string | string[];
 }>;
 
 interface FundSessionResponse {
@@ -43,6 +45,17 @@ export default async function PayPage({
 }) {
   const params = await searchParams;
   const token = Array.isArray(params.s) ? params.s[0] : params.s;
+  const offrampToken = Array.isArray(params.o) ? params.o[0] : params.o;
+  if (offrampToken) {
+    return (
+      <SiteShell>
+        <section className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
+          <OfframpHeader />
+          <OfframpFlow token={offrampToken} mode="launch" />
+        </section>
+      </SiteShell>
+    );
+  }
   const session = token ? await resolveFundSession(token) : null;
   const flow = session?.paymentLinkUrl ? flowForPaymentUrl(session.paymentLinkUrl) : "onramp";
 
@@ -76,6 +89,24 @@ export default async function PayPage({
         )}
       </section>
     </SiteShell>
+  );
+}
+
+function OfframpHeader() {
+  return (
+    <header className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
+        <Wallet className="h-7 w-7" />
+      </div>
+      <div className="space-y-2">
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          Cash out from Basemate
+        </h1>
+        <p className="text-base leading-relaxed text-muted-foreground">
+          Configure your sale with Coinbase, then approve the exact USDC transfer from your Base Account.
+        </p>
+      </div>
+    </header>
   );
 }
 
