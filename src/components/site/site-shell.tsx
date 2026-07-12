@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/site";
 
+// Pay + wallet flows are link-only (they need a session token), so they aren't
+// nav items. The logo links home, so Home isn't a nav item either.
 const nav = [
-  { href: "/", label: "Home", external: false },
   { href: "/relay", label: "Relay", external: false },
   { href: "/waitlist", label: "Waitlist", external: false },
-  { href: "/pay", label: "Pay", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
 ] as const;
 
@@ -31,7 +31,7 @@ export function SiteShell({
 
       <header className="relative z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5 min-w-0">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
             <Image
               src="/brand/logo/basemate-logo-flat.png"
               alt="@basemate"
@@ -40,7 +40,7 @@ export function SiteShell({
               className="rounded-lg"
               priority
             />
-            <span className="truncate font-mono text-sm font-semibold tracking-tight">
+            <span className="font-mono text-sm font-semibold tracking-tight">
               {SITE.name}
             </span>
           </Link>
