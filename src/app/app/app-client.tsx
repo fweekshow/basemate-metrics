@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCurrentUser,
-  useEvmSmartAccounts,
+  useGetAccessToken,
   useIsSignedIn,
   useSignInWithEmail,
-  useSignEvmMessage,
   useSignOut,
   useVerifyEmailOTP,
 } from "@coinbase/cdp-hooks";
@@ -46,10 +45,9 @@ type AuthPhase = "checking" | "email" | "otp" | "linking" | "ready" | "error";
 function AuthGate() {
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
-  const { evmSmartAccounts } = useEvmSmartAccounts();
   const { signInWithEmail } = useSignInWithEmail();
   const { verifyEmailOTP } = useVerifyEmailOTP();
-  const { signEvmMessage } = useSignEvmMessage();
+  const { getAccessToken } = useGetAccessToken();
   const { signOut } = useSignOut();
 
   const [phase, setPhase] = useState<AuthPhase>("checking");
@@ -58,15 +56,6 @@ function AuthGate() {
   const [otp, setOtp] = useState("");
   const [flowId, setFlowId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
-  const smartAddress = useMemo((): string | undefined => {
-    const smart = evmSmartAccounts?.[0] as unknown;
-    if (typeof smart === "string") return smart;
-    if (smart && typeof smart === "object" && "address" in smart) {
-      return (smart as { address?: string }).address;
-    }
-    return undefined;
-  }, [evmSmartAccounts]);
 
   // If a dashboard session cookie already exists, skip sign-in.
   useEffect(() => {
@@ -86,23 +75,20 @@ function AuthGate() {
   }, [isSignedIn]);
 
   const linkSession = useCallback(async () => {
-    if (!smartAddress || !currentUser) return;
+    if (!currentUser) return;
     setPhase("linking");
     try {
-      const nonce = Math.random().toString(36).slice(2);
-      const issuedAt = new Date().toISOString();
-      const message = `Sign in to Basemate\n\nAddress: ${smartAddress}\nNonce: ${nonce}\nIssued At: ${issuedAt}`;
-      const result = (await signEvmMessage({
-        evmAccount: smartAddress as `0x${string}`,
-        message,
-      } as never)) as { signature?: string } | string;
-      const signature = typeof result === "string" ? result : result?.signature;
-      if (!signature) throw new Error("Couldn't sign the sign-in message.");
+      // A CDP access token proves the signed-in end user server-side — no wallet
+      // signing, and it works before the smart account is deployed on-chain.
+      const raw = (await getAccessToken()) as unknown;
+      const accessToken =
+        typeof raw === "string" ? raw : (raw as { accessToken?: string })?.accessToken;
+      if (!accessToken) throw new Error("Couldn't read your Basemate session.");
 
       const res = await fetch("/api/app/session", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ address: smartAddress, message, signature }),
+        body: JSON.stringify({ accessToken }),
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) throw new Error(body?.error || "Sign-in failed.");
@@ -111,7 +97,7 @@ function AuthGate() {
       setPhase("error");
       setMessage(err instanceof Error ? err.message : "Sign-in failed.");
     }
-  }, [smartAddress, currentUser, signEvmMessage]);
+  }, [currentUser, getAccessToken]);
 
   // CDP already has a session (e.g. from a prior /wallet/connect) — skip the
   // email form and link straight away instead of erroring "already authenticated".
@@ -119,12 +105,12 @@ function AuthGate() {
     if ((phase === "email" || phase === "otp") && isSignedIn) setPhase("linking");
   }, [phase, isSignedIn]);
 
-  // Once the wallet is provisioned after email verification, link the session.
+  // Once signed in (via existing session or after OTP), link the dashboard session.
   useEffect(() => {
-    if (phase === "linking" && isSignedIn && smartAddress && currentUser) {
+    if (phase === "linking" && isSignedIn && currentUser) {
       void linkSession();
     }
-  }, [phase, isSignedIn, smartAddress, currentUser, linkSession]);
+  }, [phase, isSignedIn, currentUser, linkSession]);
 
   async function submitEmail() {
     if (!email) return;

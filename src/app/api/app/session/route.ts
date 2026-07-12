@@ -7,16 +7,14 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 /**
- * POST /api/app/session — verify a SIWE signature from the embedded wallet (via
- * the agent), then set an httpOnly session cookie. Body: { address, message, signature }.
+ * POST /api/app/session — validate the CDP access token (via the agent), then
+ * set an httpOnly session cookie. Body: { accessToken }.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const address = typeof body?.address === "string" ? body.address : "";
-  const message = typeof body?.message === "string" ? body.message : "";
-  const signature = typeof body?.signature === "string" ? body.signature : "";
-  if (!address || !message || !signature) {
-    return NextResponse.json({ error: "Missing address, message, or signature." }, { status: 400 });
+  const accessToken = typeof body?.accessToken === "string" ? body.accessToken : "";
+  if (!accessToken) {
+    return NextResponse.json({ error: "Missing access token." }, { status: 400 });
   }
 
   const host = agentHost();
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       cache: "no-store",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ address, message, signature }),
+      body: JSON.stringify({ accessToken }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
