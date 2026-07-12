@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProviderInterface } from "@base-org/account";
-import { AlertCircle, CheckCircle2, Loader2, ShieldCheck, Wallet, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 
 type PayMode = "quick" | "manual";
 
@@ -30,7 +30,16 @@ type LoadState =
   | { status: "error"; message: string };
 
 const BASE_CHAIN_HEX = "0x2105";
+const LOGO_URL =
+  "https://res.cloudinary.com/dg5qvbxjp/image/upload/v1770196704/IMG_9007_iv7vkm.png";
 
+/**
+ * Build a Base Account provider for the chosen mode.
+ *
+ * Quick Pay uses a sub-account (local key on basemate.app) + auto spend
+ * permissions, so after the one-time authorization every future payment signs
+ * silently with no Coinbase popup. Approve Each Time pops the signer per tx.
+ */
 async function getProvider(mode: PayMode): Promise<ProviderInterface> {
   const { createBaseAccountSDK } = await import("@base-org/account/browser");
   const paymasterUrl =
@@ -38,7 +47,7 @@ async function getProvider(mode: PayMode): Promise<ProviderInterface> {
 
   return createBaseAccountSDK({
     appName: "Basemate",
-    appLogoUrl: "https://res.cloudinary.com/dg5qvbxjp/image/upload/v1770196704/IMG_9007_iv7vkm.png",
+    appLogoUrl: LOGO_URL,
     appChainIds: [8453],
     preference: { telemetry: false },
     ...(paymasterUrl ? { paymasterUrls: { 8453: paymasterUrl } } : {}),
@@ -67,7 +76,17 @@ async function waitForTxHash(provider: ProviderInterface, id: string): Promise<s
 export function PaySignClient({ token }: { token: string }) {
   const router = useRouter();
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
-  const [mode, setMode] = useState<PayMode | null>(null);
+  // Default to Quick Pay: one authorization, then silent signing on basemate.app.
+  const [mode, setMode] = useState<PayMode>("quick");
+  const sdkWarmed = useRef(false);
+
+  // Warm the SDK module cache on mount so the import() during signing resolves
+  // as a microtask and doesn't drop Safari's popup user-activation.
+  useEffect(() => {
+    if (sdkWarmed.current) return;
+    sdkWarmed.current = true;
+    void import("@base-org/account/browser").catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,7 +105,7 @@ export function PaySignClient({ token }: { token: string }) {
           setLoad({ status: "done" });
           return;
         }
-        setMode(pending.payMode);
+        if (pending.payMode) setMode(pending.payMode);
         setLoad({ status: "ready", pending });
       })
       .catch((err) => {
@@ -97,78 +116,73 @@ export function PaySignClient({ token }: { token: string }) {
     };
   }, [token]);
 
-  const confirm = useCallback(
-    async (chosen: PayMode) => {
-      if (load.status !== "ready") return;
-      const pending = load.pending;
-      setLoad({ status: "signing", pending });
+  const confirm = useCallback(async () => {
+    if (load.status !== "ready") return;
+    const pending = load.pending;
+    setLoad({ status: "signing", pending });
 
+    // Persist the mode choice in the background — never awaited before the popup.
+    void fetch("/api/pay/sign", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token, mode }),
+    }).catch(() => undefined);
+
+    try {
+      const provider = await getProvider(mode);
+
+      // Connect (creates the sub-account on-connect in Quick Pay). Kept as the
+      // first popup-triggering call so it inherits the tap's user-activation.
+      const connect = (await provider.request({
+        method: "wallet_connect",
+        params: [{ version: "1", capabilities: {} }],
+      })) as { accounts?: Array<{ address?: string }> };
+      const from = connect.accounts?.[0]?.address ?? pending.from;
+
+      const paymasterUrl = `${window.location.origin}/api/paymaster`;
+      const baseParams = {
+        version: "1.0",
+        chainId: pending.chainId || BASE_CHAIN_HEX,
+        from,
+        calls: pending.calls.map((c) => ({ to: c.to, data: c.data ?? "0x", value: c.value ?? "0x0" })),
+      };
+
+      let sendResult: unknown;
       try {
-        // Persist mode choice (best-effort) so future payments skip the picker.
-        if (pending.payMode !== chosen) {
-          void fetch("/api/pay/sign", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ token, mode: chosen }),
-          }).catch(() => undefined);
-        }
-
-        const provider = await getProvider(chosen);
-        await provider
-          .request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_HEX }] })
-          .catch(() => undefined);
-
-        const connect = (await provider.request({
-          method: "wallet_connect",
-          params: [{ version: "1", capabilities: {} }],
-        })) as { accounts?: Array<{ address?: string }> };
-        const from = connect.accounts?.[0]?.address ?? pending.from;
-
-        const paymasterUrl = `${window.location.origin}/api/paymaster`;
-        const baseParams = {
-          version: "1.0",
-          chainId: pending.chainId || BASE_CHAIN_HEX,
-          from,
-          calls: pending.calls.map((c) => ({ to: c.to, data: c.data ?? "0x", value: c.value ?? "0x0" })),
-        };
-
-        let sendResult: unknown;
-        try {
-          sendResult = await provider.request({
-            method: "wallet_sendCalls",
-            params: [{ ...baseParams, capabilities: { paymasterService: { url: paymasterUrl } } }],
-          });
-        } catch {
-          // Retry without gas sponsorship if the paymaster path is unavailable.
-          sendResult = await provider.request({ method: "wallet_sendCalls", params: [baseParams] });
-        }
-
-        const id = typeof sendResult === "string" ? sendResult : (sendResult as { id?: string })?.id;
-        if (!id) throw new Error("The wallet did not return a transaction id.");
-
-        const txHash = await waitForTxHash(provider, id);
-
-        const res = await fetch("/api/pay/sign", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ token, txHash }),
+        sendResult = await provider.request({
+          method: "wallet_sendCalls",
+          params: [{ ...baseParams, capabilities: { paymasterService: { url: paymasterUrl } } }],
         });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.error || "Could not record the payment.");
-        }
-
-        setLoad({ status: "done" });
-        router.replace("/pay/success");
-      } catch (err) {
-        setLoad({
-          status: "error",
-          message: err instanceof Error ? err.message : "Could not complete this payment.",
-        });
+      } catch {
+        sendResult = await provider.request({ method: "wallet_sendCalls", params: [baseParams] });
       }
-    },
-    [load, router, token],
-  );
+
+      const id = typeof sendResult === "string" ? sendResult : (sendResult as { id?: string })?.id;
+      if (!id) throw new Error("The wallet did not return a transaction id.");
+
+      const txHash = await waitForTxHash(provider, id);
+
+      const res = await fetch("/api/pay/sign", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, txHash }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Could not record the payment.");
+      }
+
+      setLoad({ status: "done" });
+      router.replace("/pay/success");
+    } catch (err) {
+      setLoad({
+        status: "error",
+        message: err instanceof Error ? err.message : "Could not complete this payment.",
+      });
+    }
+  }, [load, mode, router, token]);
+
+  const pending = load.status === "ready" || load.status === "signing" ? load.pending : null;
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-xl flex-col items-center justify-center gap-6 px-4 py-8 text-center sm:px-6">
@@ -195,54 +209,41 @@ export function PaySignClient({ token }: { token: string }) {
       ) : (
         <div className="w-full">
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            {load.pending.label ?? "Confirm your payment"}
+            {pending?.label ?? "Confirm your payment"}
           </h1>
-          {load.pending.amount && load.pending.tokenSymbol ? (
+          {pending?.amount && pending?.tokenSymbol ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              {load.pending.amount} {load.pending.tokenSymbol}
-              {load.pending.recipientDisplay ? ` to ${load.pending.recipientDisplay}` : ""}
+              {pending.amount} {pending.tokenSymbol}
+              {pending.recipientDisplay ? ` to ${pending.recipientDisplay}` : ""}
             </p>
           ) : null}
 
-          {mode === null ? (
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => confirm("quick")}
-                className="flex flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card p-4 text-left transition hover:border-primary"
-              >
-                <Zap className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Quick Pay</span>
-                <span className="text-xs text-muted-foreground">
-                  Sign instantly, no popups after setup. You set the spend limit.
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => confirm("manual")}
-                className="flex flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card p-4 text-left transition hover:border-primary"
-              >
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Approve Each Time</span>
-                <span className="text-xs text-muted-foreground">
-                  Review and approve every payment individually.
-                </span>
-              </button>
-            </div>
-          ) : (
+          <button
+            type="button"
+            onClick={confirm}
+            disabled={load.status === "signing"}
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {load.status === "signing" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {load.status === "signing" ? "Confirming…" : "Pay now"}
+          </button>
+
+          {load.status !== "signing" ? (
             <button
               type="button"
-              onClick={() => confirm(mode)}
-              disabled={load.status === "signing"}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => setMode((m) => (m === "quick" ? "manual" : "quick"))}
+              className="mt-3 text-xs text-muted-foreground underline underline-offset-2"
             >
-              {load.status === "signing" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {load.status === "signing" ? "Confirming…" : "Pay now"}
+              {mode === "quick"
+                ? "Prefer to approve every payment manually?"
+                : "Switch back to instant Quick Pay"}
             </button>
-          )}
+          ) : null}
 
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            Gas is covered by Basemate. Your browser may show a passkey or Face ID prompt to sign.
+            {mode === "quick"
+              ? "First payment asks Base Account for a one-time approval, then future payments are instant. Gas is covered by Basemate."
+              : "You’ll approve this payment in a Base Account prompt. Gas is covered by Basemate."}
           </p>
         </div>
       )}
