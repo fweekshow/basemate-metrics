@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCreateDelegation,
@@ -93,15 +93,14 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
     return undefined;
   })();
 
+  const finishingRef = useRef(false);
+
   const finish = useCallback(async () => {
+    const userId = currentUser?.userId;
+    if (!userId || !smartAddress) return; // not ready yet; effect will retry
+    if (finishingRef.current) return;
+    finishingRef.current = true;
     try {
-      setPhase("finishing");
-      const userId = currentUser?.userId;
-      if (!userId || !smartAddress) {
-        setMessage("Your wallet is still initializing — give it a moment and try again.");
-        setPhase("error");
-        return;
-      }
       const expiresAt = new Date(Date.now() + DELEGATION_DAYS * 24 * 60 * 60 * 1000).toISOString();
       const delegation = await createDelegation({ expiresAt });
       const res = await fetch("/api/wallet/connect", {
@@ -119,17 +118,35 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
       if (!res.ok) throw new Error(body?.error || "Could not finish setup.");
       setPhase("done");
     } catch (err) {
+      finishingRef.current = false; // allow retry
       setPhase("error");
       setMessage(err instanceof Error ? err.message : "Could not finish setup.");
     }
   }, [createDelegation, currentUser, smartAddress, sessionToken]);
 
-  // Once signed in and the smart account is provisioned, finish automatically.
+  // If the SDK restored an existing session, skip the email form.
   useEffect(() => {
-    if (isSignedIn && smartAddress && currentUser?.userId && (phase === "otp" || phase === "email")) {
+    if (phase === "email" && isSignedIn) setPhase("finishing");
+  }, [phase, isSignedIn]);
+
+  // After sign-in, once the smart account is provisioned, complete setup.
+  useEffect(() => {
+    if (phase === "finishing" && isSignedIn && smartAddress && currentUser?.userId) {
       void finish();
     }
-  }, [isSignedIn, smartAddress, currentUser, phase, finish]);
+  }, [phase, isSignedIn, smartAddress, currentUser, finish]);
+
+  // Guard: don't hang forever waiting for the wallet to provision.
+  useEffect(() => {
+    if (phase !== "finishing") return;
+    const t = setTimeout(() => {
+      if (!finishingRef.current) {
+        setPhase("error");
+        setMessage("Your wallet is taking longer than expected to set up. Tap the link again to retry.");
+      }
+    }, 45_000);
+    return () => clearTimeout(t);
+  }, [phase]);
 
   async function submitEmail() {
     if (!email) return;
