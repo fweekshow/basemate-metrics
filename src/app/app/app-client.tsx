@@ -8,6 +8,7 @@ import {
   useIsSignedIn,
   useSignInWithEmail,
   useSignEvmMessage,
+  useSignOut,
   useVerifyEmailOTP,
 } from "@coinbase/cdp-hooks";
 import {
@@ -49,6 +50,7 @@ function AuthGate() {
   const { signInWithEmail } = useSignInWithEmail();
   const { verifyEmailOTP } = useVerifyEmailOTP();
   const { signEvmMessage } = useSignEvmMessage();
+  const { signOut } = useSignOut();
 
   const [phase, setPhase] = useState<AuthPhase>("checking");
   const [message, setMessage] = useState("");
@@ -111,6 +113,12 @@ function AuthGate() {
     }
   }, [smartAddress, currentUser, signEvmMessage]);
 
+  // CDP already has a session (e.g. from a prior /wallet/connect) — skip the
+  // email form and link straight away instead of erroring "already authenticated".
+  useEffect(() => {
+    if ((phase === "email" || phase === "otp") && isSignedIn) setPhase("linking");
+  }, [phase, isSignedIn]);
+
   // Once the wallet is provisioned after email verification, link the session.
   useEffect(() => {
     if (phase === "linking" && isSignedIn && smartAddress && currentUser) {
@@ -127,7 +135,13 @@ function AuthGate() {
       setFlowId(result.flowId);
       setPhase("otp");
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Couldn't send the code.");
+      const msg = err instanceof Error ? err.message : "Couldn't send the code.";
+      // Already signed in to CDP — link the existing session instead of erroring.
+      if (/already authenticated|already signed in/i.test(msg)) {
+        setPhase("linking");
+        return;
+      }
+      setMessage(msg);
     } finally {
       setBusy(false);
     }
@@ -171,7 +185,21 @@ function AuthGate() {
           <p className="text-sm text-destructive">{message}</p>
           <button
             type="button"
-            onClick={() => setPhase("email")}
+            onClick={async () => {
+              // Sign out of CDP so we don't immediately re-link the same session
+              // (and so the user can switch email accounts).
+              try {
+                await signOut();
+              } catch {
+                // ignore
+              }
+              await fetch("/api/app/session", { method: "DELETE" }).catch(() => {});
+              setMessage("");
+              setEmail("");
+              setOtp("");
+              setFlowId(null);
+              setPhase("email");
+            }}
             className="mt-4 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
           >
             Try again
