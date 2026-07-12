@@ -10,6 +10,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars are inlined at build time, so they must be present here.
+# Railway injects service variables as build args; declare the ones we need.
+ARG NEXT_PUBLIC_CDP_PROJECT_ID
+ENV NEXT_PUBLIC_CDP_PROJECT_ID=$NEXT_PUBLIC_CDP_PROJECT_ID
 RUN npm run build
 
 FROM node:22-bookworm-slim AS runner

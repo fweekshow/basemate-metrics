@@ -13,7 +13,10 @@ import {
 import { AlertCircle, CheckCircle2, Loader2, Wallet } from "lucide-react";
 
 const DELEGATION_DAYS = 90;
-const PROJECT_ID = process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "";
+// Project ID is a public, client-side identifier. Prefer the env var; fall back
+// to the Basemate project id so the page works even if the build arg isn't wired.
+const PROJECT_ID =
+  process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
 
 const cdpConfig = {
   projectId: PROJECT_ID,
