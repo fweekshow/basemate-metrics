@@ -106,10 +106,12 @@ export function OfframpFlow({
   }, [call, mode]);
 
   useEffect(() => {
-    if (mode !== "return" || !session) return;
-    if (!["launched", "approval_pending", "transfer_submitted", "processing"].includes(session.status)) {
-      return;
-    }
+    if (!session) return;
+    // Poll while a cash-out is mid-flight — on the return page for Base Account
+    // signing, and on any page once an embedded transfer has been submitted.
+    const inFlight = ["transfer_submitted", "processing"].includes(session.status);
+    const returning = mode === "return" && ["launched", "approval_pending"].includes(session.status);
+    if (!inFlight && !returning) return;
     const timer = window.setInterval(() => void refresh(), 4_000);
     return () => window.clearInterval(timer);
   }, [mode, refresh, session]);
@@ -129,7 +131,18 @@ export function OfframpFlow({
     try {
       const payload = await call("approval");
       const approvalUrl = payload.approvalUrl ?? payload.session?.approvalUrl;
-      if (!approvalUrl) throw new Error("Base Account approval is not ready.");
+      const next = payload.session ?? (payload as OfframpSession);
+      // Embedded wallet: the transfer executed server-side (no signing URL).
+      // Show progress and let the poller track the Coinbase cash-out.
+      if (!approvalUrl) {
+        if (next?.status && next.status !== "transaction_ready") {
+          setSession(next);
+          setAction(null);
+          void refresh();
+          return;
+        }
+        throw new Error("Transfer approval is not ready.");
+      }
       window.location.assign(approvalUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create transfer approval.");

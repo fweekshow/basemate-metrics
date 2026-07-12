@@ -53,6 +53,7 @@ type PendingPayRow = {
   recipient_display: string | null;
   amount: string | null;
   token_symbol: string | null;
+  wallet_kind: string | null;
   status: string;
   tx_hash: string | null;
   expires_at: string;
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
     const pool = getPool(url);
     const result = await pool.query<PendingPayRow>(
       `SELECT sender_id, from_address, chain_id, calls, label, recipient_display,
-              amount, token_symbol, status, tx_hash, expires_at
+              amount, token_symbol, wallet_kind, status, tx_hash, expires_at
        FROM pending_pay_transactions WHERE token = $1 LIMIT 1`,
       [token],
     );
@@ -98,6 +99,9 @@ export async function GET(req: NextRequest) {
         calls: row.calls,
         chainId: row.chain_id,
         from: row.from_address,
+        // 'embedded' rows are confirmed server-side (no wallet popup); everything
+        // else is signed client-side via the Base Account SDK.
+        walletKind: row.wallet_kind === "embedded" ? "embedded" : "base_account",
         status: row.status,
         txHash: row.tx_hash,
         payMode: MODES.has(payMode ?? "") ? payMode : null,

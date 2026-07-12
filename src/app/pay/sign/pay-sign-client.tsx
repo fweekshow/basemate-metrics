@@ -9,6 +9,8 @@ type PayMode = "quick" | "manual";
 
 type WalletCall = { to: string; data?: string; value?: string };
 
+type WalletKind = "embedded" | "base_account";
+
 type PendingPay = {
   label: string | null;
   recipientDisplay: string | null;
@@ -17,6 +19,7 @@ type PendingPay = {
   calls: WalletCall[];
   chainId: string;
   from: string;
+  walletKind: WalletKind;
   status: string;
   txHash: string | null;
   payMode: PayMode | null;
@@ -121,6 +124,28 @@ export function PaySignClient({ token }: { token: string }) {
     const pending = load.pending;
     setLoad({ status: "signing", pending });
 
+    // Basemate embedded wallet: no signing popup. Tapping Confirm executes the
+    // transaction server-side via the user's delegation, then we're done.
+    if (pending.walletKind === "embedded") {
+      try {
+        const res = await fetch("/api/pay/confirm", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const body = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(body?.error || "Could not complete this transaction.");
+        setLoad({ status: "done" });
+        router.replace("/pay/success");
+      } catch (err) {
+        setLoad({
+          status: "error",
+          message: err instanceof Error ? err.message : "Could not complete this transaction.",
+        });
+      }
+      return;
+    }
+
     // Persist the mode choice in the background — never awaited before the popup.
     void fetch("/api/pay/sign", {
       method: "PATCH",
@@ -183,6 +208,7 @@ export function PaySignClient({ token }: { token: string }) {
   }, [load, mode, router, token]);
 
   const pending = load.status === "ready" || load.status === "signing" ? load.pending : null;
+  const isEmbedded = pending?.walletKind === "embedded";
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-xl flex-col items-center justify-center gap-6 px-4 py-8 text-center sm:px-6">
@@ -225,10 +251,10 @@ export function PaySignClient({ token }: { token: string }) {
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
           >
             {load.status === "signing" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {load.status === "signing" ? "Confirming…" : "Pay now"}
+            {load.status === "signing" ? "Confirming…" : "Confirm"}
           </button>
 
-          {load.status !== "signing" ? (
+          {!isEmbedded && load.status !== "signing" ? (
             <button
               type="button"
               onClick={() => setMode((m) => (m === "quick" ? "manual" : "quick"))}
@@ -241,9 +267,11 @@ export function PaySignClient({ token }: { token: string }) {
           ) : null}
 
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            {mode === "quick"
-              ? "First payment asks Base Account for a one-time approval, then future payments are instant. Gas is covered by Basemate."
-              : "You’ll approve this payment in a Base Account prompt. Gas is covered by Basemate."}
+            {isEmbedded
+              ? "Review the details above, then tap Confirm. Basemate signs from your account and covers the gas — no wallet popups."
+              : mode === "quick"
+                ? "First payment asks Base Account for a one-time approval, then future payments are instant. Gas is covered by Basemate."
+                : "You’ll approve this payment in a Base Account prompt. Gas is covered by Basemate."}
           </p>
         </div>
       )}
