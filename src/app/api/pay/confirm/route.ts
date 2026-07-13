@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAppSession } from "@/lib/app-session";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -26,6 +28,13 @@ export async function POST(req: NextRequest) {
   if (!TOKEN_RE.test(token)) {
     return NextResponse.json({ error: "Missing or invalid confirmation token." }, { status: 400 });
   }
+  const session = await getAppSession();
+  if (!session) {
+    return NextResponse.json(
+      { error: "Sign in to confirm this transaction.", requiresAuth: true },
+      { status: 401 },
+    );
+  }
 
   const host = agentHost();
   if (!host) {
@@ -41,7 +50,11 @@ export async function POST(req: NextRequest) {
       method: "POST",
       cache: "no-store",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({
+        token,
+        user: session.user,
+        sessionToken: session.token,
+      }),
     });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status, headers: { "cache-control": "no-store" } });

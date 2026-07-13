@@ -49,7 +49,10 @@
       "Bash(ls ~/.claude/skills/basemate-design/ 2>/dev/null)",
       "Read(//c/Users/user/.claude//**)",
       "Read(//c/Users/user/.claude/**)",
-      "PowerShell(taskkill /PID 13764 /F)"
+      "PowerShell(taskkill /PID 13764 /F)",
+      "PowerShell(Get-ChildItem src\\\\app -Recurse -Directory | Where-Object { $_.FullName -match 'pay' } | Select-Object FullName)",
+      "PowerShell(npx tsc --noEmit)",
+      "PowerShell(npx eslint src/app/pay/sign/pay-sign-client.tsx src/components/site/site-shell.tsx)"
     ]
   }
 }

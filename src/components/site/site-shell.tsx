@@ -69,7 +69,7 @@ export function SiteShell({
         </div>
       </header>
 
-      <main className="relative z-10 flex-1">{children}</main>
+      <main className="relative z-10 flex flex-1 flex-col">{children}</main>
 
       <footer className="relative z-10 border-t border-border/60">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">

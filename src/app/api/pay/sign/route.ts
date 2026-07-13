@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Pool, type PoolConfig } from "pg";
 
+import { agentHost, getAppSession } from "@/lib/app-session";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -44,6 +46,44 @@ function getPool(url: string): Pool {
   return poolCache.pool;
 }
 
+async function authorizeEmbeddedPayment(token: string): Promise<NextResponse | null> {
+  const session = await getAppSession();
+  if (!session) {
+    return NextResponse.json(
+      { error: "Sign in to view and confirm this transaction.", requiresAuth: true },
+      { status: 401 },
+    );
+  }
+  const host = agentHost();
+  if (!host) {
+    return NextResponse.json({ error: "Payment authorization is not configured." }, { status: 500 });
+  }
+  try {
+    const res = await fetch(new URL("/api/pay/authorize", host.replace(/\/$/, "")), {
+      method: "POST",
+      cache: "no-store",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({
+        token,
+        user: session.user,
+        sessionToken: session.token,
+      }),
+    });
+    if (res.ok) return null;
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(
+      {
+        error: data?.error ?? "Could not authorize this transaction.",
+        ...(res.status === 401 ? { requiresAuth: true } : {}),
+      },
+      { status: res.status, headers: { "cache-control": "no-store" } },
+    );
+  } catch (err) {
+    console.error("[pay/sign] authorization service unavailable:", err);
+    return NextResponse.json({ error: "Could not authorize this transaction." }, { status: 503 });
+  }
+}
+
 type PendingPayRow = {
   sender_id: string;
   from_address: string;
@@ -82,6 +122,10 @@ export async function GET(req: NextRequest) {
     }
     if (new Date(row.expires_at) < new Date() && row.status === "pending") {
       return NextResponse.json({ error: "This payment link has expired. Ask Basemate for a new one." }, { status: 404 });
+    }
+    if (row.wallet_kind === "embedded") {
+      const denied = await authorizeEmbeddedPayment(token);
+      if (denied) return denied;
     }
 
     const modeResult = await pool.query<{ pay_mode: string | null }>(
