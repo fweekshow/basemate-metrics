@@ -483,7 +483,7 @@ function HomeTab() {
           </p>
         )}
 
-        <div className="mt-5 space-y-2">
+        {/* <div className="mt-5 space-y-2">
           <a
             href="/pay"
             className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition active:scale-[0.99]"
@@ -499,7 +499,7 @@ function HomeTab() {
               <ArrowUpRight className="h-4 w-4" /> Cash out
             </a>
           </div>
-        </div>
+        </div> */}
       </section>
 
       <SectionLabel>Tokens</SectionLabel>
