@@ -101,8 +101,46 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
     if (finishingRef.current) return;
     finishingRef.current = true;
     try {
-      const expiresAt = new Date(Date.now() + DELEGATION_DAYS * 24 * 60 * 60 * 1000).toISOString();
-      const delegation = await createDelegation({ expiresAt });
+      const lookupDelegation = async (): Promise<{ active: boolean; expiresAt: string | null }> => {
+        const response = await fetch("/api/wallet/delegation", {
+          method: "POST",
+          cache: "no-store",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify({ token: sessionToken, userId, address: smartAddress }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result?.error || "Could not check your existing wallet authorization.");
+        }
+        return {
+          active: result?.active === true,
+          expiresAt: typeof result?.expiresAt === "string" ? result.expiresAt : null,
+        };
+      };
+
+      const requestedExpiresAt = new Date(
+        Date.now() + DELEGATION_DAYS * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      let delegationId: string | undefined;
+      let delegationExpiresAt: string;
+      const existing = await lookupDelegation();
+      if (existing.active && existing.expiresAt) {
+        delegationExpiresAt = existing.expiresAt;
+      } else {
+        try {
+          const delegation = await createDelegation({ expiresAt: requestedExpiresAt });
+          delegationId = (delegation as { delegationId?: string })?.delegationId;
+          delegationExpiresAt =
+            (delegation as { expiresAt?: string })?.expiresAt ?? requestedExpiresAt;
+        } catch (err) {
+          const message = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+          if (!message.includes("active delegation already exists")) throw err;
+          const raced = await lookupDelegation();
+          if (!raced.active || !raced.expiresAt) throw err;
+          delegationExpiresAt = raced.expiresAt;
+        }
+      }
+
       const res = await fetch("/api/wallet/connect", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -110,8 +148,8 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
           token: sessionToken,
           userId,
           address: smartAddress,
-          delegationId: (delegation as { delegationId?: string })?.delegationId,
-          expiresAt: (delegation as { expiresAt?: string })?.expiresAt ?? expiresAt,
+          delegationId,
+          expiresAt: delegationExpiresAt,
         }),
       });
       const body = await res.json();
