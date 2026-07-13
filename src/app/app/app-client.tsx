@@ -14,7 +14,12 @@ import {
   Activity,
   ArrowDownToLine,
   ArrowUpRight,
+  Check,
+  Copy,
+  ExternalLink,
   Loader2,
+  LogOut,
+  Plus,
   Send,
   Settings,
   Sparkles,
@@ -151,9 +156,12 @@ function AuthGate() {
 
   return (
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center gap-6 px-5 py-10 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-        <Wallet className="h-7 w-7" />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/logo/basemate-mark.png"
+        alt="Basemate"
+        className="h-14 w-14 rounded-2xl shadow-[var(--shadow-card)]"
+      />
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">Your Basemate account</h1>
         <p className="mt-1 text-sm text-muted-foreground">Sign in with your email — same as in Basemate.</p>
@@ -247,11 +255,71 @@ const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
   { id: "settings", label: "You", icon: Settings },
 ];
 
+const TAB_IDS = TABS.map((t) => t.id) as Tab[];
+
+// Friendly hash aliases so deep links land on the right tab. Basemate sends
+// these in chat (e.g. /app#balance, /app#payments); the canonical tab ids
+// (/app#activity, /app#sends, …) also work directly.
+const HASH_ALIASES: Record<string, Tab> = {
+  balance: "home",
+  yield: "earn",
+  earning: "earn",
+  payment: "settings",
+  payments: "settings",
+  you: "settings",
+};
+
+function tabFromHash(): Tab | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.location.hash.replace(/^#/, "").trim().toLowerCase();
+  if (!raw) return null;
+  if ((TAB_IDS as string[]).includes(raw)) return raw as Tab;
+  return HASH_ALIASES[raw] ?? null;
+}
+
 function Dashboard() {
   const [tab, setTab] = useState<Tab>("home");
+
+  // Sync the active tab with the URL hash so deep links (e.g. /app#activity)
+  // open the right page — both on first load and when the hash changes while
+  // the dashboard is already open. Reading the hash post-mount (not in the
+  // initial state) avoids a server/client hydration mismatch.
+  useEffect(() => {
+    const sync = () => {
+      const next = tabFromHash();
+      if (next) setTab(next);
+    };
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  const selectTab = useCallback((id: Tab) => {
+    setTab(id);
+    // Reflect the tab in the URL without pushing a new history entry.
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `#${id}`);
+    }
+  }, []);
+
+  const activeTitle =
+    tab === "home"
+      ? "Basemate"
+      : tab === "bets"
+        ? "World Cup"
+        : tab === "settings"
+          ? "Settings"
+          : (TABS.find((t) => t.id === tab)?.label ?? "Basemate");
+
   return (
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col bg-background">
-      <main className="flex-1 overflow-y-auto px-4 pb-24 pt-6">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-2.5 border-b border-border/50 bg-background/80 px-4 backdrop-blur-md">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/logo/basemate-mark.png" alt="Basemate" className="h-7 w-7 rounded-full" />
+        <span className="font-display text-base font-semibold tracking-tight">{activeTitle}</span>
+      </header>
+
+      <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
         {tab === "home" && <HomeTab />}
         {tab === "activity" && <ActivityTab />}
         {tab === "earn" && <EarnTab />}
@@ -259,19 +327,33 @@ function Dashboard() {
         {tab === "bets" && <BetsTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
-      <nav className="fixed inset-x-0 bottom-0 z-10 mx-auto flex max-w-md items-center justify-around border-t border-border/60 bg-background/90 backdrop-blur-md">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${tab === id ? "text-primary" : "text-muted-foreground"
-              }`}
-          >
-            <Icon className="h-5 w-5" />
-            {label}
-          </button>
-        ))}
+
+      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/50 bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+        <div className="flex items-stretch justify-around px-1.5 py-1.5">
+          {TABS.map(({ id, label, icon: Icon }) => {
+            const active = tab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => selectTab(id)}
+                aria-current={active ? "page" : undefined}
+                className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5"
+              >
+                <span
+                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+                >
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span
+                  className={`text-[10px] font-semibold transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
+                >
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
@@ -297,19 +379,50 @@ function useApi<T>(path: string): { data: T | null; loading: boolean; error: str
   return { data, loading, error, reload };
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionLabel({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
-    <section className="mb-6">
-      <h2 className="mb-3 font-display text-lg font-bold tracking-tight">{title}</h2>
-      {children}
-    </section>
+    <div className="mb-2 mt-6 flex items-center justify-between px-1 first:mt-0">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {children}
+      </h2>
+      {action}
+    </div>
   );
 }
 
-function Loading() {
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-muted ${className}`} />;
+}
+
+function ListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="flex justify-center py-10">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    <div className="space-y-2">
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className="h-[64px] w-full" />
+      ))}
+    </div>
+  );
+}
+
+/** Shared list-row shell — white card on the lavender canvas for clear separation. */
+function Row({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border border-border/50 bg-card px-4 py-3 ${className}`}
+    >
+      {children}
     </div>
   );
 }
@@ -317,6 +430,23 @@ function Loading() {
 function usd(n: number | null | undefined): string {
   if (n == null) return "$0.00";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function fmtDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 interface PortfolioPayload {
@@ -328,64 +458,102 @@ interface PortfolioPayload {
 
 function HomeTab() {
   const { data, loading } = useApi<PortfolioPayload>("/api/app/portfolio");
-  if (loading) return <Loading />;
   const total = data?.totals?.totalUsd ?? 0;
+  const stakingUsd = data?.totals?.stakingUsd ?? 0;
+  const coins = data?.coins ?? [];
+  const staking = data?.staking ?? [];
+
   return (
     <>
-      <section className="mb-6 rounded-2xl border border-border/60 bg-card p-5 flex justify-between items-center">
-        <div>
-          <p className="text-sm text-muted-foreground">Total balance</p>
-          <p className="mt-1 font-display text-3xl font-bold tracking-tight">{usd(total)}</p>
-        </div>
+      {/* Hero — the number that matters, then the primary money action */}
+      <section className="rounded-[var(--radius-xl)] border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Total balance
+        </p>
+        {loading ? (
+          <Skeleton className="mt-2 h-11 w-44 rounded-xl" />
+        ) : (
+          <p className="mt-1.5 font-display text-[2.6rem] font-bold leading-none tracking-tight tabular-nums">
+            {usd(total)}
+          </p>
+        )}
+        {stakingUsd > 0 && (
+          <p className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-up">
+            <Sparkles className="h-3.5 w-3.5" /> {usd(stakingUsd)} earning yield
+          </p>
+        )}
 
-        <div className="">
-          <ReceiveButton />
-          {/* <a href="/pay" className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium">
-            <ArrowUpRight className="h-4 w-4" /> Add funds
+        <div className="mt-5 space-y-2">
+          <a
+            href="/pay"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition active:scale-[0.99]"
+          >
+            <Plus className="h-4 w-4" /> Add funds
           </a>
-          <a href="/pay/offramp" className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium">
-            <ArrowDownToLine className="h-4 w-4" /> Cash out
-          </a> */}
+          <div className="grid grid-cols-2 gap-2">
+            <ReceiveButton />
+            <a
+              href="/pay/offramp"
+              className="flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition active:scale-[0.99]"
+            >
+              <ArrowUpRight className="h-4 w-4" /> Cash out
+            </a>
+          </div>
         </div>
       </section>
 
-      <Panel title="Tokens">
+      <SectionLabel>Tokens</SectionLabel>
+      {loading ? (
+        <ListSkeleton rows={3} />
+      ) : coins.length === 0 ? (
+        <Empty text="No tokens yet — add funds to get started." mascot="mate-peace" />
+      ) : (
         <div className="space-y-2">
-          {(data?.coins ?? []).map((c) => (
-            <div key={c.id} className="flex items-center justify-between rounded-xl border border-border/40 px-4 py-3">
-              <div className="flex items-center gap-3">
+          {coins.map((c) => (
+            <Row key={c.id} className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-3">
                 {c.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.imageUrl} alt={c.symbol} className="h-8 w-8 rounded-full" />
+                  <img src={c.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-full" />
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">{c.symbol.slice(0, 3)}</div>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                    {c.symbol.slice(0, 3)}
+                  </div>
                 )}
-                <div>
-                  <p className="text-sm font-semibold">{c.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{Number(c.amount).toLocaleString()} {c.symbol}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{c.symbol}</p>
+                  <p className="truncate text-xs tabular-nums text-muted-foreground">
+                    {Number(c.amount).toLocaleString()} {c.symbol}
+                  </p>
                 </div>
               </div>
-              <p className="text-sm font-medium">{usd(c.valueUsd)}</p>
-            </div>
+              <p className="shrink-0 text-sm font-semibold tabular-nums">{usd(c.valueUsd)}</p>
+            </Row>
           ))}
-          {(data?.coins ?? []).length === 0 && <Empty text="No tokens yet. Add funds to get started." />}
         </div>
-      </Panel>
+      )}
 
-      {(data?.staking ?? []).length > 0 && (
-        <Panel title="Earning">
+      {staking.length > 0 && (
+        <>
+          <SectionLabel>Earning</SectionLabel>
           <div className="space-y-2">
-            {data!.staking.map((s) => (
-              <div key={s.id} className="flex items-center justify-between rounded-xl border border-border/40 px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold capitalize">{s.protocol} · {s.asset}</p>
-                  {s.apy != null && <p className="text-xs text-up">{(s.apy * 100).toFixed(2)}% APY</p>}
+            {staking.map((s) => (
+              <Row key={s.id} className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold capitalize">
+                    {s.protocol} · {s.asset}
+                  </p>
+                  {s.apy != null && (
+                    <p className="text-xs font-semibold text-up">
+                      {(s.apy * 100).toFixed(2)}% APY
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm font-medium">{usd(s.valueUsd)}</p>
-              </div>
+                <p className="shrink-0 text-sm font-semibold tabular-nums">{usd(s.valueUsd)}</p>
+              </Row>
             ))}
           </div>
-        </Panel>
+        </>
       )}
     </>
   );
@@ -394,35 +562,60 @@ function HomeTab() {
 function ReceiveButton() {
   const { data } = useApi<{ embeddedAddress: string | null }>("/api/app/profile");
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const address = data?.embeddedAddress ?? "";
+
+  async function copy() {
+    try {
+      await navigator.clipboard?.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  }
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium"
+        className="flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition active:scale-[0.99]"
       >
         <ArrowDownToLine className="h-4 w-4 rotate-180" /> Receive
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-card p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <p className="font-display text-lg font-bold">Receive</p>
-            <p className="mt-2 break-all rounded-xl border border-border/60 bg-background p-3 text-xs">{address || "—"}</p>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-[var(--radius-xl)] bg-card p-6 text-center shadow-[var(--shadow-modal)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-display text-lg font-bold">Receive on Base</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Send USDC or ETH on Base to this address.
+            </p>
             {address && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${address}`}
-                alt="QR"
-                className="mx-auto mt-4 h-40 w-40 rounded-xl bg-white p-2"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${address}`}
+                alt="Wallet address QR code"
+                className="mx-auto mt-5 h-44 w-44 rounded-2xl bg-white p-2"
               />
             )}
+            <p className="mt-4 break-all rounded-2xl border border-border/60 bg-secondary px-3 py-3 font-mono text-xs">
+              {address || "—"}
+            </p>
             <button
               type="button"
-              onClick={() => { void navigator.clipboard?.writeText(address); }}
-              className="mt-4 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
+              onClick={copy}
+              disabled={!address}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
             >
-              Copy address
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied ? "Copied!" : "Copy address"}
             </button>
           </div>
         </div>
@@ -431,8 +624,18 @@ function ReceiveButton() {
   );
 }
 
-function Empty({ text }: { text: string }) {
-  return <p className="rounded-xl border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">{text}</p>;
+function Empty({ text, mascot = "mate-peace" }: { text: string; mascot?: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-[var(--radius-xl)] border border-dashed border-border/60 px-6 py-10 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/brand/mascot/${mascot}.png`}
+        alt=""
+        className="h-20 w-20 rounded-2xl bg-white object-contain p-1.5 shadow-[var(--shadow-card)]"
+      />
+      <p className="max-w-[16rem] text-sm text-muted-foreground">{text}</p>
+    </div>
+  );
 }
 
 interface ActivityItem {
@@ -447,33 +650,47 @@ interface ActivityItem {
 
 function ActivityTab() {
   const { data, loading } = useApi<{ items: ActivityItem[] }>("/api/app/activity");
-  if (loading) return <Loading />;
+  if (loading) return <ListSkeleton />;
   const items = data?.items ?? [];
+  if (items.length === 0) {
+    return (
+      <Empty
+        text="No transactions yet — your sends, swaps, and top-ups will show up here."
+        mascot="mate-peace"
+      />
+    );
+  }
   return (
-    <Panel title="Activity">
-      {items.length === 0 ? (
-        <Empty text="No transactions yet." />
-      ) : (
-        <div className="space-y-2">
-          {items.map((t) => (
-            <div key={t.id} className="rounded-xl border border-border/40 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">{t.label ?? "Transaction"}</p>
-                <StatusPill status={t.status} />
-              </div>
-              <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{new Date(t.createdAt).toLocaleString()}</span>
-                {t.explorerUrl && (
-                  <a href={t.explorerUrl} target="_blank" rel="noreferrer" className="text-primary underline">
-                    Basescan
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Panel>
+    <div className="space-y-2">
+      {items.map((t) => (
+        <Row key={t.id}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm font-semibold">{t.label ?? "Transaction"}</p>
+            {t.amount && (
+              <p className="shrink-0 text-sm font-semibold tabular-nums">
+                {t.amount} {t.asset}
+              </p>
+            )}
+          </div>
+          <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span className="tabular-nums">{fmtDateTime(t.createdAt)}</span>
+            <span className="flex items-center gap-2">
+              <StatusPill status={t.status} />
+              {t.explorerUrl && (
+                <a
+                  href={t.explorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-primary"
+                >
+                  Basescan <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </span>
+          </div>
+        </Row>
+      ))}
+    </div>
   );
 }
 
@@ -503,29 +720,37 @@ interface SendItem {
 
 function SendsTab() {
   const { data, loading } = useApi<{ items: SendItem[] }>("/api/app/sends");
-  if (loading) return <Loading />;
+  if (loading) return <ListSkeleton />;
   const items = data?.items ?? [];
+  if (items.length === 0) {
+    return (
+      <Empty
+        text="You haven't sent anyone money yet — pay a friend and it'll show up here."
+        mascot="mate-support"
+      />
+    );
+  }
   return (
-    <Panel title="Sends">
-      {items.length === 0 ? (
-        <Empty text="You haven't sent anyone money yet." />
-      ) : (
-        <div className="space-y-2">
-          {items.map((s) => (
-            <div key={s.id} className="flex items-center justify-between rounded-xl border border-border/40 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">{s.recipientName ?? s.recipientPhone ?? "Recipient"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">{s.amount} {s.asset}</p>
-                <StatusPill status={s.status} />
-              </div>
+    <div className="space-y-2">
+      {items.map((s) => (
+        <Row key={s.id} className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {s.recipientName ?? s.recipientPhone ?? "Recipient"}
+            </p>
+            <p className="text-xs tabular-nums text-muted-foreground">{fmtDate(s.createdAt)}</p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-sm font-semibold tabular-nums">
+              {s.amount} {s.asset}
+            </p>
+            <div className="mt-0.5 flex justify-end">
+              <StatusPill status={s.status} />
             </div>
-          ))}
-        </div>
-      )}
-    </Panel>
+          </div>
+        </Row>
+      ))}
+    </div>
   );
 }
 
@@ -539,27 +764,37 @@ interface YieldRate {
 
 function EarnTab() {
   const { data, loading } = useApi<{ items: YieldRate[] }>("/api/app/yield/rates");
-  if (loading) return <Loading />;
   const items = data?.items ?? [];
   return (
-    <Panel title="Earn — best rates">
-      {items.length === 0 ? (
-        <Empty text="No yield opportunities available right now." />
+    <>
+      <div className="rounded-2xl border border-primary/15 bg-accent px-4 py-3 text-sm text-accent-foreground">
+        Tell Basemate <span className="font-semibold">&ldquo;earn on USDC&rdquo;</span> in chat to
+        deposit into any of these.
+      </div>
+
+      <SectionLabel>Best rates on Base</SectionLabel>
+      {loading ? (
+        <ListSkeleton />
+      ) : items.length === 0 ? (
+        <Empty text="No yield opportunities available right now — check back soon." mascot="mate-peace" />
       ) : (
         <div className="space-y-2">
           {items.map((v) => (
-            <div key={v.address} className="flex items-center justify-between rounded-xl border border-border/40 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">{v.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{v.protocol} · {v.asset}</p>
+            <Row key={v.address} className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{v.name}</p>
+                <p className="truncate text-xs capitalize text-muted-foreground">
+                  {v.protocol} · {v.asset}
+                </p>
               </div>
-              <p className="text-sm font-semibold text-up">{v.apy != null ? `${(v.apy * 100).toFixed(2)}%` : "—"}</p>
-            </div>
+              <p className="shrink-0 font-display text-lg font-bold tabular-nums text-up">
+                {v.apy != null ? `${(v.apy * 100).toFixed(2)}%` : "—"}
+              </p>
+            </Row>
           ))}
         </div>
       )}
-      <p className="mt-3 text-center text-xs text-muted-foreground">Tell Basemate &quot;earn on USDC&quot; in chat to deposit.</p>
-    </Panel>
+    </>
   );
 }
 
@@ -575,33 +810,41 @@ interface BetItem {
 
 function BetsTab() {
   const { data, loading } = useApi<{ items: BetItem[] }>("/api/app/worldcup/bets");
-  if (loading) return <Loading />;
+  if (loading) return <ListSkeleton />;
   const items = data?.items ?? [];
+  if (items.length === 0) {
+    return (
+      <Empty
+        text="No bets yet — ask Basemate about World Cup matches to place one."
+        mascot="mate-win"
+      />
+    );
+  }
   return (
-    <Panel title="World Cup">
-      {items.length === 0 ? (
-        <Empty text="No bets yet." />
-      ) : (
-        <div className="space-y-2">
-          {items.map((b) => (
-            <div key={b.id} className="rounded-xl border border-border/40 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">{b.match}</p>
-                <StatusPill status={b.status} />
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground capitalize">
-                Pick: {b.pick} · {Number(b.stakeBasemate).toLocaleString()} BASEMATE
-              </p>
-              {b.payoutUrl && (
-                <a href={b.payoutUrl} target="_blank" rel="noreferrer" className="text-xs text-primary underline">
-                  View payout
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </Panel>
+    <div className="space-y-2">
+      {items.map((b) => (
+        <Row key={b.id}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm font-semibold">{b.match}</p>
+            <StatusPill status={b.status} />
+          </div>
+          <p className="mt-1.5 text-xs capitalize text-muted-foreground">
+            Pick: <span className="font-semibold text-foreground">{b.pick}</span> ·{" "}
+            {Number(b.stakeBasemate).toLocaleString()} BASEMATE
+          </p>
+          {b.payoutUrl && (
+            <a
+              href={b.payoutUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary"
+            >
+              View payout <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </Row>
+      ))}
+    </div>
   );
 }
 
@@ -634,80 +877,93 @@ function SettingsTab() {
     }
   }
 
-  if (loading) return <Loading />;
+  if (loading) return <ListSkeleton rows={3} />;
   const mode = data?.payMode ?? "manual";
 
   return (
     <>
-      <Panel title="Account">
-        <div className="rounded-xl border border-border/40 px-4 py-3 text-sm">
-          <p className="font-semibold">{profile?.displayName ?? profile?.basename ?? "Basemate account"}</p>
-          {profile?.embeddedAddress && (
-            <p className="mt-1 break-all text-xs text-muted-foreground">{profile.embeddedAddress}</p>
-          )}
-          {profile?.delegation && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Auto-send authorization: {profile.delegation.active ? "active" : "expired"}
-              {profile.delegation.expiresAt ? ` · until ${new Date(profile.delegation.expiresAt).toLocaleDateString()}` : ""}
-            </p>
-          )}
+      <SectionLabel>Account</SectionLabel>
+      <Row>
+        <p className="text-sm font-semibold">
+          {profile?.displayName ?? profile?.basename ?? "Basemate account"}
+        </p>
+        {profile?.embeddedAddress && (
+          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+            {profile.embeddedAddress}
+          </p>
+        )}
+        {profile?.delegation && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Auto-send authorization:{" "}
+            <span
+              className={
+                profile.delegation.active
+                  ? "font-semibold text-up"
+                  : "font-semibold text-destructive"
+              }
+            >
+              {profile.delegation.active ? "active" : "expired"}
+            </span>
+            {profile.delegation.expiresAt
+              ? ` · until ${new Date(profile.delegation.expiresAt).toLocaleDateString()}`
+              : ""}
+          </p>
+        )}
+      </Row>
+
+      <SectionLabel>Payments</SectionLabel>
+      <Row>
+        <p className="text-sm font-semibold">Confirmation</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Choose whether every payment needs a tap, or sends automatically.
+        </p>
+        <div className="mt-3 flex rounded-full bg-secondary p-1">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => save({ payMode: "manual" })}
+            className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "manual" ? "bg-card text-foreground shadow-[var(--shadow-card)]" : "text-muted-foreground"}`}
+          >
+            Confirm each
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => save({ payMode: "quick" })}
+            className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold transition ${mode === "quick" ? "bg-card text-foreground shadow-[var(--shadow-card)]" : "text-muted-foreground"}`}
+          >
+            Automatic
+          </button>
         </div>
-      </Panel>
 
-      <Panel title="Payments">
-        <div className="space-y-3">
-          <div className="rounded-xl border border-border/40 p-4">
-            <p className="text-sm font-semibold">Confirmation</p>
+        {mode === "quick" && (
+          <div className="mt-3 border-t border-border/50 pt-3">
+            <p className="text-sm font-semibold">Auto-approve limit</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Choose whether every payment needs a tap to confirm, or sends automatically.
+              Payments above this amount still ask you to confirm.
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => save({ payMode: "manual" })}
-                className={`rounded-xl border px-3 py-2 text-xs font-semibold ${mode === "manual" ? "border-primary bg-primary/10 text-primary" : "border-border/60"}`}
-              >
-                Confirm each
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => save({ payMode: "quick" })}
-                className={`rounded-xl border px-3 py-2 text-xs font-semibold ${mode === "quick" ? "border-primary bg-primary/10 text-primary" : "border-border/60"}`}
-              >
-                Automatic
-              </button>
-            </div>
-          </div>
-
-          {mode === "quick" && (
-            <div className="rounded-xl border border-border/40 p-4">
-              <p className="text-sm font-semibold">Auto-approve limit</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Payments above this amount still ask you to confirm.
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-sm">$</span>
+            <div className="mt-3 flex items-center gap-2">
+              <div className="flex flex-1 items-center gap-1 rounded-full border border-border bg-background px-3">
+                <span className="text-sm text-muted-foreground">$</span>
                 <input
                   type="number"
                   value={limit}
                   onChange={(e) => setLimit(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full bg-transparent py-2 text-sm tabular-nums outline-none"
                 />
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => save({ autoSendLimitUsd: Number(limit) })}
-                  className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-60"
-                >
-                  Save
-                </button>
               </div>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => save({ autoSendLimitUsd: Number(limit) })}
+                className="rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                Save
+              </button>
             </div>
-          )}
-        </div>
-      </Panel>
+          </div>
+        )}
+      </Row>
 
       <button
         type="button"
@@ -715,9 +971,9 @@ function SettingsTab() {
           await fetch("/api/app/session", { method: "DELETE" });
           window.location.reload();
         }}
-        className="w-full rounded-full border border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition active:scale-[0.99]"
       >
-        Sign out
+        <LogOut className="h-4 w-4" /> Sign out
       </button>
     </>
   );
