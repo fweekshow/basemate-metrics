@@ -179,7 +179,7 @@ function AuthGate() {
               } catch {
                 // ignore
               }
-              await fetch("/api/app/session", { method: "DELETE" }).catch(() => {});
+              await fetch("/api/app/session", { method: "DELETE" }).catch(() => { });
               setMessage("");
               setEmail("");
               setOtp("");
@@ -265,9 +265,8 @@ function Dashboard() {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
-              tab === id ? "text-primary" : "text-muted-foreground"
-            }`}
+            className={`flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${tab === id ? "text-primary" : "text-muted-foreground"
+              }`}
           >
             <Icon className="h-5 w-5" />
             {label}
@@ -333,17 +332,20 @@ function HomeTab() {
   const total = data?.totals?.totalUsd ?? 0;
   return (
     <>
-      <section className="mb-6 rounded-2xl border border-border/60 bg-card p-5">
-        <p className="text-sm text-muted-foreground">Total balance</p>
-        <p className="mt-1 font-display text-3xl font-bold tracking-tight">{usd(total)}</p>
-        <div className="mt-4 grid grid-cols-3 gap-2">
+      <section className="mb-6 rounded-2xl border border-border/60 bg-card p-5 flex justify-between items-center">
+        <div>
+          <p className="text-sm text-muted-foreground">Total balance</p>
+          <p className="mt-1 font-display text-3xl font-bold tracking-tight">{usd(total)}</p>
+        </div>
+
+        <div className="">
           <ReceiveButton />
-          <a href="/pay" className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium">
+          {/* <a href="/pay" className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium">
             <ArrowUpRight className="h-4 w-4" /> Add funds
           </a>
           <a href="/pay/offramp" className="flex flex-col items-center gap-1 rounded-xl border border-border/60 py-3 text-xs font-medium">
             <ArrowDownToLine className="h-4 w-4" /> Cash out
-          </a>
+          </a> */}
         </div>
       </section>
 
@@ -480,9 +482,8 @@ function StatusPill({ status }: { status: string }) {
   const bad = status === "failed" || status === "expired";
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-        ok ? "bg-up/15 text-up" : bad ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
-      }`}
+      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ok ? "bg-up/15 text-up" : bad ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
+        }`}
     >
       {status}
     </span>
