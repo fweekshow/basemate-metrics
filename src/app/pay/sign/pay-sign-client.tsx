@@ -347,7 +347,7 @@ function PaySignInner({ token }: { token: string }) {
   const isEmbedded = pending?.walletKind === "embedded";
 
   return (
-    <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-4 py-6 text-center sm:px-6">
+    <section className="mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-md flex-1 flex-col items-center justify-center px-4 py-6 text-center sm:px-6">
       <div className="w-full rounded-xl border border-border/60 bg-card/80 p-6 backdrop-blur-md sm:p-8">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
           <Wallet className="h-6 w-6" />
