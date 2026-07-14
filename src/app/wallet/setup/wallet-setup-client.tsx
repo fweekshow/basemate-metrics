@@ -146,7 +146,10 @@ export function WalletSetupClient({ sessionToken }: { sessionToken: string }) {
               <p className="font-semibold">Base Account connected</p>
               <p className="mt-2 break-all rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">{state.address}</p>
             </div>
-            <p className="text-sm text-muted-foreground">You can close this page and ask Basemate to show your wallet.</p>
+            <p className="text-sm text-muted-foreground">
+              If funds are waiting for you, Basemate will claim them automatically and text you
+              when they arrive.
+            </p>
           </div>
         ) : state.status === "error" ? (
           <div className="flex flex-col items-center gap-4">
