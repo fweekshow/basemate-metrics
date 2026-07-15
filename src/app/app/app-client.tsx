@@ -594,8 +594,14 @@ function AddFundsButton() {
       if (email) q.set("email", email);
       const res = await fetch(`/api/app/fund-session?${q.toString()}`, { cache: "no-store" });
       const body = await res.json();
-      if (!res.ok || !body?.paymentLinkOptions?.length) {
-        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
+      // Hosted fallback: single-use token, must navigate (can't embed in iframe).
+      if (body?.redirectUrl) {
+        window.location.href = body.redirectUrl as string;
+        return;
+      }
+      if (!body?.paymentLinkOptions?.length) {
+        throw new Error(body?.error ?? "Couldn't start Apple Pay.");
       }
       setSession({
         paymentLinkOptions: body.paymentLinkOptions as FundPayOption[],
