@@ -103,7 +103,7 @@ function OfframpHeader() {
           Cash out from Basemate
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground">
-          Configure your sale with Coinbase, then approve the exact USDC transfer from your Base Account.
+          Configure your sale with Coinbase, then confirm the exact USDC transfer from your Basemate wallet.
         </p>
       </div>
     </header>

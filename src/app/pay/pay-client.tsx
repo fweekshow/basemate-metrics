@@ -58,7 +58,7 @@ const PROVIDER_COPY = {
   },
   crossmint: {
     description:
-      "Use card, Apple Pay, or Google Pay to buy USDC on Base. Continue to Crossmint to complete checkout, KYC, and delivery to your connected Base Account.",
+      "Use card, Apple Pay, or Google Pay to buy USDC on Base. Continue to Crossmint to complete checkout, KYC, and delivery to your Basemate wallet.",
     loading: "Loading Crossmint checkout...",
     ready: "Continue to Crossmint to complete checkout.",
     title: "Crossmint Onramp",

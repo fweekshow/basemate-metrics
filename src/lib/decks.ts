@@ -30,7 +30,7 @@ export const DECKS = {
     title: "Basemate — Pitch Deck v2",
     toolbarLabel: "Pitch Deck v2",
     description:
-      "Every Base Account should have an agent. Save, Earn, Trade, Send — all in iMessage.",
+      "Every Basemate wallet should have an agent. Save, Earn, Trade, Send — all in iMessage.",
     path: "/deck2",
   },
 } as const satisfies Record<string, DeckConfig>;

@@ -28,7 +28,7 @@ export default async function OfframpReturnPage({
               Complete your cash out
             </h1>
             <p className="text-base leading-relaxed text-muted-foreground">
-              Review Coinbase&apos;s order and approve the exact USDC transfer from your Base Account.
+              Review Coinbase&apos;s order and confirm the exact USDC transfer from your Basemate wallet.
             </p>
           </div>
         </header>

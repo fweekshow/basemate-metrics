@@ -30,11 +30,11 @@ const SETS = [
 export const metadata: Metadata = {
   title: "Waitlist · Basemate",
   description:
-    "Basemate is coming to iMessage. Every Base Account should have an agent — Send, Earn, Trade, Save, all by text.",
+    "Basemate is coming to iMessage. Every Basemate wallet should have an agent — Send, Earn, Trade, Save, all by text.",
   openGraph: {
     title: "Waitlist · Basemate",
     description:
-      "Basemate is coming to iMessage. Every Base Account should have an agent — Send, Earn, Trade, Save, all by text.",
+      "Basemate is coming to iMessage. Every Basemate wallet should have an agent — Send, Earn, Trade, Save, all by text.",
     type: "website",
     images: [SITE.pfp],
   },
@@ -55,7 +55,7 @@ export default function WaitlistPage() {
                 <span className="bm-emphasis">messages.</span>
               </h1>
               <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
-                Every Base Account should have an agent. That agent should have a
+                Every Basemate wallet should have an agent. That agent should have a
                 phone number.
               </p>
             </div>

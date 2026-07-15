@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
-  ExternalLink,
   Loader2,
   RefreshCw,
   Wallet,
@@ -107,8 +106,7 @@ export function OfframpFlow({
 
   useEffect(() => {
     if (!session) return;
-    // Poll while a cash-out is mid-flight — on the return page for Base Account
-    // signing, and on any page once an embedded transfer has been submitted.
+    // Poll while an embedded-wallet cash-out is being submitted or processed.
     const inFlight = ["transfer_submitted", "processing"].includes(session.status);
     const returning = mode === "return" && ["launched", "approval_pending"].includes(session.status);
     if (!inFlight && !returning) return;
@@ -132,18 +130,16 @@ export function OfframpFlow({
       const payload = await call("approval");
       const approvalUrl = payload.approvalUrl ?? payload.session?.approvalUrl;
       const next = payload.session ?? (payload as OfframpSession);
-      // Embedded wallet: the transfer executed server-side (no signing URL).
-      // Show progress and let the poller track the Coinbase cash-out.
-      if (!approvalUrl) {
-        if (next?.status && next.status !== "transaction_ready") {
-          setSession(next);
-          setAction(null);
-          void refresh();
-          return;
-        }
-        throw new Error("Transfer approval is not ready.");
+      if (approvalUrl) {
+        throw new Error("This cash-out does not use a Basemate embedded wallet.");
       }
-      window.location.assign(approvalUrl);
+      if (next?.status && next.status !== "transaction_ready") {
+        setSession(next);
+        setAction(null);
+        void refresh();
+        return;
+      }
+      throw new Error("Transfer approval is not ready.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create transfer approval.");
       setAction(null);
@@ -190,7 +186,7 @@ export function OfframpFlow({
     return (
       <ActionCard
         title={`Cash out ${session.requestedAmount} USDC`}
-        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Base Account."
+        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Basemate wallet."
         button="Continue to Coinbase"
         pending={action === "launch"}
         onClick={launch}
@@ -207,7 +203,7 @@ export function OfframpFlow({
             <Wallet className="h-6 w-6 text-primary" />
             <div>
               <h2 className="text-xl font-semibold">Approve the USDC transfer</h2>
-              <p className="text-sm text-muted-foreground">Review the exact order before signing.</p>
+              <p className="text-sm text-muted-foreground">Review the exact order before confirming.</p>
             </div>
           </div>
           <dl className="grid gap-3 text-sm">
@@ -225,8 +221,8 @@ export function OfframpFlow({
             disabled={action !== null}
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
-            {action === "approval" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-            Review and sign with Base Account
+            {action === "approval" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Confirm with Basemate
           </button>
           {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
         </div>
@@ -236,7 +232,7 @@ export function OfframpFlow({
 
   const pendingMessage =
     session.status === "approval_pending"
-      ? "Waiting for your Base Account signature."
+      ? "Waiting for your transfer confirmation."
       : session.status === "transfer_submitted"
         ? "Your USDC transfer was submitted on Base."
         : session.status === "processing"
@@ -250,10 +246,6 @@ export function OfframpFlow({
       pending={action === "refresh"}
       onClick={() => void refresh()}
       error={error}
-      secondary={session.approvalUrl && session.status === "approval_pending" ? {
-        label: "Open Base Account approval",
-        href: session.approvalUrl,
-      } : undefined}
     />
   );
 }
@@ -265,7 +257,6 @@ function ActionCard({
   pending,
   onClick,
   error,
-  secondary,
 }: {
   title: string;
   body: string;
@@ -273,7 +264,6 @@ function ActionCard({
   pending: boolean;
   onClick: () => void;
   error: string | null;
-  secondary?: { label: string; href: string };
 }) {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-5 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
@@ -291,11 +281,6 @@ function ActionCard({
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         {button}
       </button>
-      {secondary ? (
-        <a className="text-sm font-medium text-primary underline-offset-4 hover:underline" href={secondary.href}>
-          {secondary.label}
-        </a>
-      ) : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>
   );
