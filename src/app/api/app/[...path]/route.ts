@@ -9,12 +9,12 @@ export const runtime = "nodejs";
 /**
  * Authenticated proxy for the dashboard. Reads the httpOnly session cookie and
  * forwards to the agent with user+token injected, so the token never reaches
- * client JS. `portfolio` maps to the existing /api/agent/portfolio endpoint;
- * everything else maps to /api/app/<path>.
+ * client JS. Everything maps to /api/app/<path> — including `portfolio`, which
+ * uses the dashboard-scoped endpoint (Basemate embedded wallet only), distinct
+ * from the /api/agent/portfolio magic link that shows all linked wallets.
  */
 function corePath(segments: string[]): string {
   const path = segments.join("/");
-  if (path === "portfolio") return "/api/agent/portfolio";
   return `/api/app/${path}`;
 }
 
