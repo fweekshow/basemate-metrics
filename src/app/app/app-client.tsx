@@ -484,12 +484,7 @@ function HomeTab() {
         )}
 
         <div className="mt-5 space-y-2">
-          <a
-            href="/pay"
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition active:scale-[0.99]"
-          >
-            <Plus className="h-4 w-4" /> Add funds
-          </a>
+          <AddFundsButton />
           {/* <div className="grid grid-cols-2 gap-2">
             <ReceiveButton />
             <a
@@ -554,6 +549,91 @@ function HomeTab() {
             ))}
           </div>
         </>
+      )}
+    </>
+  );
+}
+
+function AddFundsButton() {
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const numericAmount = Number(amount);
+  const canContinue = Number.isFinite(numericAmount) && numericAmount > 0;
+
+  async function continueToApplePay() {
+    if (!canContinue || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/app/fund-session?amount=${encodeURIComponent(numericAmount)}`, {
+        cache: "no-store",
+      });
+      const body = await res.json();
+      if (!res.ok || !body?.url) throw new Error(body?.error ?? `HTTP ${res.status}`);
+      window.location.href = body.url as string;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't start Add funds.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition active:scale-[0.99]"
+      >
+        <Plus className="h-4 w-4" /> Add funds
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+          onClick={() => !busy && setOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-[var(--radius-xl)] bg-card p-6 shadow-[var(--shadow-modal)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-display text-lg font-bold">Add funds</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Buy USDC on Base with Apple Pay. Enter how much you want to add.
+            </p>
+            <label className="mt-5 block">
+              <span className="sr-only">Amount in USD</span>
+              <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-secondary px-4 py-3">
+                <span className="font-display text-2xl font-bold text-muted-foreground">$</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="1"
+                  step="1"
+                  autoFocus
+                  placeholder="25"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") continueToApplePay();
+                  }}
+                  className="w-full bg-transparent font-display text-2xl font-bold tabular-nums outline-none"
+                />
+              </div>
+            </label>
+            {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+            <button
+              type="button"
+              onClick={continueToApplePay}
+              disabled={!canContinue || busy}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              {busy ? "Starting Apple Pay…" : "Continue to Apple Pay"}
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
