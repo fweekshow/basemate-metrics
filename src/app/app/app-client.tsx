@@ -639,6 +639,13 @@ function AddFundsButton() {
                   flow="onramp"
                   paymentLinkOptions={session.paymentLinkOptions}
                   expiresAt={session.expiresAt}
+                  onSuccess={() => {
+                    void fetch("/api/app/record-funding", {
+                      method: "POST",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify({ amount: numericAmount }),
+                    }).catch(() => {});
+                  }}
                 />
               </div>
             ) : (

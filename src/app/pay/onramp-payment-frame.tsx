@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 interface OnrampPaymentFrameProps {
   flow: "onramp" | "offramp";
   paymentLinkOptions: FundPaymentLinkOption[];
   expiresAt: string;
+  /** Fired once when Coinbase confirms the onramp purchase (polling success). */
+  onSuccess?: () => void;
 }
 
 interface FundPaymentLinkOption {
@@ -56,7 +58,11 @@ export function OnrampPaymentFrame({
   flow,
   paymentLinkOptions,
   expiresAt,
+  onSuccess,
 }: OnrampPaymentFrameProps) {
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const successFiredRef = useRef(false);
   const [status, setStatus] = useState(EVENT_COPY["onramp_api.load_pending"]);
   const [isFrameLoading, setIsFrameLoading] = useState(true);
   const [hasFrameLoaded, setHasFrameLoaded] = useState(false);
@@ -96,6 +102,10 @@ export function OnrampPaymentFrame({
         if (message.eventName === "onramp_api.load_success") {
           setIsFrameLoading(false);
           setHasFrameLoadDelayed(false);
+        }
+        if (message.eventName === "onramp_api.polling_success" && !successFiredRef.current) {
+          successFiredRef.current = true;
+          onSuccessRef.current?.();
         }
       }
     }
