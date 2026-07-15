@@ -25,6 +25,7 @@ import {
   Sparkles,
   Trophy,
   Wallet,
+  X,
 } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
@@ -569,6 +570,7 @@ function AddFundsButton() {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [funded, setFunded] = useState(false);
   const [session, setSession] = useState<{
     paymentLinkOptions: FundPayOption[];
     expiresAt: string;
@@ -583,6 +585,7 @@ function AddFundsButton() {
     setSession(null);
     setError(null);
     setAmount("");
+    setFunded(false);
   }
 
   async function continueToApplePay() {
@@ -632,7 +635,19 @@ function AddFundsButton() {
             className={`max-h-[92vh] w-full overflow-y-auto rounded-[var(--radius-xl)] bg-card p-6 shadow-[var(--shadow-modal)] ${session ? "max-w-lg" : "max-w-md"}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-display text-lg font-bold">Add funds</p>
+            <div className="flex items-center justify-between">
+              <p className="font-display text-lg font-bold">Add funds</p>
+              {session && (
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
             {session ? (
               <div className="mt-4">
                 <OnrampPaymentFrame
@@ -640,6 +655,7 @@ function AddFundsButton() {
                   paymentLinkOptions={session.paymentLinkOptions}
                   expiresAt={session.expiresAt}
                   onSuccess={() => {
+                    setFunded(true);
                     void fetch("/api/app/record-funding", {
                       method: "POST",
                       headers: { "content-type": "application/json" },
@@ -647,6 +663,18 @@ function AddFundsButton() {
                     }).catch(() => {});
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={close}
+                  className={`mt-4 flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition active:scale-[0.99] ${
+                    funded
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
+                  }`}
+                >
+                  {funded ? <Check className="h-4 w-4" /> : null}
+                  {funded ? "Done — back to home" : "Close"}
+                </button>
               </div>
             ) : (
               <>
