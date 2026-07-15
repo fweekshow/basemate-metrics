@@ -27,6 +27,8 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
+
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
 
@@ -554,28 +556,54 @@ function HomeTab() {
   );
 }
 
+type FundPayOption = {
+  method: "apple_pay" | "google_pay";
+  label: "Apple Pay" | "Google Pay";
+  url: string;
+};
+
 function AddFundsButton() {
+  const { currentUser } = useCurrentUser();
+  const email = currentUser?.authenticationMethods?.email?.email ?? "";
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<{
+    paymentLinkOptions: FundPayOption[];
+    expiresAt: string;
+  } | null>(null);
 
   const numericAmount = Number(amount);
   const canContinue = Number.isFinite(numericAmount) && numericAmount > 0;
+
+  function close() {
+    if (busy) return;
+    setOpen(false);
+    setSession(null);
+    setError(null);
+    setAmount("");
+  }
 
   async function continueToApplePay() {
     if (!canContinue || busy) return;
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/app/fund-session?amount=${encodeURIComponent(numericAmount)}`, {
-        cache: "no-store",
-      });
+      const q = new URLSearchParams({ amount: String(numericAmount) });
+      if (email) q.set("email", email);
+      const res = await fetch(`/api/app/fund-session?${q.toString()}`, { cache: "no-store" });
       const body = await res.json();
-      if (!res.ok || !body?.url) throw new Error(body?.error ?? `HTTP ${res.status}`);
-      window.location.href = body.url as string;
+      if (!res.ok || !body?.paymentLinkOptions?.length) {
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
+      setSession({
+        paymentLinkOptions: body.paymentLinkOptions as FundPayOption[],
+        expiresAt: body.expiresAt as string,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't start Add funds.");
+    } finally {
       setBusy(false);
     }
   }
@@ -592,46 +620,61 @@ function AddFundsButton() {
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
-          onClick={() => !busy && setOpen(false)}
+          onClick={close}
         >
           <div
-            className="w-full max-w-md rounded-[var(--radius-xl)] bg-card p-6 shadow-[var(--shadow-modal)]"
+            className={`max-h-[92vh] w-full overflow-y-auto rounded-[var(--radius-xl)] bg-card p-6 shadow-[var(--shadow-modal)] ${session ? "max-w-lg" : "max-w-md"}`}
             onClick={(e) => e.stopPropagation()}
           >
             <p className="font-display text-lg font-bold">Add funds</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Buy USDC on Base with Apple Pay. Enter how much you want to add.
-            </p>
-            <label className="mt-5 block">
-              <span className="sr-only">Amount in USD</span>
-              <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-secondary px-4 py-3">
-                <span className="font-display text-2xl font-bold text-muted-foreground">$</span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="1"
-                  step="1"
-                  autoFocus
-                  placeholder="25"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") continueToApplePay();
-                  }}
-                  className="w-full bg-transparent font-display text-2xl font-bold tabular-nums outline-none"
+            {session ? (
+              <div className="mt-4">
+                <OnrampPaymentFrame
+                  flow="onramp"
+                  paymentLinkOptions={session.paymentLinkOptions}
+                  expiresAt={session.expiresAt}
                 />
               </div>
-            </label>
-            {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
-            <button
-              type="button"
-              onClick={continueToApplePay}
-              disabled={!canContinue || busy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              {busy ? "Starting Apple Pay…" : "Continue to Apple Pay"}
-            </button>
+            ) : (
+              <>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Buy USDC on Base with Apple Pay. Enter how much you want to add.
+                </p>
+                <label className="mt-5 block">
+                  <span className="sr-only">Amount in USD</span>
+                  <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-secondary px-4 py-3">
+                    <span className="font-display text-2xl font-bold text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="1"
+                      step="1"
+                      autoFocus
+                      placeholder="25"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") continueToApplePay();
+                      }}
+                      className="w-full bg-transparent font-display text-2xl font-bold tabular-nums outline-none"
+                    />
+                  </div>
+                </label>
+                {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+                <button
+                  type="button"
+                  onClick={continueToApplePay}
+                  disabled={!canContinue || busy}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  {busy ? "Starting Apple Pay…" : "Continue to Apple Pay"}
+                </button>
+                <p className="mt-3 text-center text-[11px] leading-4 text-muted-foreground">
+                  By continuing you agree to Coinbase&apos;s Guest Checkout terms.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -787,6 +830,22 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+function OutcomePill({ outcome }: { outcome: "win" | "loss" | "pending" | "refund" }) {
+  const label =
+    outcome === "win" ? "Won" : outcome === "loss" ? "Lost" : outcome === "refund" ? "Refunded" : "Pending";
+  const cls =
+    outcome === "win"
+      ? "bg-up/15 text-up"
+      : outcome === "loss"
+        ? "bg-destructive/15 text-destructive"
+        : "bg-muted text-muted-foreground";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
 interface SendItem {
   id: string;
   recipientName: string | null;
@@ -883,7 +942,9 @@ interface BetItem {
   match: string;
   pick: string;
   stakeBasemate: string;
+  payoutBasemate: string | null;
   status: string;
+  outcome: "win" | "loss" | "pending" | "refund";
   payoutUrl: string | null;
   kickoffAt: string;
 }
@@ -906,12 +967,17 @@ function BetsTab() {
         <Row key={b.id}>
           <div className="flex items-center justify-between gap-2">
             <p className="truncate text-sm font-semibold">{b.match}</p>
-            <StatusPill status={b.status} />
+            <OutcomePill outcome={b.outcome} />
           </div>
           <p className="mt-1.5 text-xs capitalize text-muted-foreground">
             Pick: <span className="font-semibold text-foreground">{b.pick}</span> ·{" "}
             {Number(b.stakeBasemate).toLocaleString()} BASEMATE
           </p>
+          {b.outcome === "win" && b.payoutBasemate && (
+            <p className="mt-1 text-xs font-semibold text-up">
+              Won {Number(b.payoutBasemate).toLocaleString()} BASEMATE
+            </p>
+          )}
           {b.payoutUrl && (
             <a
               href={b.payoutUrl}
