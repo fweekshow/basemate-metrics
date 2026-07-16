@@ -1022,35 +1022,168 @@ interface YieldRate {
 }
 
 function EarnTab() {
-  const { data, loading } = useApi<{ items: YieldRate[] }>("/api/app/yield/rates");
+  const { data, loading, reload } = useApi<{ items: YieldRate[] }>("/api/app/yield/rates");
   const items = data?.items ?? [];
   return (
     <>
       <div className="rounded-2xl border border-primary/15 bg-accent px-4 py-3 text-sm text-accent-foreground">
-        Tell Basemate <span className="font-semibold">&ldquo;earn on USDC&rdquo;</span> in chat to
-        deposit into any of these.
+        Earn interest on Base with <span className="font-semibold">Moonwell</span>. Tap{" "}
+        <span className="font-semibold">Deposit</span> — Basemate handles the rest, no gas.
       </div>
 
-      <SectionLabel>Best rates on Base</SectionLabel>
+      <SectionLabel>Moonwell markets</SectionLabel>
       {loading ? (
         <ListSkeleton />
       ) : items.length === 0 ? (
-        <Empty text="No yield opportunities available right now — check back soon." mascot="mate-peace" />
+        <Empty text="No Moonwell markets available right now — check back soon." mascot="mate-peace" />
       ) : (
         <div className="space-y-2">
           {items.map((v) => (
-            <Row key={v.address} className="flex items-center justify-between gap-2">
+            <Row key={v.address} className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{v.name}</p>
-                <p className="truncate text-xs capitalize text-muted-foreground">
-                  {v.protocol} · {v.asset}
+                <p className="truncate text-sm font-semibold">{v.asset}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {v.apy != null ? `${v.apy.toFixed(2)}% APY` : "APY —"} · Moonwell
                 </p>
               </div>
-              <p className="shrink-0 font-display text-lg font-bold tabular-nums text-up">
-                {v.apy != null ? `${(v.apy * 100).toFixed(2)}%` : "—"}
-              </p>
+              <DepositButton rate={v} onDone={reload} />
             </Row>
           ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function DepositButton({ rate, onDone }: { rate: YieldRate; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+
+  const numericAmount = Number(amount);
+  const canDeposit = Number.isFinite(numericAmount) && numericAmount > 0;
+
+  function close() {
+    if (busy) return;
+    setOpen(false);
+    setAmount("");
+    setError(null);
+    setTxHash(null);
+  }
+
+  async function deposit() {
+    if (!canDeposit || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/app/yield/deposit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ asset: rate.asset, amount }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
+      setTxHash(body?.txHash ?? "");
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't complete your deposit.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="shrink-0 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition active:scale-[0.99]"
+      >
+        Deposit
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+          onClick={close}
+        >
+          <div
+            className="w-full max-w-md rounded-[var(--radius-xl)] bg-card p-6 shadow-[var(--shadow-modal)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="font-display text-lg font-bold">Deposit {rate.asset}</p>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {txHash !== null ? (
+              <div className="mt-5 flex flex-col items-center gap-3 text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/mascot/mate-win.png" alt="" className="h-20 w-20 rounded-2xl bg-white p-1.5" />
+                <p className="text-sm font-semibold">
+                  Deposited {amount} {rate.asset} to Moonwell
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You&apos;re now earning {rate.apy != null ? `${rate.apy.toFixed(2)}%` : ""} APY. It&apos;ll show
+                  under Earning in your portfolio shortly.
+                </p>
+                <button
+                  type="button"
+                  onClick={close}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
+                >
+                  <Check className="h-4 w-4" /> Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Supply {rate.asset} to Moonwell and start earning{" "}
+                  {rate.apy != null ? `${rate.apy.toFixed(2)}%` : ""} APY. Gas is on us.
+                </p>
+                <label className="mt-5 block">
+                  <span className="sr-only">Amount in {rate.asset}</span>
+                  <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-secondary px-4 py-3">
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="any"
+                      autoFocus
+                      placeholder="0.00"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") deposit();
+                      }}
+                      className="w-full bg-transparent font-display text-2xl font-bold tabular-nums outline-none"
+                    />
+                    <span className="font-display text-lg font-bold text-muted-foreground">
+                      {rate.asset}
+                    </span>
+                  </div>
+                </label>
+                {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+                <button
+                  type="button"
+                  onClick={deposit}
+                  disabled={!canDeposit || busy}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {busy ? "Depositing…" : `Deposit ${rate.asset}`}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>
