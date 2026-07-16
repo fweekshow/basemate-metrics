@@ -167,18 +167,25 @@ function AuthGate() {
       />
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">Your Basemate account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in with your email — same as in Basemate.</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Sign in with your email — same as in Basemate.
+        </p>
       </div>
 
       <a
         href="https://x.com/basemateagent"
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full rounded-2xl border border-primary/20 bg-accent px-4 py-3 text-left text-sm leading-relaxed text-accent-foreground transition hover:border-primary/40"
+        className="w-full space-y-2 rounded-2xl border border-primary/20 bg-accent px-5 py-4 text-left text-sm leading-relaxed text-accent-foreground transition hover:border-primary/40"
       >
-        <span className="font-semibold">Currently in beta.</span> Email sign-in works once
-        you&apos;ve set up Basemate in iMessage. Not in yet? DM{" "}
-        <span className="font-semibold text-primary">@basemateagent</span> on X for access.
+        <p>
+          <span className="font-semibold">Currently in beta.</span> Email sign-in works once
+          you&apos;ve set up Basemate in iMessage.
+        </p>
+        <p>
+          Not in yet? DM <span className="font-semibold text-primary">@basemateagent</span> on X
+          for access.
+        </p>
       </a>
 
       {phase === "checking" || phase === "linking" ? (
