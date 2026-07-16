@@ -7,7 +7,8 @@ import { cookies } from "next/headers";
  * server-side and forwards user+token to the agent.
  */
 export const APP_SESSION_COOKIE = "bm_app_session";
-const MAX_AGE_S = 12 * 60 * 60;
+// 30 days — keep in sync with the agent's SESSION_TTL_MS (token expiry).
+const MAX_AGE_S = 30 * 24 * 60 * 60;
 
 export interface AppSession {
   user: string;

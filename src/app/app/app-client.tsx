@@ -472,9 +472,59 @@ function fmtDate(iso: string): string {
 
 interface PortfolioPayload {
   totals: { totalUsd: number; coinsUsd: number; stakingUsd: number };
-  coins: Array<{ id: string; symbol: string; name: string | null; amount: string; valueUsd: number; imageUrl: string | null }>;
+  coins: Array<{
+    id: string;
+    symbol: string;
+    name: string | null;
+    amount: string;
+    valueUsd: number;
+    imageUrl: string | null;
+    tokenAddress: string | null;
+  }>;
   staking: Array<{ id: string; protocol: string; asset: string; valueUsd: number | null; apy: number | null }>;
   user: { wallets: string[] };
+}
+
+/** WETH on Base — used as the logo source for native ETH (no contract). */
+const WETH_BASE_ADDRESS = "0x4200000000000000000000000000000000000006";
+
+/** DexScreener token-icon CDN for a Base token, or null when we can't resolve one. */
+function tokenLogoUrl(symbol: string, tokenAddress: string | null): string | null {
+  const s = symbol.toUpperCase();
+  const address =
+    s === "ETH" || s === "WETH" ? WETH_BASE_ADDRESS : tokenAddress?.toLowerCase() ?? null;
+  if (!address) return null;
+  return `https://dd.dexscreener.com/ds-data/tokens/base/${address}.png`;
+}
+
+/** Token avatar: real logo when available, graceful letter fallback on miss. */
+function TokenIcon({
+  symbol,
+  tokenAddress,
+  imageUrl,
+}: {
+  symbol: string;
+  tokenAddress: string | null;
+  imageUrl: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+  const src = imageUrl ?? tokenLogoUrl(symbol, tokenAddress);
+  if (src && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        onError={() => setFailed(true)}
+        className="h-9 w-9 shrink-0 rounded-full bg-muted object-cover"
+      />
+    );
+  }
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+      {symbol.slice(0, 3)}
+    </div>
+  );
 }
 
 function HomeTab() {
@@ -528,14 +578,7 @@ function HomeTab() {
           {coins.map((c) => (
             <Row key={c.id} className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-3">
-                {c.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-full" />
-                ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                    {c.symbol.slice(0, 3)}
-                  </div>
-                )}
+                <TokenIcon symbol={c.symbol} tokenAddress={c.tokenAddress} imageUrl={c.imageUrl} />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{c.symbol}</p>
                   <p className="truncate text-xs tabular-nums text-muted-foreground">
