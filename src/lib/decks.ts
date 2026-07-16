@@ -16,22 +16,12 @@ export const DECKS = {
   main: {
     id: "main",
     pdfUrl: "/deck.pdf",
-    downloadName: "Basemate-Pitch-Deck.pdf",
+    downloadName: "Basemate-Deck.pdf",
     title: "Basemate — Pitch Deck",
     toolbarLabel: "Pitch Deck",
     description:
       "Your AI financial advisor is in your texts. Trade, earn, and grow — all in iMessage.",
     path: "/deck",
-  },
-  v2: {
-    id: "v2",
-    pdfUrl: "/deck2.pdf",
-    downloadName: "Basemate-Pitch-Deck-v2.pdf",
-    title: "Basemate — Pitch Deck v2",
-    toolbarLabel: "Pitch Deck v2",
-    description:
-      "Every Basemate wallet should have an agent. Save, Earn, Trade, Send — all in iMessage.",
-    path: "/deck2",
   },
 } as const satisfies Record<string, DeckConfig>;
 
