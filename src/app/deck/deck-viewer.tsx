@@ -23,7 +23,7 @@ function useIsMobileViewport() {
 function DeckToolbar({ deck }: { deck: DeckConfig }) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
-      <Link href="/" className="flex min-w-0 items-center gap-2.5">
+      <Link href="/landing" className="flex min-w-0 items-center gap-2.5">
         <Image
           src="/brand/logo/basemate-logo-flat.png"
           alt="Basemate"

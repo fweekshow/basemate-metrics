@@ -894,6 +894,7 @@ interface SendItem {
   amount: string | null;
   asset: string | null;
   status: string;
+  txHash: string | null;
   explorerUrl: string | null;
   createdAt: string;
 }
@@ -905,7 +906,7 @@ function SendsTab() {
   if (items.length === 0) {
     return (
       <Empty
-        text="You haven't sent anyone money yet — pay a friend and it'll show up here."
+        text="No sends yet. To pay a friend, share their contact card with Basemate in chat, then say &ldquo;send $10 to [name]&rdquo;."
         mascot="mate-support"
       />
     );
@@ -913,20 +914,37 @@ function SendsTab() {
   return (
     <div className="space-y-2">
       {items.map((s) => (
-        <Row key={s.id} className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">
-              {s.recipientName ?? s.recipientPhone ?? "Recipient"}
-            </p>
-            <p className="text-xs tabular-nums text-muted-foreground">{fmtDate(s.createdAt)}</p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-sm font-semibold tabular-nums">
+        <Row key={s.id}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">
+                {s.recipientName ?? s.recipientPhone ?? "Recipient"}
+              </p>
+              {s.recipientPhone && (
+                <p className="truncate text-xs tabular-nums text-muted-foreground">
+                  {s.recipientPhone}
+                </p>
+              )}
+            </div>
+            <p className="shrink-0 text-sm font-semibold tabular-nums">
               {s.amount} {s.asset}
             </p>
-            <div className="mt-0.5 flex justify-end">
+          </div>
+          <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span className="tabular-nums">{fmtDateTime(s.createdAt)}</span>
+            <span className="flex items-center gap-2">
               <StatusPill status={s.status} />
-            </div>
+              {s.explorerUrl && (
+                <a
+                  href={s.explorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-primary"
+                >
+                  Basescan <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </span>
           </div>
         </Row>
       ))}

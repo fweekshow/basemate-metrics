@@ -29,7 +29,7 @@ export default function PaySuccessPage() {
           Your USDC purchase was submitted successfully. You can close this page and return to your Basemate chat.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button render={<Link href="/" />} nativeButton={false} size="lg">
+          <Button render={<Link href="/landing" />} nativeButton={false} size="lg">
             Back to Basemate
           </Button>
           <Button
