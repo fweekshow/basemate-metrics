@@ -19,8 +19,9 @@ const geistMono = Geist_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   const origin = await getRequestOrigin();
   const embed = basemateEmbedMetadata({
-    title: `${SITE.name} — ${SITE.manifestTagline}`,
-    description: SITE.description,
+    // Keep the shared-link card simple: one line, no extra body copy.
+    title: "Send, Earn, Trade, Save on iMessage",
+    description: "",
     url: origin,
     origin,
     buttonTitle: "Launch Basemate",
