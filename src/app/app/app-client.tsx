@@ -259,6 +259,13 @@ function AuthGate() {
           </button>
         </div>
       )}
+
+      <a
+        href="/landing"
+        className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+      >
+        What is Basemate?
+      </a>
     </div>
   );
 }
