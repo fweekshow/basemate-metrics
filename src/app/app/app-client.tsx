@@ -961,6 +961,7 @@ interface SendItem {
   recipientPhone: string | null;
   amount: string | null;
   asset: string | null;
+  memo: string | null;
   status: string;
   txHash: string | null;
   explorerUrl: string | null;
@@ -1014,6 +1015,11 @@ function SendsTab() {
               )}
             </span>
           </div>
+          {s.memo && (
+            <p className="mt-2 rounded-xl bg-secondary px-3 py-2 text-xs text-secondary-foreground">
+              &ldquo;{s.memo}&rdquo;
+            </p>
+          )}
         </Row>
       ))}
     </div>
