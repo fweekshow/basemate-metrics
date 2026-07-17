@@ -31,7 +31,7 @@ export function SiteShell({
 
       <header className="relative z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/landing" className="flex shrink-0 items-center gap-2.5">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
             <Image
               src="/brand/logo/basemate-logo-flat.png"
               alt="@basemate"
