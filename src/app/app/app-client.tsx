@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
-import { SITE } from "@/lib/site";
 
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
@@ -260,13 +259,6 @@ function AuthGate() {
           </button>
         </div>
       )}
-
-      <a
-        href={SITE.baseUrl}
-        className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-      >
-        What is Basemate?
-      </a>
     </div>
   );
 }
