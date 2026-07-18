@@ -19,8 +19,7 @@ export const DECKS = {
     downloadName: "Basemate-Deck.pdf",
     title: "Basemate — Pitch Deck",
     toolbarLabel: "Pitch Deck",
-    description:
-      "Your AI financial advisor is in your texts. Trade, earn, and grow — all in iMessage.",
+    description: "",
     path: "/deck",
   },
 } as const satisfies Record<string, DeckConfig>;

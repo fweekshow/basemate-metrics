@@ -73,13 +73,10 @@ function MobileDeckPrompt({ deck }: { deck: DeckConfig }) {
             className="rounded-2xl"
           />
         </div>
-        <div className="max-w-sm space-y-2">
+        <div className="max-w-sm">
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
             {deck.title}
           </h1>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {deck.description}
-          </p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-3">
           <a
