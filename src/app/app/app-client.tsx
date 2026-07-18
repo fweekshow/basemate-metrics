@@ -495,9 +495,16 @@ interface PortfolioPayload {
 /** WETH on Base — used as the logo source for native ETH (no contract). */
 const WETH_BASE_ADDRESS = "0x4200000000000000000000000000000000000006";
 
+/** Known logos we ship locally — DexScreener often has no icon for majors like USDC. */
+const LOCAL_TOKEN_LOGOS: Record<string, string> = {
+  USDC: "/brand/tokens/usdc.png",
+  USDBC: "/brand/tokens/usdc.png",
+};
+
 /** DexScreener token-icon CDN for a Base token, or null when we can't resolve one. */
 function tokenLogoUrl(symbol: string, tokenAddress: string | null): string | null {
   const s = symbol.toUpperCase();
+  if (LOCAL_TOKEN_LOGOS[s]) return LOCAL_TOKEN_LOGOS[s];
   const address =
     s === "ETH" || s === "WETH" ? WETH_BASE_ADDRESS : tokenAddress?.toLowerCase() ?? null;
   if (!address) return null;
