@@ -123,7 +123,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
                 What&apos;s shipped. What&apos;s next.
               </h2>
               <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                From Base App agent to iMessage onramp — one win at a time.
+                From cross-border send to local payout — one win at a time.
               </p>
 
               <div className="mt-7">
@@ -163,7 +163,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-lilac/40 via-lilac/10 to-transparent"
               />
-              <PhaseLabel color="lilac">SHIPPED ON BASE APP</PhaseLabel>
+              <PhaseLabel color="lilac">SHIPPED</PhaseLabel>
               <ul className="mt-5 space-y-3">
                 {shippedItems.map((item, i) => (
                   <li
@@ -267,7 +267,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
                     {destination.label}
                   </p>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    The default way to move money on and off Base — right inside iMessage.
+                    The default way to send money home — right inside your texts.
                   </p>
                 </div>
               ) : null}

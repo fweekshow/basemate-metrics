@@ -4,13 +4,13 @@ export const SITE_URL =
 
 export const SITE = {
   name: "Basemate",
-  tagline: "Trade, Earn and Learn",
+  tagline: "Send, Earn, Trade, Save",
   description:
-    "Trade perps, swap, earn yield, and scout launches — all by messaging. The Base-native agent that lives in your chats.",
-  manifestTagline: "Trade, Earn and Learn",
+    "Money that lives in your texts. Send across borders, earn yield, trade, and save — all in iMessage and Base App on Base.",
+  manifestTagline: "Send, Earn, Trade, Save",
   /** Max 100 chars — Farcaster miniapp.ogDescription limit. */
   manifestOgDescription:
-    "The Base-native trading agent that lives in your chats.",
+    "Money that lives in your texts — send, earn, trade, and save on Base.",
   /** Root domain — Farcaster manifest + accountAssociation. */
   baseUrl: "https://basemate.app",
   /** Base App canonical URL (dashboard + chat unfurls). */

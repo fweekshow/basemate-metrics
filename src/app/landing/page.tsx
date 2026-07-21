@@ -1,57 +1,86 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { headers } from "next/headers";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
 import { SITE } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
+import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — The Base-native trading agent`,
+  title: `${SITE.name} — Money that lives in your texts`,
   description:
-    "Trade perps, swap, earn yield, and scout launches — all by messaging. The Base-native agent that lives in your chats.",
+    "Send across borders. Earn. Trade. Save. Basemate is the onchain agent that lives in iMessage and Base App — no app to download, no wallet to set up.",
 };
 
-const features = [
+const sets = [
   {
-    label: "PERPS",
-    headline: 'Two words — "Long COIN" or "Short ETH"',
-    body: "Basemate opens an Avantis position with TP/SL, leverage, and amount all preset.",
+    letter: "S",
+    label: "SEND",
+    headline: "Send money home in a text",
+    body: "Money to anyone with a phone number, across any border. Text “send $200 to Mum” and it moves in seconds.",
     color: "#0505FF",
   },
-  
   {
-    label: "TRENDING",
-    headline: "Scout launches before they moon",
-    body: 'Ask "what\'s trending?" and get a live Bankr feed with top movers and one-tap buy.',
-    color: "#16A34A",
-  },
-  {
+    letter: "E",
     label: "EARN",
-    headline: "Park idle USDC, earn yield",
-    body: "Tell Basemate to earn and it finds the best rate on Base, executes, and confirms — one message.",
+    headline: "Idle USDC earns ~5% automatically",
+    body: "Tell Basemate to earn and it finds the best onchain rate on Base — Moonwell, Morpho, or Aave — in one message.",
+    color: "#19FB44",
+  },
+  {
+    letter: "T",
+    label: "TRADE",
+    headline: "Swap in a text. Trade in Base App",
+    body: "Spot swaps on Uniswap and Aerodrome from the chat. Perps and full trading live in Base App.",
     color: "#0505FF",
   },
   {
-    label: "LAUNCH",
-    headline: "Ship a token from the chat",
-    body: "Describe it, confirm the details, and it's on-chain — no launchpad interface required.",
-    color: "#16A34A",
+    letter: "S",
+    label: "SAVE",
+    headline: "USDC as your base currency",
+    body: "Stable, dollar-denominated money that stays in your agent wallet — ready to send, earn, or trade.",
+    color: "#19FB44",
+  },
+] as const;
+
+const gapStats = [
+  { value: "3.3B+", label: "iMessage + WhatsApp users" },
+  { value: "$800B+", label: "sent across borders yearly" },
+  { value: "~6%", label: "average remittance fee today" },
+] as const;
+
+const moat = [
+  {
+    n: "01",
+    title: "The sender side — iMessage",
+    body: "Where the money comes from. 1.3B users across the US, EU, and Gulf — the world's remittance senders.",
+  },
+  {
+    n: "02",
+    title: "The receiver side — WhatsApp",
+    body: "Where the money goes. Dominant in the Philippines, India, Mexico, Nigeria, and Brazil.",
+  },
+  {
+    n: "03",
+    title: "The unlock",
+    body: "Zero apps, zero accounts, zero crypto knowledge. A text arrives. The money's there.",
   },
 ] as const;
 
 const roadmap = [
-  { label: "Agent launched on Base App", done: true },
-  { label: "Basemate token launched", done: true },
-  { label: "Avantis perps integration live", done: true },
-  { label: "Hundreds of tokens launched via Basemate", done: true },
-  { label: "Millions in trading volume", done: true },
-  { label: "Thousands of active users", done: true },
-  { label: "Trade in iMessage", done: false, next: true },
-  { label: "Basemate on web", done: false, pending: true },
+  { label: "Live on Base App + iMessage beta", done: true },
+  { label: "USDC send to any phone number", done: true },
+  { label: "Apple Pay + card funding", done: true },
+  { label: "~5% yield on idle USDC", done: true },
+  { label: "Spot swaps in chat", done: true },
+  { label: "10K+ users · $260K+ moved", done: true },
+  { label: "WhatsApp receive-side", done: false, next: true },
+  { label: "Multi-corridor remittance rails", done: false, pending: true },
   {
-    label: "Your onramp to Base — inside iMessage",
+    label: "Send money home — cash out to local currency",
     done: false,
     destination: true,
   },
@@ -75,25 +104,37 @@ async function getMetrics(): Promise<AnalyticsPayload | null> {
 }
 
 function formatUsers(total: number): string {
+  if (total >= 10_000) return `${(total / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  if (total >= 1000) return `${Math.floor(total / 1000)}K+`;
+  return total.toLocaleString("en-US");
+}
+
+function formatMessages(total: number): string {
   if (total >= 1000) return `${Math.floor(total / 1000)}K+`;
   return total.toLocaleString("en-US");
 }
 
 function buildStats(metrics: AnalyticsPayload | null) {
+  const trading = metrics ? resolveChatTrading(metrics) : null;
+
   return [
     {
-      value: metrics ? formatUsers(metrics.users.total) : "1000s",
+      value: metrics ? formatUsers(metrics.users.total) : "10.7K",
       label: "USERS",
       live: Boolean(metrics),
     },
     {
       value: metrics
-        ? metrics.tokenLaunches.allTime.success.toLocaleString("en-US")
-        : "100s",
-      label: "TOKENS LAUNCHED",
+        ? formatMessages(metrics.users.messagesReceived)
+        : "49K+",
+      label: "MESSAGES",
       live: Boolean(metrics),
     },
-    { value: "Avantis", label: "PERPS PARTNER", live: false },
+    {
+      value: trading ? formatVolumeKpi(trading.notionalLifetime) : "$262K+",
+      label: "NOTIONAL MOVED",
+      live: Boolean(metrics),
+    },
   ] as const;
 }
 
@@ -124,30 +165,38 @@ export default async function LandingPage() {
               </span>
             </div>
 
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              Live on iMessage · Base App
+            </div>
+
             <h1
               className="font-display text-5xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-6xl"
               style={{ textWrap: "balance" }}
             >
-              Trade, Earn, <span className="bm-emphasis">and Launch.</span>
+              Money that lives in your <span className="bm-emphasis">texts.</span>
             </h1>
 
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Basemate is the Base Agent that lives in your chats. Long COIN, Short ETH,
-              Swap Tokens, Earn Yield, Discover Trending Tokens or Launch your own token
-              and connect with Community all inside of chats.
+              Send across borders. Earn. Trade. Save. All in the app you already have
+              open — no wallet to set up, no seed phrase, no new app to download.
             </p>
 
-            <a
-              href={SITE.baseAppStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-              </svg>
-              Download the Base App
-            </a>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/waitlist"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+              >
+                Get iMessage access
+              </Link>
+              <a
+                href={SITE.baseAppStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+              >
+                Try on Base App
+              </a>
+            </div>
           </div>
 
           <div className="flex flex-1 justify-center lg:justify-end">
@@ -161,7 +210,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           {hasLiveStats ? (
             <div className="flex items-center justify-end gap-2 pt-4">
-              <span className="size-1.5 rounded-full bg-up animate-pulse" />
+              <span className="size-1.5 animate-pulse rounded-full bg-up" />
               <span
                 className="text-[10px] font-medium tracking-[0.2em] text-up"
                 style={{ fontFamily: "var(--font-mono)" }}
@@ -191,30 +240,160 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── Features ───────────────────────────────────────────── */}
+      {/* ── The gap ──────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+          <div>
+            <p
+              className="mb-3 text-xs font-bold tracking-widest text-primary"
+              style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+            >
+              THE GAP
+            </p>
+            <h2 className="font-display mb-4 text-2xl font-bold sm:text-3xl">
+              iMessage + WhatsApp are the world&apos;s largest{" "}
+              <span className="bm-emphasis">unbanked</span> network.
+            </h2>
+            <p className="text-muted-foreground">
+              3.3 billion people message every day — with no way to send, earn, or
+              grow money without leaving the app.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            {gapStats.map(({ value, label }) => (
+              <div
+                key={label}
+                className="rounded-2xl border border-border bg-white p-5 shadow-sm"
+              >
+                <span
+                  className="block text-2xl font-bold text-primary"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  {value}
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── The problem ──────────────────────────────────────────── */}
+      <section className="border-y border-border bg-muted/30">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+          <p
+            className="mb-3 text-xs font-bold tracking-widest text-primary"
+            style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+          >
+            THE PROBLEM
+          </p>
+          <h2 className="font-display mb-8 text-2xl font-bold sm:text-3xl">
+            Sending money home is still <span className="bm-emphasis">broken.</span>
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-down/20 bg-white p-6">
+              <p
+                className="mb-3 text-xs font-bold tracking-widest text-down"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                TODAY
+              </p>
+              <p
+                className="text-sm leading-relaxed text-muted-foreground"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                up to 6% fees · 1–3 days · download an app · create an account
+              </p>
+            </div>
+            <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-6">
+              <p
+                className="mb-3 text-xs font-bold tracking-widest text-primary"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                SHOULD BE
+              </p>
+              <p className="font-display text-2xl font-bold text-foreground">a text.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SETS ─────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+        <p
+          className="mb-3 text-xs font-bold tracking-widest text-primary"
+          style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+        >
+          HOW IT WORKS
+        </p>
         <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
-          One agent. Everything on Base.
+          One agent. Four <span className="bm-emphasis">jobs.</span>
         </h2>
-        <p className="mb-10 text-muted-foreground">
-          Every action confirmed in the chat — no app-switching, no forms.
+        <p className="mb-10 max-w-2xl text-muted-foreground">
+          Send · Earn · Trade · Save. Cross-border send is the front door — once your
+          money&apos;s in, Basemate does the other three.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
-          {features.map(({ label, headline, body, color }) => (
+          {sets.map(({ letter, label, headline, body, color }) => (
             <div
               key={label}
               className="group rounded-2xl border border-border bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
-              <span
-                className="mb-3 block text-xs font-bold tracking-widest"
-                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color }}
-              >
-                {label}
-              </span>
+              <div className="mb-3 flex items-center gap-3">
+                <span
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white"
+                  style={{ background: color, fontFamily: "var(--font-display)" }}
+                >
+                  {letter}
+                </span>
+                <span
+                  className="text-xs font-bold tracking-widest"
+                  style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color }}
+                >
+                  {label}
+                </span>
+              </div>
               <h3 className="font-display mb-2 text-lg font-bold">{headline}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Moat ─────────────────────────────────────────────────── */}
+      <section className="border-t border-border bg-muted/30">
+        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+          <p
+            className="mb-3 text-xs font-bold tracking-widest text-primary"
+            style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+          >
+            THE MOAT
+          </p>
+          <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
+            Built on the rails remittances <span className="bm-emphasis">actually</span>{" "}
+            run on.
+          </h2>
+          <p className="mb-10 max-w-2xl text-muted-foreground">
+            Every incumbent makes the recipient do the work. We flipped it. The sender
+            uses iMessage. The receiver uses WhatsApp. Nobody installs anything.
+          </p>
+          <div className="grid gap-4 md:grid-cols-3">
+            {moat.map(({ n, title, body }) => (
+              <div
+                key={n}
+                className="rounded-2xl border border-border bg-white p-6 shadow-sm"
+              >
+                <span
+                  className="mb-4 block text-xs font-bold text-primary"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  {n}
+                </span>
+                <h3 className="font-display mb-2 text-base font-bold">{title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -243,40 +422,48 @@ export default async function LandingPage() {
                 className="mb-2 text-xs font-bold tracking-widest text-white/60"
                 style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
               >
-                ONE TAP · ONE WIN
+                ONE ACTION · ONE WIN
               </p>
               <h2 className="font-display mb-4 text-3xl font-bold text-white sm:text-4xl">
-                Ready to trade in the chat?
+                Come build the bank that lives in your texts.
               </h2>
               <p className="mb-7 max-w-md text-white/75">
-                Add @basemate to your Base App group and start trading with a single
-                message.
+                Fund with Apple Pay, send USDC in a text, earn yield automatically —
+                all on Base.
               </p>
-              <a
-                href={SITE.baseAppStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-                </svg>
-                Download the Base App
-              </a>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/waitlist"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
+                >
+                  Join the iMessage waitlist
+                </Link>
+                <a
+                  href={SITE.metricsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/30 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                >
+                  See live metrics
+                </a>
+              </div>
             </div>
 
-              <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-                <div className="rounded-2xl p-4 shadow-[0_0_40px_rgba(5,5,255,0.3)]" style={{ background: "rgba(255,255,255,0.15)" }}>
-                  <Image
-                    src="/brand/logo/basemate-mark-transparent.png"
-                    alt=""
-                    width={120}
-                    height={120}
-                    className="select-none"
-                    draggable={false}
-                  />
-                </div>
+            <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
+              <div
+                className="rounded-2xl p-4 shadow-[0_0_40px_rgba(5,5,255,0.3)]"
+                style={{ background: "rgba(255,255,255,0.15)" }}
+              >
+                <Image
+                  src="/brand/logo/basemate-mark-transparent.png"
+                  alt=""
+                  width={120}
+                  height={120}
+                  className="select-none"
+                  draggable={false}
+                />
               </div>
+            </div>
           </div>
         </div>
       </section>
@@ -301,7 +488,7 @@ function ChatMockup() {
             className="text-[10px] font-medium text-up"
             style={{ fontFamily: "var(--font-mono)" }}
           >
-            ● LIVE ON BASE
+            ● iMESSAGE
           </p>
         </div>
       </div>
@@ -309,43 +496,37 @@ function ChatMockup() {
       <div className="space-y-3 bg-muted/30 px-3 py-4">
         <div className="flex justify-end">
           <div
-            className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white"
+            className="max-w-[82%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white"
             style={{ background: "#0505FF" }}
           >
-            Long SPCX
+            send $200 to mum 🇵🇭
           </div>
         </div>
 
         <div className="flex justify-start">
-          <div className="max-w-[88%] rounded-[20px] border border-border bg-white px-3.5 py-3 text-sm shadow-sm">
+          <div className="max-w-[90%] rounded-[20px] border border-border bg-white px-3.5 py-3 text-sm shadow-sm">
             <p className="font-semibold text-foreground">
-              Open SPCX Long 10× with $200 Collateral.
+              $200 → ₱11,4xx to Mum · fee $0.60
+            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              rate shown for illustration
             </p>
             <div className="mt-2.5">
               <span className="inline-flex w-full items-center justify-center rounded-full bg-primary py-2 text-xs font-bold text-white">
-                Sign Transaction
+                yes, send
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <div
-            className="max-w-[75%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white"
-            style={{ background: "#0505FF" }}
-          >
-            Sign Transaction
-          </div>
-        </div>
-
         <div className="flex justify-start">
           <div
-            className="max-w-[90%] rounded-[20px] border bg-white px-3.5 py-2.5 text-sm shadow-[0_0_12px_rgba(22,163,74,0.12)]"
-            style={{ borderColor: "rgba(22,163,74,0.25)" }}
+            className="max-w-[90%] rounded-[20px] border bg-white px-3.5 py-2.5 text-sm shadow-[0_0_12px_rgba(25,251,68,0.12)]"
+            style={{ borderColor: "rgba(25,251,68,0.25)" }}
           >
-            <p className="font-semibold text-up">Transaction confirmed ✓</p>
+            <p className="font-semibold text-up">Done ✓</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              SPCX Long 10× · settled on Base
+              Mum&apos;s notified — she can cash out anytime
             </p>
           </div>
         </div>
