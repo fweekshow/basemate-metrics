@@ -182,16 +182,13 @@ export default async function LandingPage() {
             </p>
 
             <div className="space-y-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <a
                   href={IMESSAGE_HREF}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
                 >
-                  Text Basemate
-                  <span
-                    className="text-white/70"
-                    style={{ fontFamily: "var(--font-mono)" }}
-                  >
+                  Text
+                  <span style={{ fontFamily: "var(--font-mono)" }}>
                     {SITE.imessagePhoneDisplay}
                   </span>
                 </a>
@@ -199,7 +196,7 @@ export default async function LandingPage() {
                   href={SITE.baseAppStoreUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-border bg-white px-6 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
                 >
                   Try on Base App
                 </a>
@@ -449,19 +446,19 @@ export default async function LandingPage() {
                 Fund with Apple Pay, send USDC in a text, earn yield automatically —
                 all on Base.
               </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
                   href={IMESSAGE_HREF}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-white px-6 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
                 >
-                  Text{" "}
+                  Text
                   <span style={{ fontFamily: "var(--font-mono)" }}>
                     {SITE.imessagePhoneDisplay}
                   </span>
                 </a>
                 <Link
                   href="/waitlist"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/30 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
                 >
                   Join the waitlist
                 </Link>
@@ -469,7 +466,7 @@ export default async function LandingPage() {
                   href={SITE.metricsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/30 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
                 >
                   See live metrics
                 </a>
