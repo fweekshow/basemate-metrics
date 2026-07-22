@@ -1273,9 +1273,11 @@ interface Prefs {
 }
 
 function SettingsTab() {
+  const { signOut } = useSignOut();
   const { data, loading, reload } = useApi<Prefs>("/api/app/preferences");
   const { data: profile } = useApi<{ displayName: string | null; basename: string | null; embeddedAddress: string | null; delegation: { active: boolean; expiresAt: string | null } | null }>("/api/app/profile");
   const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [limit, setLimit] = useState<string>("");
 
   useEffect(() => {
@@ -1386,13 +1388,23 @@ function SettingsTab() {
 
       <button
         type="button"
+        disabled={signingOut}
         onClick={async () => {
-          await fetch("/api/app/session", { method: "DELETE" });
-          window.location.reload();
+          setSigningOut(true);
+          try {
+            // Clear CDP's persisted session before removing the app cookie;
+            // otherwise AuthGate immediately links the same account again.
+            await signOut();
+            await fetch("/api/app/session", { method: "DELETE" });
+            window.location.reload();
+          } finally {
+            setSigningOut(false);
+          }
         }}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition active:scale-[0.99]"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition active:scale-[0.99] disabled:opacity-60"
       >
-        <LogOut className="h-4 w-4" /> Sign out
+        {signingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+        {signingOut ? "Signing out…" : "Sign out"}
       </button>
     </>
   );
