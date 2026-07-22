@@ -23,4 +23,14 @@ export const SITE = {
     "https://apps.apple.com/us/app/base-built-to-trade-earn/id1278383455",
   metricsUrl: "https://basemate.app/metrics",
   twitter: "@basemateagent",
+  /** Basemate's iMessage line — E.164 for links, display form for labels. */
+  imessagePhone: "+16283165638",
+  imessagePhoneDisplay: "+1 (628) 316-5638",
 } as const;
+
+/**
+ * Opens Messages with a draft to the Basemate line. `sms:` is what Apple
+ * registers for iMessage; the `?&body=` form is the shape both iOS and
+ * Android parse correctly.
+ */
+export const IMESSAGE_HREF = `sms:${SITE.imessagePhone}?&body=${encodeURIComponent("gm")}`;

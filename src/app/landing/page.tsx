@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
-import { SITE } from "@/lib/site";
+import { IMESSAGE_HREF, SITE } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
 import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 
@@ -181,21 +181,39 @@ export default async function LandingPage() {
               open — no wallet to set up, no seed phrase, no new app to download.
             </p>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/waitlist"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
-              >
-                Get iMessage access
-              </Link>
-              <a
-                href={SITE.baseAppStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
-              >
-                Try on Base App
-              </a>
+            <div className="space-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a
+                  href={IMESSAGE_HREF}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+                >
+                  Text Basemate
+                  <span
+                    className="text-white/70"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    {SITE.imessagePhoneDisplay}
+                  </span>
+                </a>
+                <a
+                  href={SITE.baseAppStoreUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+                >
+                  Try on Base App
+                </a>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Opens iMessage with a draft to our line.{" "}
+                <Link
+                  href="/waitlist"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Or join the waitlist
+                </Link>
+                .
+              </p>
             </div>
           </div>
 
@@ -432,11 +450,20 @@ export default async function LandingPage() {
                 all on Base.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/waitlist"
+                <a
+                  href={IMESSAGE_HREF}
                   className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
                 >
-                  Join the iMessage waitlist
+                  Text{" "}
+                  <span style={{ fontFamily: "var(--font-mono)" }}>
+                    {SITE.imessagePhoneDisplay}
+                  </span>
+                </a>
+                <Link
+                  href="/waitlist"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/30 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                >
+                  Join the waitlist
                 </Link>
                 <a
                   href={SITE.metricsUrl}
