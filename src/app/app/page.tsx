@@ -4,7 +4,8 @@ import { AppClient } from "./app-client";
 
 export const metadata: Metadata = {
   title: "Basemate",
-  description: "Your Basemate account — balances, activity, earn, sends, and settings.",
+  description:
+    "Manage your Basemate account — balances, activity, earn, sends, and settings. Sign in after you've set up in iMessage.",
 };
 
 export const dynamic = "force-dynamic";
