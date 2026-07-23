@@ -146,61 +146,39 @@ export default async function LandingPage() {
   return (
     <SiteShell>
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
-        <div className="flex flex-col gap-14 lg:flex-row lg:items-center lg:gap-16">
-          <div className="flex-1 space-y-8">
-            <div className="flex items-center gap-2.5">
-              <Image
-                src="/brand/logo/basemate-logo-flat.png"
-                alt="Basemate"
-                width={32}
-                height={32}
-                className="rounded-lg"
-              />
-              <span
-                className="text-sm font-bold text-foreground"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                Basemate
-              </span>
-            </div>
-
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Live on iMessage · Base App
-            </div>
-
-            <h1
-              className="font-display text-5xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-6xl"
-              style={{ textWrap: "balance" }}
-            >
-              Money that lives in your <span className="bm-emphasis">texts.</span>
-            </h1>
-
-            <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Send across borders. Earn. Trade. Save. All in the app you already have
-              open — no wallet to set up, no seed phrase, no new app to download.
-            </p>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/waitlist"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
-              >
-                Get iMessage access
-              </Link>
-              <a
-                href={SITE.baseAppStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
-              >
-                Try on Base App
-              </a>
-            </div>
+      <section className="relative mx-auto max-w-5xl px-4 pb-10 pt-10 sm:px-6 sm:pt-14">
+        <div className="max-w-2xl space-y-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            Live on iMessage · Base App
           </div>
 
-          <div className="flex flex-1 justify-center lg:justify-end">
-            <ChatMockup />
+          <h1
+            className="font-display text-4xl font-semibold leading-[1.12] tracking-normal text-foreground sm:text-5xl"
+            style={{ textWrap: "balance" }}
+          >
+            Money that lives in your <span className="bm-emphasis">texts.</span>
+          </h1>
+
+          <p className="max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Send across borders. Earn. Trade. Save. All in the app you already have
+            open — no wallet to set up, no seed phrase, no new app to download.
+          </p>
+
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+            <Link
+              href="/"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+            >
+              Text Basemate to start
+            </Link>
+            <a
+              href={SITE.baseAppStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+            >
+              Try on Base App
+            </a>
           </div>
         </div>
       </section>
@@ -221,7 +199,7 @@ export default async function LandingPage() {
           ) : null}
           <div className="grid grid-cols-2 gap-px sm:grid-cols-3">
             {stats.map(({ value, label }) => (
-              <div key={label} className="flex flex-col gap-1 px-4 py-8 sm:px-6">
+              <div key={label} className="flex flex-col gap-1 px-4 py-5 sm:px-6">
                 <span
                   className="text-2xl font-bold text-primary sm:text-3xl"
                   style={{ fontFamily: "var(--font-mono)" }}
@@ -241,16 +219,15 @@ export default async function LandingPage() {
       </section>
 
       {/* ── The gap ──────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           <div>
             <p
-              className="mb-3 text-xs font-bold tracking-widest text-primary"
-              style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+              className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary"
             >
               THE GAP
             </p>
-            <h2 className="font-display mb-4 text-2xl font-bold sm:text-3xl">
+            <h2 className="font-display mb-3 text-2xl font-semibold tracking-normal sm:text-3xl">
               iMessage + WhatsApp are the world&apos;s largest{" "}
               <span className="bm-emphasis">unbanked</span> network.
             </h2>
@@ -280,17 +257,14 @@ export default async function LandingPage() {
 
       {/* ── The problem ──────────────────────────────────────────── */}
       <section className="border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-          <p
-            className="mb-3 text-xs font-bold tracking-widest text-primary"
-            style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
-          >
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+          <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
             THE PROBLEM
           </p>
-          <h2 className="font-display mb-8 text-2xl font-bold sm:text-3xl">
+          <h2 className="font-display mb-5 text-2xl font-semibold tracking-normal sm:text-3xl">
             Sending money home is still <span className="bm-emphasis">broken.</span>
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-down/20 bg-white p-6">
               <p
                 className="mb-3 text-xs font-bold tracking-widest text-down"
@@ -312,48 +286,47 @@ export default async function LandingPage() {
               >
                 SHOULD BE
               </p>
-              <p className="font-display text-2xl font-bold text-foreground">a text.</p>
+              <p className="font-display text-2xl font-semibold tracking-normal text-foreground">
+                a text.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── SETS ─────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-        <p
-          className="mb-3 text-xs font-bold tracking-widest text-primary"
-          style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
-        >
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+        <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
           HOW IT WORKS
         </p>
-        <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
+        <h2 className="font-display mb-2 text-2xl font-semibold tracking-normal sm:text-3xl">
           One agent. Four <span className="bm-emphasis">jobs.</span>
         </h2>
-        <p className="mb-10 max-w-2xl text-muted-foreground">
+        <p className="mb-6 max-w-2xl text-muted-foreground">
           Send · Earn · Trade · Save. Cross-border send is the front door — once your
           money&apos;s in, Basemate does the other three.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           {sets.map(({ letter, label, headline, body, color }) => (
             <div
               key={label}
-              className="group rounded-2xl border border-border bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="group rounded-2xl border border-border bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="mb-3 flex items-center gap-3">
+              <div className="mb-2 flex items-center gap-3">
                 <span
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
                   style={{ background: color, fontFamily: "var(--font-display)" }}
                 >
                   {letter}
                 </span>
                 <span
-                  className="text-xs font-bold tracking-widest"
-                  style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color }}
+                  className="font-mono text-xs font-bold tracking-[0.14em]"
+                  style={{ color }}
                 >
                   {label}
                 </span>
               </div>
-              <h3 className="font-display mb-2 text-lg font-bold">{headline}</h3>
+              <h3 className="mb-1.5 text-base font-semibold text-foreground">{headline}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
             </div>
           ))}
@@ -362,34 +335,28 @@ export default async function LandingPage() {
 
       {/* ── Moat ─────────────────────────────────────────────────── */}
       <section className="border-t border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-          <p
-            className="mb-3 text-xs font-bold tracking-widest text-primary"
-            style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
-          >
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+          <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
             THE MOAT
           </p>
-          <h2 className="font-display mb-3 text-2xl font-bold sm:text-3xl">
+          <h2 className="font-display mb-2 text-2xl font-semibold tracking-normal sm:text-3xl">
             Built on the rails remittances <span className="bm-emphasis">actually</span>{" "}
             run on.
           </h2>
-          <p className="mb-10 max-w-2xl text-muted-foreground">
+          <p className="mb-6 max-w-2xl text-muted-foreground">
             Every incumbent makes the recipient do the work. We flipped it. The sender
             uses iMessage. The receiver uses WhatsApp. Nobody installs anything.
           </p>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-3">
             {moat.map(({ n, title, body }) => (
               <div
                 key={n}
-                className="rounded-2xl border border-border bg-white p-6 shadow-sm"
+                className="rounded-2xl border border-border bg-white p-5 shadow-sm"
               >
-                <span
-                  className="mb-4 block text-xs font-bold text-primary"
-                  style={{ fontFamily: "var(--font-mono)" }}
-                >
+                <span className="mb-3 block font-mono text-xs font-bold text-primary">
                   {n}
                 </span>
-                <h3 className="font-display mb-2 text-base font-bold">{title}</h3>
+                <h3 className="mb-1.5 text-base font-semibold text-foreground">{title}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
               </div>
             ))}
@@ -400,8 +367,11 @@ export default async function LandingPage() {
       <HomeRoadmap items={roadmap} />
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-12 sm:px-14 sm:py-16">
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+        <div
+          className="relative overflow-hidden rounded-3xl px-8 py-10 sm:px-12 sm:py-12"
+          style={{ background: "#0000FF" }}
+        >
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-20"
@@ -424,19 +394,19 @@ export default async function LandingPage() {
               >
                 ONE ACTION · ONE WIN
               </p>
-              <h2 className="font-display mb-4 text-3xl font-bold text-white sm:text-4xl">
+              <h2 className="font-display mb-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
                 Come build the bank that lives in your texts.
               </h2>
-              <p className="mb-7 max-w-md text-white/75">
+              <p className="mb-5 max-w-md text-white/75">
                 Fund with Apple Pay, send USDC in a text, earn yield automatically —
                 all on Base.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/waitlist"
+                  href="/"
                   className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
                 >
-                  Join the iMessage waitlist
+                  Text Basemate to start
                 </Link>
                 <a
                   href={SITE.metricsUrl}
@@ -450,87 +420,19 @@ export default async function LandingPage() {
             </div>
 
             <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-              <div
-                className="rounded-2xl p-4 shadow-[0_0_40px_rgba(5,5,255,0.3)]"
-                style={{ background: "rgba(255,255,255,0.15)" }}
-              >
-                <Image
-                  src="/brand/logo/basemate-mark-transparent.png"
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="select-none"
-                  draggable={false}
-                />
-              </div>
+              {/* Full-blue eyes mark — same blue as the CTA so only the eyes read */}
+              <Image
+                src="/brand/mascot/mate-eyes-blue.png"
+                alt=""
+                width={140}
+                height={140}
+                className="select-none rounded-2xl"
+                draggable={false}
+              />
             </div>
           </div>
         </div>
       </section>
     </SiteShell>
-  );
-}
-
-function ChatMockup() {
-  return (
-    <div className="w-full max-w-[340px] overflow-hidden rounded-2xl border border-border bg-white shadow-[0_8px_40px_rgba(5,5,255,0.1),0_2px_8px_rgba(0,0,0,0.06)]">
-      <div className="flex items-center gap-3 border-b border-border bg-white px-4 py-3">
-        <Image
-          src="/brand/logo/basemate-logo-flat.png"
-          alt="Basemate"
-          width={28}
-          height={28}
-          className="rounded-lg"
-        />
-        <div>
-          <p className="text-xs font-semibold text-foreground">Basemate</p>
-          <p
-            className="text-[10px] font-medium text-up"
-            style={{ fontFamily: "var(--font-mono)" }}
-          >
-            ● iMESSAGE
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-3 bg-muted/30 px-3 py-4">
-        <div className="flex justify-end">
-          <div
-            className="max-w-[82%] rounded-[20px] px-3.5 py-2.5 text-sm font-medium text-white"
-            style={{ background: "#0505FF" }}
-          >
-            send $200 to mum 🇵🇭
-          </div>
-        </div>
-
-        <div className="flex justify-start">
-          <div className="max-w-[90%] rounded-[20px] border border-border bg-white px-3.5 py-3 text-sm shadow-sm">
-            <p className="font-semibold text-foreground">
-              $200 → ₱11,4xx to Mum · fee $0.60
-            </p>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              rate shown for illustration
-            </p>
-            <div className="mt-2.5">
-              <span className="inline-flex w-full items-center justify-center rounded-full bg-primary py-2 text-xs font-bold text-white">
-                yes, send
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-start">
-          <div
-            className="max-w-[90%] rounded-[20px] border bg-white px-3.5 py-2.5 text-sm shadow-[0_0_12px_rgba(25,251,68,0.12)]"
-            style={{ borderColor: "rgba(25,251,68,0.25)" }}
-          >
-            <p className="font-semibold text-up">Done ✓</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Mum&apos;s notified — she can cash out anytime
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

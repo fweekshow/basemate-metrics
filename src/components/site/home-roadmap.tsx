@@ -103,7 +103,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
         className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-lilac/8 to-transparent"
       />
 
-      <div ref={sectionRef} className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6">
+      <div ref={sectionRef} className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
         <div
           style={{
             opacity: visible ? 1 : 0,

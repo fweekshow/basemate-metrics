@@ -103,7 +103,15 @@ function AuthGate() {
       setPhase("ready");
     } catch (err) {
       setPhase("error");
-      setMessage(err instanceof Error ? err.message : "Sign-in failed.");
+      const raw = err instanceof Error ? err.message : "Sign-in failed.";
+      // Agent returns this when CDP email has no imessage_wallets row yet.
+      if (/no basemate account is linked|not linked|connect it from basemate/i.test(raw)) {
+        setMessage(
+          "No Basemate account is linked to this email yet. Text Basemate in iMessage to set up first, then come back here.",
+        );
+      } else {
+        setMessage(raw);
+      }
     }
   }, [currentUser, getAccessToken]);
 
@@ -135,7 +143,15 @@ function AuthGate() {
         setPhase("linking");
         return;
       }
-      setMessage(msg);
+      // CDP SDK surfaces axios "Network Error" when it can't reach Coinbase
+      // (offline, adblock, or local/dev domain not allowlisted).
+      if (/network error|failed to fetch|load failed/i.test(msg)) {
+        setMessage(
+          "Couldn't reach sign-in (Coinbase). Check your connection, or try again on basemate.app.",
+        );
+      } else {
+        setMessage(msg);
+      }
     } finally {
       setBusy(false);
     }
@@ -166,27 +182,23 @@ function AuthGate() {
         className="h-14 w-14 rounded-2xl shadow-[var(--shadow-card)]"
       />
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Your Basemate account</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          Manage your Basemate account
+        </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Sign in with your email — same as in Basemate.
+          Sign in with the email you used when you set up Basemate in iMessage.
         </p>
       </div>
 
-      <a
-        href="https://x.com/basemateagent"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full space-y-2 rounded-2xl border border-primary/20 bg-accent px-5 py-4 text-left text-sm leading-relaxed text-accent-foreground transition hover:border-primary/40"
-      >
+      <div className="w-full space-y-2 rounded-2xl border border-primary/20 bg-accent px-5 py-4 text-left text-sm leading-relaxed text-accent-foreground">
         <p>
-          <span className="font-semibold">Currently in beta.</span> Email sign-in works once
-          you&apos;ve set up Basemate in iMessage.
+          <span className="font-semibold">Returning users only.</span> New here?{" "}
+          <a href="/" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Text Basemate in iMessage
+          </a>{" "}
+          to create your account first.
         </p>
-        <p>
-          Not in yet? DM <span className="font-semibold text-primary">@basemateagent</span> on X
-          for access.
-        </p>
-      </a>
+      </div>
 
       {phase === "checking" || phase === "linking" ? (
         <div className="flex flex-col items-center gap-3">
@@ -196,8 +208,14 @@ function AuthGate() {
           </p>
         </div>
       ) : phase === "error" ? (
-        <div className="w-full">
+        <div className="w-full space-y-3">
           <p className="text-sm text-destructive">{message}</p>
+          <a
+            href="sms:+16283165638?body=hey"
+            className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
+          >
+            Open in Messages
+          </a>
           <button
             type="button"
             onClick={async () => {
@@ -215,9 +233,9 @@ function AuthGate() {
               setFlowId(null);
               setPhase("email");
             }}
-            className="mt-4 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
+            className="w-full rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground"
           >
-            Try again
+            Try a different email
           </button>
         </div>
       ) : phase === "otp" ? (
@@ -261,10 +279,10 @@ function AuthGate() {
       )}
 
       <a
-        href="/landing"
+        href="/"
         className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
       >
-        What is Basemate?
+        New here? Text Basemate to get started
       </a>
     </div>
   );
