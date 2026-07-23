@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
+import { IMESSAGE_HREF } from "@/lib/site";
 
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
@@ -211,7 +212,7 @@ function AuthGate() {
         <div className="w-full space-y-3">
           <p className="text-sm text-destructive">{message}</p>
           <a
-            href="sms:+16283165638?body=hey"
+            href={IMESSAGE_HREF}
             className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
           >
             Open in Messages
