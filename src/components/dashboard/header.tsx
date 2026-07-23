@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { RefreshCw } from "lucide-react";
+import { MessageCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IMESSAGE_HREF, SITE } from "@/lib/site";
 import type { Status } from "@/hooks/use-metrics";
 
 function StatusDot({ status }: { status: Status }) {
@@ -85,6 +86,14 @@ export function Header({
         </div>
 
         <div className="ml-auto flex items-center gap-5">
+          <a
+            href={IMESSAGE_HREF}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 font-mono text-[11px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97]"
+          >
+            <MessageCircle className="size-3" />
+            <span className="hidden sm:inline">{SITE.imessagePhoneDisplay}</span>
+            <span className="sm:hidden">text us</span>
+          </a>
           <StatusDot status={status} />
           <div className="hidden font-mono text-[11px] text-muted-foreground sm:block">
             poll {Math.round(pollMs / 1000)}s

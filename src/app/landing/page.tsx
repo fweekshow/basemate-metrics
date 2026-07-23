@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
-import { SITE } from "@/lib/site";
+import { IMESSAGE_HREF, SITE } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
 import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 
@@ -164,21 +164,34 @@ export default async function LandingPage() {
             open — no wallet to set up, no seed phrase, no new app to download.
           </p>
 
-          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
-            <Link
-              href="/"
-              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
-            >
-              Text Basemate to start
-            </Link>
-            <a
-              href={SITE.baseAppStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
-            >
-              Try on Base App
-            </a>
+          <div className="space-y-3 pt-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <a
+                href={IMESSAGE_HREF}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+              >
+                Text
+                <span className="font-mono">{SITE.imessagePhoneDisplay}</span>
+              </a>
+              <a
+                href={SITE.baseAppStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-border bg-white px-6 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+              >
+                Try on Base App
+              </a>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Opens iMessage with a draft to our line.{" "}
+              <Link
+                href="/waitlist"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Or join the waitlist
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </section>
@@ -222,9 +235,7 @@ export default async function LandingPage() {
       <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           <div>
-            <p
-              className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary"
-            >
+            <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
               THE GAP
             </p>
             <h2 className="font-display mb-3 text-2xl font-semibold tracking-normal sm:text-3xl">
@@ -401,18 +412,25 @@ export default async function LandingPage() {
                 Fund with Apple Pay, send USDC in a text, earn yield automatically —
                 all on Base.
               </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a
+                  href={IMESSAGE_HREF}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-white px-6 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
                 >
-                  Text Basemate to start
+                  Text
+                  <span className="font-mono">{SITE.imessagePhoneDisplay}</span>
+                </a>
+                <Link
+                  href="/waitlist"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                >
+                  Join the waitlist
                 </Link>
                 <a
                   href={SITE.metricsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/30 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
                 >
                   See live metrics
                 </a>

@@ -1,9 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const PHONE_DISPLAY = "+1 (628) 316-5638";
-const PHONE_E164 = "+16283165638";
-const SMS_HREF = `sms:${PHONE_E164}?body=${encodeURIComponent("hey")}`;
+import { IMESSAGE_HREF, SITE } from "@/lib/site";
 
 /**
  * Companion gate for anonymous visitors at /. Basemate lives in iMessage —
@@ -47,10 +45,10 @@ export function ImessageGate() {
 
         <div className="flex w-full flex-col items-center gap-3">
           <p className="font-mono text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            {PHONE_DISPLAY}
+            {SITE.imessagePhoneDisplay}
           </p>
           <a
-            href={SMS_HREF}
+            href={IMESSAGE_HREF}
             className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:brightness-110 hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] active:scale-[0.97]"
           >
             Open in Messages
