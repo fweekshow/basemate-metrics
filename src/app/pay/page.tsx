@@ -29,6 +29,7 @@ type PayPageSearchParams = Promise<{
 interface FundSessionResponse {
   paymentLinkUrl: string;
   paymentLinkOptions?: FundPaymentLinkOption[];
+  hostedFallbackUrl?: string;
   expiresAt: string;
 }
 
@@ -61,19 +62,19 @@ export default async function PayPage({
 
   return (
     <SiteShell>
-      <section className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
-        <header className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-            <Wallet className="h-7 w-7" />
+      <section className="mx-auto flex max-w-md flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
+        <header className="flex flex-col items-center gap-3 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
+            <Wallet className="h-6 w-6" />
           </div>
-          <div className="space-y-2">
-            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="space-y-1">
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
               {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate wallet"}
             </h1>
-            <p className="text-base leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {flow === "offramp"
                 ? "Continue to Coinbase to sell USDC on Base and send the proceeds to fiat."
-                : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page."}
+                : "Apple Pay or Google Pay here, or card and bank on Coinbase."}
             </p>
           </div>
         </header>
@@ -82,6 +83,7 @@ export default async function PayPage({
           <OnrampPaymentFrame
             flow={flow}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
+            hostedFallbackUrl={session.hostedFallbackUrl}
             expiresAt={session.expiresAt}
             sessionToken={token}
           />
@@ -140,6 +142,10 @@ async function resolveFundSession(
     return {
       paymentLinkUrl: body.paymentLinkUrl,
       paymentLinkOptions: body.paymentLinkOptions?.filter(isFundPaymentLinkOption),
+      hostedFallbackUrl:
+        typeof body.hostedFallbackUrl === "string" && body.hostedFallbackUrl.startsWith("https://")
+          ? body.hostedFallbackUrl
+          : undefined,
       expiresAt: body.expiresAt,
     };
   } catch (err) {
