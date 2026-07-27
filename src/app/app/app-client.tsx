@@ -667,11 +667,12 @@ function AddFundsButton() {
   const [funded, setFunded] = useState(false);
   const [session, setSession] = useState<{
     paymentLinkOptions: FundPayOption[];
+    hostedFallbackUrl?: string;
     expiresAt: string;
   } | null>(null);
 
   const numericAmount = Number(amount);
-  const canContinue = Number.isFinite(numericAmount) && numericAmount > 0;
+  const canContinue = Number.isFinite(numericAmount) && numericAmount >= 2;
 
   function close() {
     if (busy) return;
@@ -697,11 +698,15 @@ function AddFundsButton() {
         window.location.href = body.redirectUrl as string;
         return;
       }
-      if (!body?.paymentLinkOptions?.length) {
-        throw new Error(body?.error ?? "Couldn't start Apple Pay.");
+      const paymentLinkOptions = (body?.paymentLinkOptions ?? []) as FundPayOption[];
+      const hostedFallbackUrl =
+        typeof body?.hostedFallbackUrl === "string" ? body.hostedFallbackUrl : undefined;
+      if (!paymentLinkOptions.length && !hostedFallbackUrl) {
+        throw new Error(body?.error ?? "Couldn't start checkout.");
       }
       setSession({
-        paymentLinkOptions: body.paymentLinkOptions as FundPayOption[],
+        paymentLinkOptions,
+        hostedFallbackUrl,
         expiresAt: body.expiresAt as string,
       });
     } catch (e) {
@@ -747,6 +752,7 @@ function AddFundsButton() {
                 <OnrampPaymentFrame
                   flow="onramp"
                   paymentLinkOptions={session.paymentLinkOptions}
+                  hostedFallbackUrl={session.hostedFallbackUrl}
                   expiresAt={session.expiresAt}
                   onSuccess={() => {
                     setFunded(true);
@@ -773,7 +779,7 @@ function AddFundsButton() {
             ) : (
               <>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Buy USDC on Base with Apple Pay. Enter how much you want to add.
+                  Buy USDC on Base with Apple Pay, Google Pay, or card on Coinbase. Minimum $2.
                 </p>
                 <label className="mt-5 block">
                   <span className="sr-only">Amount in USD</span>
@@ -782,7 +788,7 @@ function AddFundsButton() {
                     <input
                       type="number"
                       inputMode="decimal"
-                      min="1"
+                      min="2"
                       step="1"
                       autoFocus
                       placeholder="25"
