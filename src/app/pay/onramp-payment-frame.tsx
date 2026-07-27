@@ -7,6 +7,8 @@ interface OnrampPaymentFrameProps {
   flow: "onramp" | "offramp";
   paymentLinkOptions: FundPaymentLinkOption[];
   expiresAt: string;
+  /** Fund session token from /pay?s= — used to log the deposit in Activity. */
+  sessionToken?: string;
   /** Fired once when Coinbase confirms the onramp purchase (polling success). */
   onSuccess?: () => void;
 }
@@ -58,6 +60,7 @@ export function OnrampPaymentFrame({
   flow,
   paymentLinkOptions,
   expiresAt,
+  sessionToken,
   onSuccess,
 }: OnrampPaymentFrameProps) {
   const onSuccessRef = useRef(onSuccess);
@@ -105,6 +108,7 @@ export function OnrampPaymentFrame({
         }
         if (message.eventName === "onramp_api.polling_success" && !successFiredRef.current) {
           successFiredRef.current = true;
+          void recordFundingSession(sessionToken);
           onSuccessRef.current?.();
         }
       }
@@ -298,4 +302,13 @@ function formatExpiry(expiresAt: string): string {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+function recordFundingSession(sessionToken?: string) {
+  if (!sessionToken) return;
+  void fetch("/api/pay/record-funding", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionToken }),
+  }).catch(() => {});
 }
