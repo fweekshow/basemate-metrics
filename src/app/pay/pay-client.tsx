@@ -148,8 +148,13 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
 
       if (payload.eventName === "onramp_api.polling_success" && !redirectedRef.current) {
         redirectedRef.current = true;
+        void fetch("/api/pay/record-funding", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ sessionToken }),
+        }).catch(() => {});
         setLoadState({ status: "idle" });
-        router.replace("/pay/success");
+        router.replace(`/pay/success?s=${encodeURIComponent(sessionToken)}`);
       }
     }
 

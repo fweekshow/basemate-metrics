@@ -83,6 +83,7 @@ export default async function PayPage({
             flow={flow}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
             expiresAt={session.expiresAt}
+            sessionToken={token}
           />
         ) : (
           <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
