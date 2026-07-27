@@ -672,7 +672,7 @@ function AddFundsButton() {
   } | null>(null);
 
   const numericAmount = Number(amount);
-  const canContinue = Number.isFinite(numericAmount) && numericAmount >= 5;
+  const canContinue = Number.isFinite(numericAmount) && numericAmount >= 2;
 
   function close() {
     if (busy) return;
@@ -779,7 +779,7 @@ function AddFundsButton() {
             ) : (
               <>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Buy USDC on Base with Apple Pay, Google Pay, or card on Coinbase. Minimum $5.
+                  Buy USDC on Base with Apple Pay, Google Pay, or card on Coinbase. Minimum $2.
                 </p>
                 <label className="mt-5 block">
                   <span className="sr-only">Amount in USD</span>
@@ -788,7 +788,7 @@ function AddFundsButton() {
                     <input
                       type="number"
                       inputMode="decimal"
-                      min="5"
+                      min="2"
                       step="1"
                       autoFocus
                       placeholder="25"
