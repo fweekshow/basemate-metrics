@@ -1,20 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Loader2 } from "lucide-react";
 
+import { HeadlessOnrampCheckout } from "@/app/pay/headless-onramp-checkout";
 import { OnrampPaymentFrame, type FundCheckoutSession } from "@/app/pay/onramp-payment-frame";
+import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
 
 export function PayFundClient({
   sessionToken,
   initialSession,
+  initialPaymentLinkUrl,
 }: {
   sessionToken: string;
   initialSession: FundCheckoutSession;
+  initialPaymentLinkUrl?: string;
 }) {
+  const initialEmbed = useMemo(
+    () =>
+      resolveEmbeddablePaymentLinks({
+        paymentLinkUrl: initialPaymentLinkUrl,
+        paymentLinkOptions: initialSession.paymentLinkOptions,
+      }),
+    [initialPaymentLinkUrl, initialSession.paymentLinkOptions],
+  );
+
   const [session, setSession] = useState(initialSession);
-  const [sessionReady, setSessionReady] = useState(false);
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState(initialPaymentLinkUrl ?? "");
+  const [sessionReady, setSessionReady] = useState(initialEmbed.length > 0);
 
   const refetchSession = useCallback(async () => {
     const res = await fetch(`/api/pay/fund-session?s=${encodeURIComponent(sessionToken)}`, {
@@ -22,6 +36,7 @@ export function PayFundClient({
     });
     const body = await res.json();
     if (!res.ok) throw new Error(body?.error ?? "Could not refresh checkout.");
+    if (typeof body.paymentLinkUrl === "string") setPaymentLinkUrl(body.paymentLinkUrl);
     setSession({
       paymentLinkOptions: body.paymentLinkOptions ?? [],
       hostedFallbackUrl: body.hostedFallbackUrl,
@@ -38,6 +53,17 @@ export function PayFundClient({
       .finally(() => setSessionReady(true));
   }, [refetchSession]);
 
+  const embedOptions = useMemo(
+    () =>
+      resolveEmbeddablePaymentLinks({
+        paymentLinkUrl,
+        paymentLinkOptions: session.paymentLinkOptions,
+      }),
+    [paymentLinkUrl, session.paymentLinkOptions],
+  );
+
+  const iframeOptions = embedOptions.length > 0 ? embedOptions : initialEmbed;
+
   const requestLimitUpgradeUrl = useCallback(async () => {
     const res = await fetch("/api/pay/limit-upgrade-url", {
       method: "POST",
@@ -52,13 +78,23 @@ export function PayFundClient({
     if (!res.ok) throw new Error(body?.error ?? "Could not start limit upgrade.");
     if (!body.upgradeUrl) throw new Error("Missing upgrade URL.");
     return { upgradeUrl: body.upgradeUrl as string, expiresAt: body.expiresAt as string };
-  }, [sessionToken]);
+  }, [sessionToken, refetchSession]);
+
+  if (iframeOptions.length > 0) {
+    return (
+      <HeadlessOnrampCheckout
+        paymentLinkOptions={iframeOptions}
+        expiresAt={session.expiresAt}
+        sessionToken={sessionToken}
+      />
+    );
+  }
 
   if (!sessionReady) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card/80 p-8 text-center shadow-sm">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading Apple Pay checkout…</p>
+        <p className="text-sm text-muted-foreground">Loading checkout…</p>
       </div>
     );
   }

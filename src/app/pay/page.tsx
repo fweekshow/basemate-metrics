@@ -7,6 +7,7 @@ import { PayFundClient } from "@/app/pay/pay-fund-client";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
 import { forwardClientIpHeaders } from "@/lib/client-ip";
+import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export default async function PayPage({
 
   return (
     <SiteShell>
-      <section className="mx-auto flex max-w-md flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
+      <section className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
         <header className="flex flex-col items-center gap-3 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
             <Wallet className="h-6 w-6" />
@@ -79,7 +80,7 @@ export default async function PayPage({
             <p className="text-sm leading-relaxed text-muted-foreground">
               {flow === "offramp"
                 ? "Continue to Coinbase to sell USDC on Base and send the proceeds to fiat."
-                : "Apple Pay or Google Pay here, or card and bank on Coinbase."}
+                : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page."}
             </p>
           </div>
         </header>
@@ -87,8 +88,12 @@ export default async function PayPage({
         {session?.paymentLinkUrl && token ? (
           <PayFundClient
             sessionToken={token}
+            initialPaymentLinkUrl={session.paymentLinkUrl}
             initialSession={{
-              paymentLinkOptions: paymentLinkOptionsForSession(session),
+              paymentLinkOptions: resolveEmbeddablePaymentLinks({
+                paymentLinkUrl: session.paymentLinkUrl,
+                paymentLinkOptions: session.paymentLinkOptions,
+              }),
               hostedFallbackUrl: session.hostedFallbackUrl,
               expiresAt: session.expiresAt,
               headlessBlockedReason: session.headlessBlockedReason,
@@ -179,26 +184,6 @@ async function resolveFundSession(
     return {
       error: err instanceof Error ? err.message : "Could not load this fund link.",
     };
-  }
-}
-
-function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
-  if (session.paymentLinkOptions?.length) {
-    return session.paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
-  }
-  if (isHostedCoinbaseOnrampUrl(session.paymentLinkUrl)) return [];
-  return [];
-}
-
-function isHostedCoinbaseOnrampUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return (
-      parsed.hostname === "pay.coinbase.com" &&
-      (parsed.pathname.includes("/buy/select-asset") || parsed.searchParams.has("sessionToken"))
-    );
-  } catch {
-    return false;
   }
 }
 
