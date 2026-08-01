@@ -787,12 +787,7 @@ function AddFundsButton() {
                 <OnrampPaymentFrame
                   flow="onramp"
                   paymentLinkOptions={session.paymentLinkOptions}
-                  hostedFallbackUrl={session.hostedFallbackUrl}
                   expiresAt={session.expiresAt}
-                  headlessBlockedReason={session.headlessBlockedReason}
-                  limitUpgradeEligible={session.limitUpgradeEligible}
-                  onRequestLimitUpgradeUrl={requestLimitUpgradeUrl}
-                  onLimitUpgradeComplete={refetchFundSession}
                   onSuccess={() => {
                     setFunded(true);
                     void fetch("/api/app/record-funding", {
