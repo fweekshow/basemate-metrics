@@ -31,6 +31,10 @@ export async function GET(req: NextRequest) {
 
   const endpoint = new URL("/api/agent/fund-session", host.replace(/\/$/, ""));
   endpoint.searchParams.set("token", token);
+  const remint = req.nextUrl.searchParams.get("remint");
+  if (remint === "1" || remint === "true") {
+    endpoint.searchParams.set("remint", "1");
+  }
 
   try {
     const endUserIp = clientIpFromRequest(req);

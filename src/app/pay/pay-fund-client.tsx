@@ -30,8 +30,10 @@ export function PayFundClient({
   const [paymentLinkUrl, setPaymentLinkUrl] = useState(initialPaymentLinkUrl ?? "");
   const [sessionReady, setSessionReady] = useState(initialEmbed.length > 0);
 
-  const refetchSession = useCallback(async () => {
-    const res = await fetch(`/api/pay/fund-session?s=${encodeURIComponent(sessionToken)}`, {
+  const refetchSession = useCallback(async (opts?: { forceRemint?: boolean }) => {
+    const qs = new URLSearchParams({ s: sessionToken });
+    if (opts?.forceRemint) qs.set("remint", "1");
+    const res = await fetch(`/api/pay/fund-session?${qs.toString()}`, {
       cache: "no-store",
     });
     const body = await res.json();
@@ -68,7 +70,9 @@ export function PayFundClient({
       return;
     }
     initialFetchDoneRef.current = true;
-    void refetchSession()
+    const shouldForceRemint =
+      initialEmbed.length === 0 && initialSession.limitUpgradeComplete === true;
+    void refetchSession(shouldForceRemint ? { forceRemint: true } : undefined)
       .catch(() => {})
       .finally(() => setSessionReady(true));
   }, [refetchSession, initialEmbed.length]);
@@ -130,7 +134,7 @@ export function PayFundClient({
       limitUpgradeEligible={session.limitUpgradeEligible}
       limitUpgradeComplete={session.limitUpgradeComplete}
       onRequestLimitUpgradeUrl={requestLimitUpgradeUrl}
-      onLimitUpgradeComplete={refetchSession}
+      onLimitUpgradeComplete={() => refetchSession({ forceRemint: true })}
     />
   );
 }
