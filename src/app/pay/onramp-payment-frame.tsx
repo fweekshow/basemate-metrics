@@ -1,24 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
+
+export interface FundPaymentLinkOption {
+  method: "apple_pay" | "google_pay";
+  label: "Apple Pay" | "Google Pay";
+  url: string;
+}
+
+export interface FundCheckoutSession {
+  paymentLinkOptions: FundPaymentLinkOption[];
+  hostedFallbackUrl?: string;
+  expiresAt: string;
+  headlessBlockedReason?: string;
+  limitUpgradeEligible?: boolean;
+}
 
 interface OnrampPaymentFrameProps {
   flow: "onramp" | "offramp";
   paymentLinkOptions: FundPaymentLinkOption[];
   expiresAt: string;
-  /** Coinbase-hosted URL for debit card / bank (full-page redirect, not iframe). */
   hostedFallbackUrl?: string;
-  /** Fund session token from /pay?s= — used to log the deposit in Activity. */
   sessionToken?: string;
-  /** Fired once when Coinbase confirms the onramp purchase (polling success). */
+  headlessBlockedReason?: string;
+  limitUpgradeEligible?: boolean;
   onSuccess?: () => void;
-}
-
-interface FundPaymentLinkOption {
-  method: "apple_pay" | "google_pay";
-  label: "Apple Pay" | "Google Pay";
-  url: string;
+  onRequestLimitUpgradeUrl?: () => Promise<{ upgradeUrl: string; expiresAt: string }>;
+  onLimitUpgradeComplete?: () => void | Promise<void>;
 }
 
 interface OnrampPostMessage {
@@ -49,7 +58,7 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
   },
   "onramp_api.polling_success": {
     tone: "success",
-    message: "Done. Your USDC is on its way to your Basemate wallet.",
+    message: "Done. Your USDC is on its way to your Basemate Account.",
   },
   "onramp_api.cancel": {
     tone: "error",
@@ -75,6 +84,7 @@ const FRAME_LOAD_TIMEOUT_MS = 12_000;
 const DEFAULT_FRAME_HEIGHT = 120;
 const LOAD_SUCCESS_HEIGHT = 96;
 const POLLING_FRAME_HEIGHT = 320;
+const UPGRADE_FRAME_HEIGHT = 480;
 const MAX_FRAME_HEIGHT = 480;
 
 export function OnrampPaymentFrame({
@@ -83,10 +93,17 @@ export function OnrampPaymentFrame({
   expiresAt,
   hostedFallbackUrl,
   sessionToken,
+  headlessBlockedReason,
+  limitUpgradeEligible,
   onSuccess,
+  onRequestLimitUpgradeUrl,
+  onLimitUpgradeComplete,
 }: OnrampPaymentFrameProps) {
   const onSuccessRef = useRef(onSuccess);
   onSuccessRef.current = onSuccess;
+  const onLimitUpgradeCompleteRef = useRef(onLimitUpgradeComplete);
+  onLimitUpgradeCompleteRef.current = onLimitUpgradeComplete;
+
   const successFiredRef = useRef(false);
   const [status, setStatus] = useState(EVENT_COPY["onramp_api.load_pending"]);
   const [isFrameLoading, setIsFrameLoading] = useState(true);
@@ -94,17 +111,34 @@ export function OnrampPaymentFrame({
   const [hasFrameLoadDelayed, setHasFrameLoadDelayed] = useState(false);
   const [frameRetryNonce, setFrameRetryNonce] = useState(0);
   const [frameHeight, setFrameHeight] = useState(DEFAULT_FRAME_HEIGHT);
-  const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(
-    paymentLinkOptions.length > 0 ? "wallet" : "hosted",
-  );
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [upgradeUrl, setUpgradeUrl] = useState<string | null>(null);
+  const [upgradeMode, setUpgradeMode] = useState(false);
+
+  const guestLimitHit =
+    headlessBlockedReason === "guest_transaction_count" ||
+    (paymentLinkOptions.length === 0 && limitUpgradeEligible);
+
+  const safePaymentOptions = paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
+
+  const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(() => {
+    if (safePaymentOptions.length > 0) return "wallet";
+    if (limitUpgradeEligible && guestLimitHit) return "wallet";
+    return "hosted";
+  });
   const [selectedMethod, setSelectedMethod] = useState(() =>
-    defaultPaymentMethod(paymentLinkOptions),
+    defaultPaymentMethod(safePaymentOptions),
   );
   const selectedOption =
-    paymentLinkOptions.find((option) => option.method === selectedMethod) ??
-    paymentLinkOptions[0];
+    safePaymentOptions.find((option) => option.method === selectedMethod) ??
+    safePaymentOptions[0];
   const selectedOptionUrl = selectedOption?.url;
-  const expiresLabel = useMemo(() => formatExpiry(expiresAt), [expiresAt]);
+
+  const [expiresLabel, setExpiresLabel] = useState("");
+  useEffect(() => {
+    setExpiresLabel(formatExpiry(expiresAt));
+  }, [expiresAt]);
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -118,6 +152,23 @@ export function OnrampPaymentFrame({
         if (typeof nextHeight === "number" && nextHeight > 0) {
           setFrameHeight(Math.min(nextHeight, MAX_FRAME_HEIGHT));
         }
+        return;
+      }
+
+      if (message.eventName === "onramp_api.upgrade_approved") {
+        setUpgradeMode(false);
+        setUpgradeUrl(null);
+        setStatus({
+          tone: "success",
+          message: "Limits increased. Loading Apple Pay checkout...",
+        });
+        void onLimitUpgradeCompleteRef.current?.();
+        return;
+      }
+
+      if (message.eventName === "onramp_api.cancel" && upgradeMode) {
+        setUpgradeMode(false);
+        setUpgradeUrl(null);
         return;
       }
 
@@ -157,10 +208,10 @@ export function OnrampPaymentFrame({
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [sessionToken]);
+  }, [sessionToken, upgradeMode]);
 
   useEffect(() => {
-    if (!selectedOptionUrl || checkoutMode !== "wallet") return;
+    if (!selectedOptionUrl || checkoutMode !== "wallet" || upgradeMode) return;
 
     setIsFrameLoading(true);
     setHasFrameLoaded(false);
@@ -173,11 +224,29 @@ export function OnrampPaymentFrame({
     }, FRAME_LOAD_TIMEOUT_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [selectedOptionUrl, frameRetryNonce, checkoutMode]);
+  }, [selectedOptionUrl, frameRetryNonce, checkoutMode, upgradeMode]);
 
-  if (!selectedOption && !hostedFallbackUrl) return null;
+  async function startLimitUpgrade() {
+    if (!onRequestLimitUpgradeUrl || upgradeBusy) return;
+    setUpgradeBusy(true);
+    setUpgradeError(null);
+    try {
+      const { upgradeUrl: url } = await onRequestLimitUpgradeUrl();
+      setUpgradeUrl(url);
+      setUpgradeMode(true);
+      setFrameHeight(UPGRADE_FRAME_HEIGHT);
+    } catch (e) {
+      setUpgradeError(e instanceof Error ? e.message : "Could not start limit upgrade.");
+    } finally {
+      setUpgradeBusy(false);
+    }
+  }
+
+  if (!safePaymentOptions.length && !hostedFallbackUrl && !limitUpgradeEligible) return null;
 
   if (flow === "offramp") {
+    const offrampUrl = paymentLinkOptions[0]?.url;
+    if (!offrampUrl) return null;
     return (
       <div className="mx-auto grid w-full max-w-md gap-4">
         <div className="flex flex-col items-center gap-5 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
@@ -190,7 +259,7 @@ export function OnrampPaymentFrame({
           <button
             type="button"
             onClick={() => {
-              window.location.assign(selectedOption.url);
+              window.location.assign(offrampUrl);
             }}
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98]"
           >
@@ -199,16 +268,19 @@ export function OnrampPaymentFrame({
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-center text-sm text-muted-foreground">
-          Link expires {expiresLabel}
+          Link expires {expiresLabel || "soon"}
         </div>
       </div>
     );
   }
 
+  const showGuestLimitPanel =
+    guestLimitHit && limitUpgradeEligible && checkoutMode === "wallet" && !upgradeMode;
+
   return (
     <div className="mx-auto grid w-full max-w-md gap-4">
       <div className="grid gap-2 rounded-2xl border border-border/70 bg-card/80 p-2 shadow-sm">
-        {paymentLinkOptions.length > 0 ? (
+        {safePaymentOptions.length > 0 && !showGuestLimitPanel ? (
           <button
             type="button"
             onClick={() => setCheckoutMode("wallet")}
@@ -242,7 +314,36 @@ export function OnrampPaymentFrame({
         ) : null}
       </div>
 
-      {checkoutMode === "hosted" && hostedFallbackUrl ? (
+      {showGuestLimitPanel ? (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+          <p className="text-sm leading-6 text-muted-foreground">
+            You&apos;ve used the 15 guest checkouts allowed on this phone for Apple Pay here. Increase limits with
+            Coinbase to keep paying on Basemate, or use card or bank below.
+          </p>
+          {upgradeError ? <p className="text-sm text-destructive">{upgradeError}</p> : null}
+          <button
+            type="button"
+            disabled={upgradeBusy || !onRequestLimitUpgradeUrl}
+            onClick={() => void startLimitUpgrade()}
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+          >
+            {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Increase limits
+          </button>
+        </div>
+      ) : upgradeMode && upgradeUrl ? (
+        <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-2 shadow-sm">
+          <iframe
+            src={upgradeUrl}
+            title="Increase Coinbase guest checkout limits"
+            allow="payment"
+            sandbox="allow-scripts allow-same-origin"
+            referrerPolicy="no-referrer"
+            style={{ height: `${frameHeight}px` }}
+            className="w-full rounded-2xl border-0 bg-background"
+          />
+        </div>
+      ) : checkoutMode === "hosted" && hostedFallbackUrl ? (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
           <p className="text-sm leading-6 text-muted-foreground">
             You&apos;ll finish checkout on Coinbase. Debit cards work without an account; bank transfer requires signing in.
@@ -258,9 +359,9 @@ export function OnrampPaymentFrame({
         </div>
       ) : selectedOption ? (
         <>
-          {paymentLinkOptions.length > 1 ? (
+          {safePaymentOptions.length > 1 ? (
             <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border/70 bg-card/80 p-2 shadow-sm">
-              {paymentLinkOptions.map((option) => {
+              {safePaymentOptions.map((option) => {
                 const selected = option.method === selectedOption.method;
                 return (
                   <button
@@ -331,15 +432,6 @@ export function OnrampPaymentFrame({
                       >
                         Retry
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          window.open(selectedOption.url, "_blank", "noopener,noreferrer");
-                        }}
-                        className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-muted"
-                      >
-                        Open directly
-                      </button>
                       {hostedFallbackUrl ? (
                         <button
                           type="button"
@@ -356,22 +448,53 @@ export function OnrampPaymentFrame({
             ) : null}
           </div>
         </>
+      ) : guestLimitHit && limitUpgradeEligible ? (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Guest checkout limit reached on this phone. Increase limits to use Apple Pay here.
+          </p>
+          <button
+            type="button"
+            disabled={upgradeBusy || !onRequestLimitUpgradeUrl}
+            onClick={() => void startLimitUpgrade()}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground"
+          >
+            {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Increase limits
+          </button>
+        </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
-        <div className="flex items-start gap-3">
-          <StatusIcon tone={status.tone} />
-          <div>
-            <p className="font-medium text-foreground">{status.message}</p>
-            {checkoutMode === "wallet" && selectedOption ? (
-              <p>Use the {selectedOption.label} button, then keep this page open until it finishes.</p>
-            ) : null}
+      {!showGuestLimitPanel && checkoutMode !== "hosted" ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
+          <div className="flex items-start gap-3">
+            <StatusIcon tone={status.tone} />
+            <div>
+              <p className="font-medium text-foreground">{status.message}</p>
+              {selectedOption ? (
+                <p>Use the {selectedOption.label} button, then keep this page open until it finishes.</p>
+              ) : null}
+            </div>
           </div>
+          <p className="text-xs" suppressHydrationWarning>
+            Link expires {expiresLabel || "soon"}
+          </p>
         </div>
-        <p className="text-xs">Link expires {expiresLabel}</p>
-      </div>
+      ) : null}
     </div>
   );
+}
+
+function isHostedCoinbaseOnrampUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === "pay.coinbase.com" &&
+      (parsed.pathname.includes("/buy/select-asset") || parsed.searchParams.has("sessionToken"))
+    );
+  } catch {
+    return false;
+  }
 }
 
 function defaultPaymentMethod(options: FundPaymentLinkOption[]): FundPaymentLinkOption["method"] {
