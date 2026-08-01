@@ -786,6 +786,7 @@ function AddFundsButton() {
               <div className="mt-4">
                 <OnrampPaymentFrame
                   flow="onramp"
+                  layout="modal"
                   paymentLinkOptions={session.paymentLinkOptions}
                   expiresAt={session.expiresAt}
                   onSuccess={() => {

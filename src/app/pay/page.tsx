@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
-import { AlertCircle, Wallet } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
+import { PayFlowShell } from "@/components/site/pay-flow-shell";
 import { SiteShell } from "@/components/site/site-shell";
 import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
 import { SITE } from "@/lib/site";
@@ -30,6 +32,8 @@ type PayPageSearchParams = Promise<{
 interface FundSessionResponse {
   paymentLinkUrl: string;
   paymentLinkOptions?: FundPaymentLinkOption[];
+  hostedFallbackUrl?: string;
+  amountUsd?: number;
   expiresAt: string;
 }
 
@@ -60,52 +64,145 @@ export default async function PayPage({
   const session = token ? await resolveFundSession(token) : null;
   const flow = session?.paymentLinkUrl ? flowForPaymentUrl(session.paymentLinkUrl) : "onramp";
 
-  return (
-    <SiteShell>
-      <section className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
-        <header className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-            <Wallet className="h-7 w-7" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate wallet"}
-            </h1>
-            <p className="text-base leading-relaxed text-muted-foreground">
-              {flow === "offramp"
-                ? "Continue to Coinbase to sell USDC on Base and send the proceeds to fiat."
-                : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page."}
-            </p>
-          </div>
-        </header>
+  const Shell = token ? PayFlowShell : SiteShell;
 
+  return (
+    <Shell>
+      <section className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center gap-6 py-4 sm:py-8">
         {session?.paymentLinkUrl ? (
-          <OnrampPaymentFrame
-            flow={flow}
-            paymentLinkOptions={paymentLinkOptionsForSession(session)}
-            expiresAt={session.expiresAt}
-            sessionToken={token}
-          />
+          <article
+            className="overflow-hidden rounded-[22px] border border-border/80 bg-card"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
+            <PayFundHeader flow={flow} amountUsd={session.amountUsd} variant="inCard" />
+            <OnrampPaymentFrame
+              flow={flow}
+              layout="embedded"
+              paymentLinkOptions={paymentLinkOptionsForSession(session)}
+              expiresAt={session.expiresAt}
+              sessionToken={token}
+              hostedFallbackUrl={session.hostedFallbackUrl}
+            />
+          </article>
         ) : (
-          <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
+          <>
+            <PayFundHeader flow="onramp" />
+            <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
+          </>
         )}
       </section>
-    </SiteShell>
+    </Shell>
+  );
+}
+
+function PayFundHeader({
+  flow,
+  amountUsd,
+  variant = "standalone",
+}: {
+  flow: "onramp" | "offramp";
+  amountUsd?: number;
+  variant?: "standalone" | "inCard";
+}) {
+  const formattedAmount =
+    typeof amountUsd === "number" && Number.isFinite(amountUsd) && amountUsd > 0
+      ? new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: amountUsd % 1 === 0 ? 0 : 2,
+        }).format(amountUsd)
+      : null;
+
+  const title =
+    flow === "offramp"
+      ? "Cash out from Basemate"
+      : formattedAmount
+        ? `Add ${formattedAmount} to your account`
+        : "Fund your Basemate Account";
+
+  const subtitle =
+    flow === "offramp"
+      ? "Sell USDC on Base and send proceeds to your bank via Coinbase."
+      : formattedAmount
+        ? "Buy USDC on Base with Apple Pay or Google Pay — without leaving this page."
+        : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page.";
+
+  return (
+    <header
+      className={
+        variant === "inCard"
+          ? "flex items-start gap-4 border-b border-border/60 bg-gradient-to-b from-secondary/50 to-card px-5 py-5 text-left"
+          : "flex flex-col items-center gap-4 text-center"
+      }
+    >
+      <div
+        className={
+          variant === "inCard"
+            ? "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-card p-1.5"
+            : "flex h-[72px] w-[72px] items-center justify-center rounded-2xl border border-border/80 bg-card p-2"
+        }
+        style={variant === "inCard" ? undefined : { boxShadow: "var(--shadow-card)" }}
+      >
+        <Image
+          src="/brand/mascot/mate-peace.png"
+          alt=""
+          width={variant === "inCard" ? 44 : 56}
+          height={variant === "inCard" ? 44 : 56}
+          className={variant === "inCard" ? "h-11 w-11 object-contain" : "h-14 w-14 object-contain"}
+          priority
+        />
+      </div>
+      <div className={variant === "inCard" ? "min-w-0 flex-1 space-y-1" : "space-y-2"}>
+        <h1
+          className={
+            variant === "inCard"
+              ? "font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl"
+              : "font-display text-2xl font-bold tracking-tight sm:text-3xl"
+          }
+        >
+          {title}
+        </h1>
+        <p
+          className={
+            variant === "inCard"
+              ? "text-sm leading-snug text-muted-foreground"
+              : "text-sm leading-relaxed text-muted-foreground sm:text-base"
+          }
+        >
+          {subtitle}
+        </p>
+        {flow === "onramp" && variant !== "inCard" ? (
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground/80">
+            USDC · Base · Coinbase
+          </p>
+        ) : null}
+      </div>
+    </header>
   );
 }
 
 function OfframpHeader() {
   return (
     <header className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-        <Wallet className="h-7 w-7" />
+      <div
+        className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/80 bg-card p-2"
+        style={{ boxShadow: "var(--shadow-card)" }}
+      >
+        <Image
+          src="/brand/mascot/mate-peace.png"
+          alt=""
+          width={40}
+          height={40}
+          className="h-10 w-10 object-contain"
+        />
       </div>
       <div className="space-y-2">
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
           Cash out from Basemate
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground">
-          Configure your sale with Coinbase, then approve the exact USDC transfer from your Base Account.
+          Configure your sale with Coinbase, then approve the exact USDC transfer from your Base
+          Account.
         </p>
       </div>
     </header>
@@ -138,9 +235,19 @@ async function resolveFundSession(
       return { error: body.error ?? "This fund link is invalid or expired." };
     }
 
+    const amountUsd =
+      typeof body.amountUsd === "number" && Number.isFinite(body.amountUsd) && body.amountUsd > 0
+        ? body.amountUsd
+        : undefined;
+
     return {
       paymentLinkUrl: body.paymentLinkUrl,
       paymentLinkOptions: body.paymentLinkOptions?.filter(isFundPaymentLinkOption),
+      hostedFallbackUrl:
+        typeof body.hostedFallbackUrl === "string" && body.hostedFallbackUrl.startsWith("https://")
+          ? body.hostedFallbackUrl
+          : undefined,
+      amountUsd,
       expiresAt: body.expiresAt,
     };
   } catch (err) {
@@ -190,12 +297,15 @@ function isFundPaymentLinkOption(value: unknown): value is FundPaymentLinkOption
 
 function PayErrorCard({ message }: { message: string }) {
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+    <div
+      className="mx-auto flex w-full flex-col items-center gap-3 rounded-[20px] border border-border/80 bg-card p-6 text-center"
+      style={{ boxShadow: "var(--shadow-card)" }}
+    >
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
         <AlertCircle className="h-5 w-5" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold">Payment link unavailable</h2>
+        <h2 className="font-display text-lg font-semibold">Payment link unavailable</h2>
         <p className="text-sm leading-6 text-muted-foreground">{message}</p>
       </div>
     </div>

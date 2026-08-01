@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { SiteShell } from "@/components/site/site-shell";
+import { PayFlowShell } from "@/components/site/pay-flow-shell";
 import { SITE } from "@/lib/site";
 import { PaySuccessClient } from "@/app/pay/success/pay-success-client";
 
@@ -28,8 +28,8 @@ export default async function PaySuccessPage({
   const sessionToken = Array.isArray(params.s) ? params.s[0] : params.s;
 
   return (
-    <SiteShell>
+    <PayFlowShell>
       <PaySuccessClient sessionToken={sessionToken} />
-    </SiteShell>
+    </PayFlowShell>
   );
 }
