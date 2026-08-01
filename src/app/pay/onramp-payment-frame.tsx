@@ -119,10 +119,14 @@ export function OnrampPaymentFrame({
   const guestLimitHit = headlessBlockedReason === "guest_transaction_count";
 
   const safePaymentOptions = paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
+  const showLimitUpgrade =
+    guestLimitHit ||
+    limitUpgradeEligible === true ||
+    (safePaymentOptions.length === 0 && Boolean(onRequestLimitUpgradeUrl));
 
   const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(() => {
     if (safePaymentOptions.length > 0) return "wallet";
-    if (guestLimitHit) return "wallet";
+    if (showLimitUpgrade) return "wallet";
     return "hosted";
   });
   const [selectedMethod, setSelectedMethod] = useState(() =>
@@ -273,12 +277,12 @@ export function OnrampPaymentFrame({
   }
 
   const showGuestLimitPanel =
-    guestLimitHit && checkoutMode === "wallet" && !upgradeMode;
+    showLimitUpgrade && checkoutMode === "wallet" && !upgradeMode;
 
   return (
     <div className="mx-auto grid w-full max-w-md gap-4">
       <div className="grid gap-2 rounded-2xl border border-border/70 bg-card/80 p-2 shadow-sm">
-        {safePaymentOptions.length > 0 || guestLimitHit ? (
+        {safePaymentOptions.length > 0 || showLimitUpgrade ? (
           <button
             type="button"
             onClick={() => setCheckoutMode("wallet")}
@@ -289,12 +293,12 @@ export function OnrampPaymentFrame({
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             ].join(" ")}
           >
-            {guestLimitHit && safePaymentOptions.length === 0
+            {showLimitUpgrade && safePaymentOptions.length === 0
               ? "Apple Pay — increase limits"
               : "Apple Pay / Google Pay"}
             <span className="mt-0.5 block text-xs font-normal opacity-80">
-              {guestLimitHit && safePaymentOptions.length === 0
-                ? "Guest checkout cap reached — verify with Coinbase to continue"
+              {showLimitUpgrade && safePaymentOptions.length === 0
+                ? "Guest checkout cap may apply — verify with Coinbase to use Apple Pay here"
                 : "Pay here — no Coinbase account needed"}
             </span>
           </button>
@@ -457,7 +461,7 @@ export function OnrampPaymentFrame({
             ) : null}
           </div>
         </>
-      ) : guestLimitHit ? (
+      ) : showLimitUpgrade ? (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
           <p className="text-sm leading-6 text-muted-foreground">
             Guest checkout limit reached on this phone. Increase limits to use Apple Pay here.
