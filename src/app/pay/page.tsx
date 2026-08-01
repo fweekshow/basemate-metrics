@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import { AlertCircle, Wallet } from "lucide-react";
 
 import { PayFundClient } from "@/app/pay/pay-fund-client";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
+import { forwardClientIpHeaders } from "@/lib/client-ip";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -137,10 +139,17 @@ async function resolveFundSession(
   const endpoint = new URL("/api/agent/fund-session", apiHost.replace(/\/$/, ""));
   endpoint.searchParams.set("token", token);
 
+  const h = await headers();
+  const endUserIp =
+    h.get("cf-connecting-ip")?.trim() ||
+    h.get("x-vercel-forwarded-for")?.trim()?.split(",")[0]?.trim() ||
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    undefined;
+
   try {
     const res = await fetch(endpoint, {
       cache: "no-store",
-      headers: { accept: "application/json" },
+      headers: { accept: "application/json", ...forwardClientIpHeaders(endUserIp) },
     });
     const body = (await res.json()) as Partial<FundSessionResponse> & {
       error?: string;

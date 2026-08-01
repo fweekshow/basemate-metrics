@@ -68,6 +68,20 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
   },
 };
 
+const HEADLESS_BLOCK_COPY: Record<string, string> = {
+  guest_transaction_count:
+    "Coinbase still treats this phone as at the guest checkout cap. Complete Increase limits, or use card or bank.",
+  invalid_app_id:
+    "Coinbase rejected the Apple Pay embed for this site (invalid_app_id). Basemate must have basemate.app on the CDP Onramp domain allowlist and CDP_FUND_PAGE_DOMAIN=basemate.app on the agent.",
+  guest_region_forbidden:
+    "Coinbase thinks this session is outside the US. Turn off VPN, use US cellular or Wi‑Fi, then refresh.",
+};
+
+function headlessBlockMessage(reason?: string): string | undefined {
+  if (!reason) return undefined;
+  return HEADLESS_BLOCK_COPY[reason];
+}
+
 const ERROR_COPY: Record<string, string> = {
   ERROR_CODE_GUEST_APPLE_PAY_NOT_SUPPORTED:
     "Apple Pay isn't available in this browser. Open in Safari, or pay with a card or bank on Coinbase.",
@@ -363,6 +377,11 @@ export function OnrampPaymentFrame({
             Coinbase already verified guest limits for this phone. Refresh checkout to load Apple Pay. If it
             still does not appear, use card or bank below or ask Basemate for a new fund link.
           </p>
+          {headlessBlockMessage(headlessBlockedReason) ? (
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+              {headlessBlockMessage(headlessBlockedReason)}
+            </p>
+          ) : null}
           {upgradeError ? <p className="text-sm text-destructive">{upgradeError}</p> : null}
           <button
             type="button"

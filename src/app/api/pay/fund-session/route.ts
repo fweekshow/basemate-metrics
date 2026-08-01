@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { clientIpFromRequest, forwardClientIpHeaders } from "@/lib/client-ip";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -31,7 +33,11 @@ export async function GET(req: NextRequest) {
   endpoint.searchParams.set("token", token);
 
   try {
-    const res = await fetch(endpoint, { cache: "no-store", headers: { accept: "application/json" } });
+    const endUserIp = clientIpFromRequest(req);
+    const res = await fetch(endpoint, {
+      cache: "no-store",
+      headers: { accept: "application/json", ...forwardClientIpHeaders(endUserIp) },
+    });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status, headers: { "cache-control": "no-store" } });
   } catch (err) {

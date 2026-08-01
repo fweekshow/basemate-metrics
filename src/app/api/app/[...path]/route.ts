@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { agentHost, getAppSession } from "@/lib/app-session";
+import { clientIpFromRequest, forwardClientIpHeaders } from "@/lib/client-ip";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,10 +38,11 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
   });
 
   try {
+    const endUserIp = clientIpFromRequest(req);
     const init: RequestInit = {
       method,
       cache: "no-store",
-      headers: { accept: "application/json" },
+      headers: { accept: "application/json", ...forwardClientIpHeaders(endUserIp) },
     };
     if (method === "POST") {
       const body = await req.json().catch(() => ({}));
