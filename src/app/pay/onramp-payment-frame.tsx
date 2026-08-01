@@ -143,16 +143,13 @@ export function OnrampPaymentFrame({
     (guestLimitHit && !needsLimitUpgrade && limitUpgradeEligible !== true);
 
   const showWalletTab =
-    safePaymentOptions.length > 0 ||
-    needsLimitUpgrade ||
-    limitUpgradeCompleteEffective ||
-    Boolean(headlessBlockedReason) ||
-    (flow === "onramp" && Boolean(onRequestLimitUpgradeUrl));
+    safePaymentOptions.length > 0 || needsLimitUpgrade || limitUpgradeCompleteEffective;
 
   const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(() => {
     if (safePaymentOptions.length > 0) return "wallet";
-    if (showWalletTab) return "wallet";
-    return "hosted";
+    if (hostedFallbackUrl && !needsLimitUpgrade && !limitUpgradeCompleteEffective) return "hosted";
+    if (needsLimitUpgrade || limitUpgradeCompleteEffective) return "wallet";
+    return hostedFallbackUrl ? "hosted" : "wallet";
   });
   const [selectedMethod, setSelectedMethod] = useState(() =>
     defaultPaymentMethod(safePaymentOptions),
@@ -166,6 +163,12 @@ export function OnrampPaymentFrame({
   useEffect(() => {
     setExpiresLabel(formatExpiry(expiresAt));
   }, [expiresAt]);
+
+  useEffect(() => {
+    if (safePaymentOptions.length > 0 && checkoutMode !== "wallet") {
+      setCheckoutMode("wallet");
+    }
+  }, [safePaymentOptions.length, checkoutMode]);
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {

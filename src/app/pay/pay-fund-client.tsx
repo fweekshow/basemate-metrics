@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { Loader2 } from "lucide-react";
+
 import { OnrampPaymentFrame, type FundCheckoutSession } from "@/app/pay/onramp-payment-frame";
 
 export function PayFundClient({
@@ -12,6 +14,7 @@ export function PayFundClient({
   initialSession: FundCheckoutSession;
 }) {
   const [session, setSession] = useState(initialSession);
+  const [sessionReady, setSessionReady] = useState(false);
 
   const refetchSession = useCallback(async () => {
     const res = await fetch(`/api/pay/fund-session?s=${encodeURIComponent(sessionToken)}`, {
@@ -30,7 +33,9 @@ export function PayFundClient({
   }, [sessionToken]);
 
   useEffect(() => {
-    void refetchSession().catch(() => {});
+    void refetchSession()
+      .catch(() => {})
+      .finally(() => setSessionReady(true));
   }, [refetchSession]);
 
   const requestLimitUpgradeUrl = useCallback(async () => {
@@ -48,6 +53,15 @@ export function PayFundClient({
     if (!body.upgradeUrl) throw new Error("Missing upgrade URL.");
     return { upgradeUrl: body.upgradeUrl as string, expiresAt: body.expiresAt as string };
   }, [sessionToken]);
+
+  if (!sessionReady) {
+    return (
+      <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card/80 p-8 text-center shadow-sm">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading Apple Pay checkout…</p>
+      </div>
+    );
+  }
 
   return (
     <OnrampPaymentFrame
