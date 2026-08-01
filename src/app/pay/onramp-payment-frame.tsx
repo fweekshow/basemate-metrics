@@ -15,6 +15,7 @@ export interface FundCheckoutSession {
   expiresAt: string;
   headlessBlockedReason?: string;
   limitUpgradeEligible?: boolean;
+  limitUpgradeComplete?: boolean;
 }
 
 interface OnrampPaymentFrameProps {
@@ -25,6 +26,7 @@ interface OnrampPaymentFrameProps {
   sessionToken?: string;
   headlessBlockedReason?: string;
   limitUpgradeEligible?: boolean;
+  limitUpgradeComplete?: boolean;
   onSuccess?: () => void;
   onRequestLimitUpgradeUrl?: () => Promise<{ upgradeUrl: string; expiresAt: string }>;
   onLimitUpgradeComplete?: () => void | Promise<void>;
@@ -95,6 +97,7 @@ export function OnrampPaymentFrame({
   sessionToken,
   headlessBlockedReason,
   limitUpgradeEligible,
+  limitUpgradeComplete,
   onSuccess,
   onRequestLimitUpgradeUrl,
   onLimitUpgradeComplete,
@@ -119,14 +122,15 @@ export function OnrampPaymentFrame({
   const guestLimitHit = headlessBlockedReason === "guest_transaction_count";
 
   const safePaymentOptions = paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
-  const showLimitUpgrade =
-    guestLimitHit ||
-    limitUpgradeEligible === true ||
-    (safePaymentOptions.length === 0 && Boolean(onRequestLimitUpgradeUrl));
+  const needsLimitUpgrade = limitUpgradeEligible === true && !limitUpgradeComplete;
+  const showWalletLimitFlow =
+    safePaymentOptions.length > 0 ||
+    needsLimitUpgrade ||
+    (limitUpgradeComplete === true && safePaymentOptions.length === 0);
 
   const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(() => {
     if (safePaymentOptions.length > 0) return "wallet";
-    if (showLimitUpgrade) return "wallet";
+    if (showWalletLimitFlow) return "wallet";
     return "hosted";
   });
   const [selectedMethod, setSelectedMethod] = useState(() =>
@@ -238,13 +242,35 @@ export function OnrampPaymentFrame({
       setUpgradeMode(true);
       setFrameHeight(UPGRADE_FRAME_HEIGHT);
     } catch (e) {
-      setUpgradeError(e instanceof Error ? e.message : "Could not start limit upgrade.");
+      const msg = e instanceof Error ? e.message : "Could not start limit upgrade.";
+      if (msg === "ALREADY_UPGRADED") {
+        setUpgradeError(null);
+        setStatus({
+          tone: "success",
+          message: "Coinbase already verified this phone. Refreshing checkout…",
+        });
+        await onLimitUpgradeCompleteRef.current?.();
+        return;
+      }
+      setUpgradeError(
+        msg.includes("already upgraded")
+          ? "Coinbase says this phone is already verified. Tap Refresh checkout below."
+          : msg,
+      );
     } finally {
       setUpgradeBusy(false);
     }
   }
 
-  if (!safePaymentOptions.length && !hostedFallbackUrl && !limitUpgradeEligible) return null;
+  async function refreshCheckout() {
+    setUpgradeError(null);
+    setStatus(EVENT_COPY["onramp_api.load_pending"]);
+    await onLimitUpgradeCompleteRef.current?.();
+  }
+
+  if (!safePaymentOptions.length && !hostedFallbackUrl && !limitUpgradeEligible && !limitUpgradeComplete) {
+    return null;
+  }
 
   if (flow === "offramp") {
     const offrampUrl = paymentLinkOptions[0]?.url;
@@ -277,12 +303,17 @@ export function OnrampPaymentFrame({
   }
 
   const showGuestLimitPanel =
-    showLimitUpgrade && checkoutMode === "wallet" && !upgradeMode;
+    needsLimitUpgrade && checkoutMode === "wallet" && !upgradeMode;
+  const showUpgradeCompletePanel =
+    limitUpgradeComplete &&
+    safePaymentOptions.length === 0 &&
+    checkoutMode === "wallet" &&
+    !upgradeMode;
 
   return (
     <div className="mx-auto grid w-full max-w-md gap-4">
       <div className="grid gap-2 rounded-2xl border border-border/70 bg-card/80 p-2 shadow-sm">
-        {safePaymentOptions.length > 0 || showLimitUpgrade ? (
+        {showWalletLimitFlow ? (
           <button
             type="button"
             onClick={() => setCheckoutMode("wallet")}
@@ -293,13 +324,17 @@ export function OnrampPaymentFrame({
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             ].join(" ")}
           >
-            {showLimitUpgrade && safePaymentOptions.length === 0
+            {needsLimitUpgrade && safePaymentOptions.length === 0
               ? "Apple Pay — increase limits"
-              : "Apple Pay / Google Pay"}
+              : limitUpgradeComplete && safePaymentOptions.length === 0
+                ? "Apple Pay"
+                : "Apple Pay / Google Pay"}
             <span className="mt-0.5 block text-xs font-normal opacity-80">
-              {showLimitUpgrade && safePaymentOptions.length === 0
-                ? "Guest checkout cap may apply — verify with Coinbase to use Apple Pay here"
-                : "Pay here — no Coinbase account needed"}
+              {needsLimitUpgrade && safePaymentOptions.length === 0
+                ? "Guest checkout cap — verify with Coinbase to continue"
+                : limitUpgradeComplete && safePaymentOptions.length === 0
+                  ? "Verified with Coinbase — refresh if the button does not load"
+                  : "Pay here — no Coinbase account needed"}
             </span>
           </button>
         ) : null}
@@ -322,7 +357,24 @@ export function OnrampPaymentFrame({
         ) : null}
       </div>
 
-      {showGuestLimitPanel ? (
+      {showUpgradeCompletePanel ? (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Coinbase already verified guest limits for this phone. Refresh checkout to load Apple Pay. If it
+            still does not appear, use card or bank below or ask Basemate for a new fund link.
+          </p>
+          {upgradeError ? <p className="text-sm text-destructive">{upgradeError}</p> : null}
+          <button
+            type="button"
+            disabled={upgradeBusy}
+            onClick={() => void refreshCheckout()}
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+          >
+            {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Refresh checkout
+          </button>
+        </div>
+      ) : showGuestLimitPanel ? (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
           <p className="text-sm leading-6 text-muted-foreground">
             You&apos;ve used the 15 guest checkouts allowed on this phone for Apple Pay here. Increase limits with
@@ -461,24 +513,9 @@ export function OnrampPaymentFrame({
             ) : null}
           </div>
         </>
-      ) : showLimitUpgrade ? (
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
-          <p className="text-sm leading-6 text-muted-foreground">
-            Guest checkout limit reached on this phone. Increase limits to use Apple Pay here.
-          </p>
-          <button
-            type="button"
-            disabled={upgradeBusy || !onRequestLimitUpgradeUrl}
-            onClick={() => void startLimitUpgrade()}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground"
-          >
-            {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Increase limits
-          </button>
-        </div>
       ) : null}
 
-      {!showGuestLimitPanel && checkoutMode !== "hosted" ? (
+      {!showGuestLimitPanel && !showUpgradeCompletePanel && checkoutMode !== "hosted" ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
           <div className="flex items-start gap-3">
             <StatusIcon tone={status.tone} />

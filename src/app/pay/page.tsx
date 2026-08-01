@@ -33,6 +33,7 @@ interface FundSessionResponse {
   expiresAt: string;
   headlessBlockedReason?: string;
   limitUpgradeEligible?: boolean;
+  limitUpgradeComplete?: boolean;
 }
 
 export interface FundPaymentLinkOption {
@@ -90,6 +91,7 @@ export default async function PayPage({
               expiresAt: session.expiresAt,
               headlessBlockedReason: session.headlessBlockedReason,
               limitUpgradeEligible: session.limitUpgradeEligible,
+              limitUpgradeComplete: session.limitUpgradeComplete,
             }}
           />
         ) : session?.paymentLinkUrl ? (
@@ -144,6 +146,7 @@ async function resolveFundSession(
       error?: string;
       limitUpgradeEligible?: boolean;
       headlessBlockedReason?: string;
+      limitUpgradeComplete?: boolean;
     };
 
     if (!res.ok || !body.paymentLinkUrl || !body.expiresAt) {
@@ -161,6 +164,7 @@ async function resolveFundSession(
       headlessBlockedReason:
         typeof body.headlessBlockedReason === "string" ? body.headlessBlockedReason : undefined,
       limitUpgradeEligible: body.limitUpgradeEligible === true,
+      limitUpgradeComplete: body.limitUpgradeComplete === true,
     };
   } catch (err) {
     return {

@@ -25,6 +25,7 @@ export function PayFundClient({
       expiresAt: body.expiresAt,
       headlessBlockedReason: body.headlessBlockedReason,
       limitUpgradeEligible: body.limitUpgradeEligible ?? false,
+      limitUpgradeComplete: body.limitUpgradeComplete ?? false,
     });
   }, [sessionToken]);
 
@@ -35,6 +36,10 @@ export function PayFundClient({
       body: JSON.stringify({ sessionToken }),
     });
     const body = await res.json();
+    if (res.status === 409 && body?.alreadyComplete) {
+      await refetchSession();
+      throw new Error("ALREADY_UPGRADED");
+    }
     if (!res.ok) throw new Error(body?.error ?? "Could not start limit upgrade.");
     if (!body.upgradeUrl) throw new Error("Missing upgrade URL.");
     return { upgradeUrl: body.upgradeUrl as string, expiresAt: body.expiresAt as string };
@@ -49,6 +54,7 @@ export function PayFundClient({
       sessionToken={sessionToken}
       headlessBlockedReason={session.headlessBlockedReason}
       limitUpgradeEligible={session.limitUpgradeEligible}
+      limitUpgradeComplete={session.limitUpgradeComplete}
       onRequestLimitUpgradeUrl={requestLimitUpgradeUrl}
       onLimitUpgradeComplete={refetchSession}
     />
