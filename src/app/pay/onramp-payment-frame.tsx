@@ -301,22 +301,6 @@ export function OnrampPaymentFrame({
     }
   }
 
-  const autoRefreshStartedRef = useRef(false);
-  useEffect(() => {
-    if (autoRefreshStartedRef.current) return;
-    if (safePaymentOptions.length > 0 || needsLimitUpgrade || upgradeMode) return;
-    if (!onLimitUpgradeCompleteRef.current) return;
-    if (limitUpgradeComplete !== true && !limitUpgradeCompleteEffective) return;
-    autoRefreshStartedRef.current = true;
-    void refreshCheckout();
-  }, [
-    safePaymentOptions.length,
-    needsLimitUpgrade,
-    upgradeMode,
-    limitUpgradeComplete,
-    limitUpgradeCompleteEffective,
-  ]);
-
   if (
     !safePaymentOptions.length &&
     !hostedFallbackUrl &&

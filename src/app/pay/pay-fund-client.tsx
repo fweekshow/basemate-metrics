@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Loader2 } from "lucide-react";
 
@@ -36,10 +36,11 @@ export function PayFundClient({
     });
     const body = await res.json();
     if (!res.ok) throw new Error(body?.error ?? "Could not refresh checkout.");
-    if (typeof body.paymentLinkUrl === "string") setPaymentLinkUrl(body.paymentLinkUrl);
+    const nextUrl = typeof body.paymentLinkUrl === "string" ? body.paymentLinkUrl : "";
+    if (nextUrl) setPaymentLinkUrl(nextUrl);
     const nextOptions = body.paymentLinkOptions ?? [];
     const nextEmbed = resolveEmbeddablePaymentLinks({
-      paymentLinkUrl: typeof body.paymentLinkUrl === "string" ? body.paymentLinkUrl : paymentLinkUrl,
+      paymentLinkUrl: nextUrl,
       paymentLinkOptions: nextOptions,
     });
     setSession((prev) => ({
@@ -58,13 +59,15 @@ export function PayFundClient({
       limitUpgradeEligible: body.limitUpgradeEligible ?? prev.limitUpgradeEligible,
       limitUpgradeComplete: body.limitUpgradeComplete ?? prev.limitUpgradeComplete,
     }));
-  }, [sessionToken, initialPaymentLinkUrl, paymentLinkUrl]);
+  }, [sessionToken, initialPaymentLinkUrl]);
 
+  const initialFetchDoneRef = useRef(false);
   useEffect(() => {
-    if (initialEmbed.length > 0) {
+    if (initialEmbed.length > 0 || initialFetchDoneRef.current) {
       setSessionReady(true);
       return;
     }
+    initialFetchDoneRef.current = true;
     void refetchSession()
       .catch(() => {})
       .finally(() => setSessionReady(true));
