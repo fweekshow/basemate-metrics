@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { AlertCircle, Wallet } from "lucide-react";
 
 import { PayFundClient } from "@/app/pay/pay-fund-client";
+import { HeadlessOnrampCheckout } from "@/app/pay/headless-onramp-checkout";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
 import { forwardClientIpHeaders } from "@/lib/client-ip";
@@ -86,21 +87,35 @@ export default async function PayPage({
         </header>
 
         {session?.paymentLinkUrl && token ? (
-          <PayFundClient
-            sessionToken={token}
-            initialPaymentLinkUrl={session.paymentLinkUrl}
-            initialSession={{
-              paymentLinkOptions: resolveEmbeddablePaymentLinks({
-                paymentLinkUrl: session.paymentLinkUrl,
-                paymentLinkOptions: session.paymentLinkOptions,
-              }),
-              hostedFallbackUrl: session.hostedFallbackUrl,
-              expiresAt: session.expiresAt,
-              headlessBlockedReason: session.headlessBlockedReason,
-              limitUpgradeEligible: session.limitUpgradeEligible,
-              limitUpgradeComplete: session.limitUpgradeComplete,
-            }}
-          />
+          (() => {
+            const embedOptions = resolveEmbeddablePaymentLinks({
+              paymentLinkUrl: session.paymentLinkUrl,
+              paymentLinkOptions: session.paymentLinkOptions,
+            });
+            if (embedOptions.length > 0) {
+              return (
+                <HeadlessOnrampCheckout
+                  paymentLinkOptions={embedOptions}
+                  expiresAt={session.expiresAt}
+                  sessionToken={token}
+                />
+              );
+            }
+            return (
+              <PayFundClient
+                sessionToken={token}
+                initialPaymentLinkUrl={session.paymentLinkUrl}
+                initialSession={{
+                  paymentLinkOptions: [],
+                  hostedFallbackUrl: session.hostedFallbackUrl,
+                  expiresAt: session.expiresAt,
+                  headlessBlockedReason: session.headlessBlockedReason,
+                  limitUpgradeEligible: session.limitUpgradeEligible,
+                  limitUpgradeComplete: session.limitUpgradeComplete,
+                }}
+              />
+            );
+          })()
         ) : session?.paymentLinkUrl ? (
           <PayErrorCard message="Open the fund link Basemate sent you to continue." />
         ) : (

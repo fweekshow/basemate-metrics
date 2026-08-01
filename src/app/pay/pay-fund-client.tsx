@@ -37,21 +37,38 @@ export function PayFundClient({
     const body = await res.json();
     if (!res.ok) throw new Error(body?.error ?? "Could not refresh checkout.");
     if (typeof body.paymentLinkUrl === "string") setPaymentLinkUrl(body.paymentLinkUrl);
-    setSession({
-      paymentLinkOptions: body.paymentLinkOptions ?? [],
-      hostedFallbackUrl: body.hostedFallbackUrl,
-      expiresAt: body.expiresAt,
-      headlessBlockedReason: body.headlessBlockedReason,
-      limitUpgradeEligible: body.limitUpgradeEligible ?? false,
-      limitUpgradeComplete: body.limitUpgradeComplete ?? false,
+    const nextOptions = body.paymentLinkOptions ?? [];
+    const nextEmbed = resolveEmbeddablePaymentLinks({
+      paymentLinkUrl: typeof body.paymentLinkUrl === "string" ? body.paymentLinkUrl : paymentLinkUrl,
+      paymentLinkOptions: nextOptions,
     });
-  }, [sessionToken]);
+    setSession((prev) => ({
+      paymentLinkOptions:
+        nextEmbed.length > 0
+          ? nextEmbed
+          : resolveEmbeddablePaymentLinks({
+              paymentLinkUrl: initialPaymentLinkUrl,
+              paymentLinkOptions: prev.paymentLinkOptions,
+            }).length > 0
+            ? prev.paymentLinkOptions
+            : nextOptions,
+      hostedFallbackUrl: body.hostedFallbackUrl ?? prev.hostedFallbackUrl,
+      expiresAt: body.expiresAt ?? prev.expiresAt,
+      headlessBlockedReason: body.headlessBlockedReason ?? prev.headlessBlockedReason,
+      limitUpgradeEligible: body.limitUpgradeEligible ?? prev.limitUpgradeEligible,
+      limitUpgradeComplete: body.limitUpgradeComplete ?? prev.limitUpgradeComplete,
+    }));
+  }, [sessionToken, initialPaymentLinkUrl, paymentLinkUrl]);
 
   useEffect(() => {
+    if (initialEmbed.length > 0) {
+      setSessionReady(true);
+      return;
+    }
     void refetchSession()
       .catch(() => {})
       .finally(() => setSessionReady(true));
-  }, [refetchSession]);
+  }, [refetchSession, initialEmbed.length]);
 
   const embedOptions = useMemo(
     () =>

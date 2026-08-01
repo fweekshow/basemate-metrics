@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
 
+import { isHostedCoinbaseOnrampUrl } from "@/lib/embed-payment-links";
+
 export interface FundPaymentLinkOption {
   method: "apple_pay" | "google_pay";
   label: "Apple Pay" | "Google Pay";
@@ -299,6 +301,22 @@ export function OnrampPaymentFrame({
     }
   }
 
+  const autoRefreshStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoRefreshStartedRef.current) return;
+    if (safePaymentOptions.length > 0 || needsLimitUpgrade || upgradeMode) return;
+    if (!onLimitUpgradeCompleteRef.current) return;
+    if (limitUpgradeComplete !== true && !limitUpgradeCompleteEffective) return;
+    autoRefreshStartedRef.current = true;
+    void refreshCheckout();
+  }, [
+    safePaymentOptions.length,
+    needsLimitUpgrade,
+    upgradeMode,
+    limitUpgradeComplete,
+    limitUpgradeCompleteEffective,
+  ]);
+
   if (
     !safePaymentOptions.length &&
     !hostedFallbackUrl &&
@@ -342,17 +360,25 @@ export function OnrampPaymentFrame({
   const showGuestLimitPanel =
     needsLimitUpgrade && checkoutMode === "wallet" && !upgradeMode;
   const showUpgradeCompletePanel =
-    limitUpgradeCompleteEffective &&
+    limitUpgradeComplete === true &&
     safePaymentOptions.length === 0 &&
     checkoutMode === "wallet" &&
     !upgradeMode &&
-    !needsLimitUpgrade;
+    !needsLimitUpgrade &&
+    !upgradeBusy;
+  const showCheckoutLoadingPanel =
+    upgradeBusy &&
+    safePaymentOptions.length === 0 &&
+    checkoutMode === "wallet" &&
+    !upgradeMode &&
+    !showGuestLimitPanel;
   const showApplePayHelpPanel =
     checkoutMode === "wallet" &&
     safePaymentOptions.length === 0 &&
     !upgradeMode &&
     !showGuestLimitPanel &&
     !showUpgradeCompletePanel &&
+    !showCheckoutLoadingPanel &&
     flow === "onramp";
 
   return (
@@ -425,6 +451,11 @@ export function OnrampPaymentFrame({
             {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Refresh checkout
           </button>
+        </div>
+      ) : showCheckoutLoadingPanel ? (
+        <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card/80 p-8 text-center shadow-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading Apple Pay checkout…</p>
         </div>
       ) : showApplePayHelpPanel ? (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
@@ -618,18 +649,6 @@ export function OnrampPaymentFrame({
       ) : null}
     </div>
   );
-}
-
-function isHostedCoinbaseOnrampUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return (
-      parsed.hostname === "pay.coinbase.com" &&
-      (parsed.pathname.includes("/buy/select-asset") || parsed.searchParams.has("sessionToken"))
-    );
-  } catch {
-    return false;
-  }
 }
 
 function defaultPaymentMethod(options: FundPaymentLinkOption[]): FundPaymentLinkOption["method"] {

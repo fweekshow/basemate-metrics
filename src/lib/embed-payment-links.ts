@@ -4,14 +4,15 @@ export interface FundPaymentLinkOption {
   url: string;
 }
 
-/** Coinbase-hosted widget URLs — not iframe-safe for Apple Pay headless embed. */
+/** Coinbase-hosted redirect/widget — not the headless Apple Pay iframe URL. */
 export function isHostedCoinbaseOnrampUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return (
-      parsed.hostname === "pay.coinbase.com" &&
-      (parsed.pathname.includes("/buy/select-asset") || parsed.searchParams.has("sessionToken"))
-    );
+    if (parsed.hostname !== "pay.coinbase.com") return false;
+    if (parsed.pathname.includes("/buy/select-asset")) return true;
+    if (parsed.pathname.startsWith("/v3/sell")) return true;
+    if (parsed.pathname.includes("/guest")) return false;
+    return parsed.searchParams.has("sessionToken");
   } catch {
     return false;
   }
