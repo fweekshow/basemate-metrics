@@ -91,6 +91,12 @@ export function SiteShell({
             <Link href="/relay" className="py-2 hover:text-foreground transition-colors">
               Relay
             </Link>
+            <Link href="/privacy" className="py-2 hover:text-foreground transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="py-2 hover:text-foreground transition-colors">
+              Terms
+            </Link>
           </div>
         </div>
       </footer>

@@ -26,6 +26,12 @@ export const SITE = {
   /** Basemate's iMessage line — E.164 for links, display form for labels. */
   imessagePhone: "+16283165638",
   imessagePhoneDisplay: "+1 (628) 316-5638",
+  /** Toll-free SMS (waitlist invites, transactional notifications). */
+  smsTollFree: "+18889712164",
+  smsTollFreeDisplay: "+1 (888) 971-2164",
+  supportEmail: "support@basemate.app",
+  privacyUrl: "https://basemate.app/privacy",
+  termsUrl: "https://basemate.app/terms",
 } as const;
 
 /**

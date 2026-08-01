@@ -14,6 +14,7 @@ type WaitlistEntry = {
   phone: string;
   email: string;
   platform: string;
+  smsConsent: boolean;
 };
 
 type WaitlistPayload = WaitlistEntry & {
@@ -63,10 +64,14 @@ function parseEntry(body: unknown): WaitlistEntry | { error: string } {
     typeof b.mobile === "string" ? b.mobile.replace(/[^\d]/g, "") : "";
   const email = typeof b.email === "string" ? b.email.trim().toLowerCase() : "";
   const platform = b.platform === "android" ? "android" : "ios";
+  const smsConsent = b.smsConsent === true;
 
   if (!fullName) return { error: "Full name is required." };
   if (mobile.length < 6) return { error: "A valid mobile number is required." };
   if (!EMAIL_RE.test(email)) return { error: "A valid email is required." };
+  if (!smsConsent) {
+    return { error: "SMS consent is required to join the waitlist." };
+  }
 
   return {
     fullName,
@@ -76,6 +81,7 @@ function parseEntry(body: unknown): WaitlistEntry | { error: string } {
     phone: `${countryCode || "+1"}${mobile}`,
     email,
     platform,
+    smsConsent: true,
   };
 }
 
@@ -92,9 +98,15 @@ async function saveToNeon(connectionString: string, payload: WaitlistPayload) {
       phone TEXT NOT NULL,
       email TEXT NOT NULL,
       platform TEXT NOT NULL,
+      sms_consent BOOLEAN NOT NULL DEFAULT FALSE,
       source TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `;
+
+  await sql`
+    ALTER TABLE waitlist_entries
+    ADD COLUMN IF NOT EXISTS sms_consent BOOLEAN NOT NULL DEFAULT FALSE
   `;
 
   await sql`
@@ -106,6 +118,7 @@ async function saveToNeon(connectionString: string, payload: WaitlistPayload) {
       phone,
       email,
       platform,
+      sms_consent,
       source,
       created_at
     ) VALUES (
@@ -116,6 +129,7 @@ async function saveToNeon(connectionString: string, payload: WaitlistPayload) {
       ${payload.phone},
       ${payload.email},
       ${payload.platform},
+      ${payload.smsConsent},
       ${payload.source},
       ${payload.createdAt}
     )
