@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { SITE } from "@/lib/site";
 
 /** Common dial codes — flag, ISO label, and E.164 prefix. US first as default. */
 const COUNTRY_CODES = [
@@ -65,6 +67,7 @@ export function WaitlistForm() {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [platform, setPlatform] = useState<Platform>("ios");
+  const [smsConsent, setSmsConsent] = useState(false);
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +86,9 @@ export function WaitlistForm() {
     if (!name) return setError("Please enter your full name.");
     if (digits.length < 6) return setError("Please enter a valid mobile number.");
     if (!EMAIL_RE.test(mail)) return setError("Please enter a valid email address.");
+    if (!smsConsent) {
+      return setError("Please agree to receive SMS updates to join the waitlist.");
+    }
 
     setStatus("submitting");
     try {
@@ -97,6 +103,7 @@ export function WaitlistForm() {
           phone: `${country.dial}${digits}`,
           email: mail,
           platform,
+          smsConsent: true,
         }),
       });
 
@@ -246,6 +253,42 @@ export function WaitlistForm() {
         </div>
       </div>
 
+      <div
+        id="sms-opt-in-consent"
+        className="rounded-2xl border border-border bg-muted/30 p-4"
+      >
+        <label className="flex cursor-pointer gap-3">
+          <input
+            type="checkbox"
+            name="smsConsent"
+            checked={smsConsent}
+            onChange={(e) => setSmsConsent(e.target.checked)}
+            className="mt-1 size-4 shrink-0 rounded border-border accent-primary"
+          />
+          <span className="text-xs leading-relaxed text-muted-foreground">
+            I agree to receive recurring automated SMS from Basemate at{" "}
+            {SITE.smsTollFreeDisplay} at the mobile number above about waitlist
+            status and product access (including my invite). Message frequency
+            varies. Message and data rates may apply. Reply STOP to opt out, HELP
+            for help. See our{" "}
+            <Link
+              href="/privacy"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/terms"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              Terms
+            </Link>
+            .
+          </span>
+        </label>
+      </div>
+
       {error ? (
         <p
           role="alert"
@@ -265,8 +308,7 @@ export function WaitlistForm() {
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        Works on iPhone and Android. We&apos;ll only message you about your Basemate
-        invite.
+        Works on iPhone and Android. SMS consent is required to join the waitlist.
       </p>
     </form>
   );
