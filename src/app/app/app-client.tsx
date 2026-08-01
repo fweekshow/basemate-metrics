@@ -669,6 +669,8 @@ function AddFundsButton() {
     paymentLinkOptions: FundPayOption[];
     hostedFallbackUrl?: string;
     expiresAt: string;
+    headlessBlockedReason?: string;
+    limitUpgradeEligible?: boolean;
   } | null>(null);
 
   const numericAmount = Number(amount);
@@ -701,19 +703,52 @@ function AddFundsButton() {
       const paymentLinkOptions = (body?.paymentLinkOptions ?? []) as FundPayOption[];
       const hostedFallbackUrl =
         typeof body?.hostedFallbackUrl === "string" ? body.hostedFallbackUrl : undefined;
-      if (!paymentLinkOptions.length && !hostedFallbackUrl) {
+      if (!paymentLinkOptions.length && !hostedFallbackUrl && !body?.limitUpgradeEligible) {
         throw new Error(body?.error ?? "Couldn't start checkout.");
       }
       setSession({
         paymentLinkOptions,
         hostedFallbackUrl,
         expiresAt: body.expiresAt as string,
+        headlessBlockedReason:
+          typeof body.headlessBlockedReason === "string" ? body.headlessBlockedReason : undefined,
+        limitUpgradeEligible: body.limitUpgradeEligible === true,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't start Add funds.");
     } finally {
       setBusy(false);
     }
+  }
+
+  async function refetchFundSession() {
+    if (!Number.isFinite(numericAmount) || numericAmount < 2) return;
+    const q = new URLSearchParams({ amount: String(numericAmount) });
+    if (email) q.set("email", email);
+    const res = await fetch(`/api/app/fund-session?${q.toString()}`, { cache: "no-store" });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
+    setSession({
+      paymentLinkOptions: (body?.paymentLinkOptions ?? []) as FundPayOption[],
+      hostedFallbackUrl:
+        typeof body?.hostedFallbackUrl === "string" ? body.hostedFallbackUrl : undefined,
+      expiresAt: body.expiresAt as string,
+      headlessBlockedReason:
+        typeof body.headlessBlockedReason === "string" ? body.headlessBlockedReason : undefined,
+      limitUpgradeEligible: body.limitUpgradeEligible === true,
+    });
+  }
+
+  async function requestLimitUpgradeUrl() {
+    const res = await fetch("/api/app/limit-upgrade-url", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body?.error ?? "Could not start limit upgrade.");
+    if (!body.upgradeUrl) throw new Error("Missing upgrade URL.");
+    return { upgradeUrl: body.upgradeUrl as string, expiresAt: body.expiresAt as string };
   }
 
   return (
@@ -754,6 +789,10 @@ function AddFundsButton() {
                   paymentLinkOptions={session.paymentLinkOptions}
                   hostedFallbackUrl={session.hostedFallbackUrl}
                   expiresAt={session.expiresAt}
+                  headlessBlockedReason={session.headlessBlockedReason}
+                  limitUpgradeEligible={session.limitUpgradeEligible}
+                  onRequestLimitUpgradeUrl={requestLimitUpgradeUrl}
+                  onLimitUpgradeComplete={refetchFundSession}
                   onSuccess={() => {
                     setFunded(true);
                     void fetch("/api/app/record-funding", {

@@ -186,7 +186,7 @@ export function OfframpFlow({
     return (
       <ActionCard
         title={`Cash out ${session.requestedAmount} USDC`}
-        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Basemate wallet."
+        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Basemate Account."
         button="Continue to Coinbase"
         pending={action === "launch"}
         onClick={launch}

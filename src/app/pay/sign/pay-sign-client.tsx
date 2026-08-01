@@ -225,7 +225,7 @@ function PaySignInner({ token }: { token: string }) {
           <div className="mt-5 w-full">
             <h1 className="font-display text-xl font-bold tracking-tight">Verify it is you</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sign in with the email connected to your Basemate wallet.
+              Sign in with the email connected to your Basemate Account.
             </p>
             {authPhase === "linking" ? (
               <div className="mt-5 flex flex-col items-center gap-3">

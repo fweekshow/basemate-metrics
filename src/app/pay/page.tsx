@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AlertCircle, Wallet } from "lucide-react";
 
-import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
+import { PayFundClient } from "@/app/pay/pay-fund-client";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
 import { SITE } from "@/lib/site";
@@ -12,10 +12,10 @@ export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Pay · Basemate",
-  description: "Move money in and out of your Basemate wallet.",
+  description: "Move money in and out of your Basemate Account.",
   openGraph: {
     title: "Pay · Basemate",
-    description: "Move money in and out of your Basemate wallet.",
+    description: "Move money in and out of your Basemate Account.",
     type: "website",
     images: [SITE.pfp],
   },
@@ -31,6 +31,8 @@ interface FundSessionResponse {
   paymentLinkOptions?: FundPaymentLinkOption[];
   hostedFallbackUrl?: string;
   expiresAt: string;
+  headlessBlockedReason?: string;
+  limitUpgradeEligible?: boolean;
 }
 
 export interface FundPaymentLinkOption {
@@ -69,7 +71,7 @@ export default async function PayPage({
           </div>
           <div className="space-y-1">
             <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate wallet"}
+              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate Account"}
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {flow === "offramp"
@@ -79,14 +81,19 @@ export default async function PayPage({
           </div>
         </header>
 
-        {session?.paymentLinkUrl ? (
-          <OnrampPaymentFrame
-            flow={flow}
-            paymentLinkOptions={paymentLinkOptionsForSession(session)}
-            hostedFallbackUrl={session.hostedFallbackUrl}
-            expiresAt={session.expiresAt}
+        {session?.paymentLinkUrl && token ? (
+          <PayFundClient
             sessionToken={token}
+            initialSession={{
+              paymentLinkOptions: paymentLinkOptionsForSession(session),
+              hostedFallbackUrl: session.hostedFallbackUrl,
+              expiresAt: session.expiresAt,
+              headlessBlockedReason: session.headlessBlockedReason,
+              limitUpgradeEligible: session.limitUpgradeEligible,
+            }}
           />
+        ) : session?.paymentLinkUrl ? (
+          <PayErrorCard message="Open the fund link Basemate sent you to continue." />
         ) : (
           <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
         )}
@@ -106,7 +113,7 @@ function OfframpHeader() {
           Cash out from Basemate
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground">
-          Configure your sale with Coinbase, then confirm the exact USDC transfer from your Basemate wallet.
+          Configure your sale with Coinbase, then confirm the exact USDC transfer from your Basemate Account.
         </p>
       </div>
     </header>
@@ -133,7 +140,11 @@ async function resolveFundSession(
       cache: "no-store",
       headers: { accept: "application/json" },
     });
-    const body = (await res.json()) as Partial<FundSessionResponse> & { error?: string };
+    const body = (await res.json()) as Partial<FundSessionResponse> & {
+      error?: string;
+      limitUpgradeEligible?: boolean;
+      headlessBlockedReason?: string;
+    };
 
     if (!res.ok || !body.paymentLinkUrl || !body.expiresAt) {
       return { error: body.error ?? "This fund link is invalid or expired." };
@@ -147,6 +158,9 @@ async function resolveFundSession(
           ? body.hostedFallbackUrl
           : undefined,
       expiresAt: body.expiresAt,
+      headlessBlockedReason:
+        typeof body.headlessBlockedReason === "string" ? body.headlessBlockedReason : undefined,
+      limitUpgradeEligible: body.limitUpgradeEligible === true,
     };
   } catch (err) {
     return {
@@ -156,15 +170,23 @@ async function resolveFundSession(
 }
 
 function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
-  if (session.paymentLinkOptions?.length) return session.paymentLinkOptions;
+  if (session.paymentLinkOptions?.length) {
+    return session.paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
+  }
+  if (isHostedCoinbaseOnrampUrl(session.paymentLinkUrl)) return [];
+  return [];
+}
 
-  return [
-    {
-      method: session.paymentLinkUrl.toLowerCase().includes("google") ? "google_pay" : "apple_pay",
-      label: session.paymentLinkUrl.toLowerCase().includes("google") ? "Google Pay" : "Apple Pay",
-      url: session.paymentLinkUrl,
-    },
-  ];
+function isHostedCoinbaseOnrampUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === "pay.coinbase.com" &&
+      (parsed.pathname.includes("/buy/select-asset") || parsed.searchParams.has("sessionToken"))
+    );
+  } catch {
+    return false;
+  }
 }
 
 function flowForPaymentUrl(url: string): "onramp" | "offramp" {
