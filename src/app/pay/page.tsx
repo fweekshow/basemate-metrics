@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 
 import { AlertCircle, Wallet } from "lucide-react";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
-import { HeadlessOnrampCheckout } from "@/app/pay/headless-onramp-checkout";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
-import { forwardClientIpHeaders } from "@/lib/client-ip";
 import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
 import { SITE } from "@/lib/site";
 
@@ -16,10 +13,10 @@ export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Pay · Basemate",
-  description: "Move money in and out of your Basemate Account.",
+  description: "Move money in and out of your Basemate wallet.",
   openGraph: {
     title: "Pay · Basemate",
-    description: "Move money in and out of your Basemate Account.",
+    description: "Move money in and out of your Basemate wallet.",
     type: "website",
     images: [SITE.pfp],
   },
@@ -33,11 +30,7 @@ type PayPageSearchParams = Promise<{
 interface FundSessionResponse {
   paymentLinkUrl: string;
   paymentLinkOptions?: FundPaymentLinkOption[];
-  hostedFallbackUrl?: string;
   expiresAt: string;
-  headlessBlockedReason?: string;
-  limitUpgradeEligible?: boolean;
-  limitUpgradeComplete?: boolean;
 }
 
 export interface FundPaymentLinkOption {
@@ -69,16 +62,16 @@ export default async function PayPage({
 
   return (
     <SiteShell>
-      <section className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
-        <header className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-            <Wallet className="h-6 w-6" />
+      <section className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
+        <header className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
+            <Wallet className="h-7 w-7" />
           </div>
-          <div className="space-y-1">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate Account"}
+          <div className="space-y-2">
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              {flow === "offramp" ? "Cash out from Basemate" : "Fund your Basemate wallet"}
             </h1>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-base leading-relaxed text-muted-foreground">
               {flow === "offramp"
                 ? "Continue to Coinbase to sell USDC on Base and send the proceeds to fiat."
                 : "Use Apple Pay or Google Pay to buy USDC on Base without leaving this page."}
@@ -86,30 +79,13 @@ export default async function PayPage({
           </div>
         </header>
 
-        {session?.paymentLinkUrl && token ? (
-          (() => {
-            const embedOptions = paymentLinkOptionsForSession(session);
-            if (embedOptions.length > 0) {
-              return (
-                <HeadlessOnrampCheckout
-                  paymentLinkOptions={embedOptions}
-                  expiresAt={session.expiresAt}
-                  sessionToken={token}
-                />
-              );
-            }
-            return (
-              <OnrampPaymentFrame
-                flow={flow}
-                paymentLinkOptions={[]}
-                hostedFallbackUrl={session.hostedFallbackUrl}
-                expiresAt={session.expiresAt}
-                sessionToken={token}
-              />
-            );
-          })()
-        ) : session?.paymentLinkUrl ? (
-          <PayErrorCard message="Open the fund link Basemate sent you to continue." />
+        {session?.paymentLinkUrl ? (
+          <OnrampPaymentFrame
+            flow={flow}
+            paymentLinkOptions={paymentLinkOptionsForSession(session)}
+            expiresAt={session.expiresAt}
+            sessionToken={token}
+          />
         ) : (
           <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
         )}
@@ -129,7 +105,7 @@ function OfframpHeader() {
           Cash out from Basemate
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground">
-          Configure your sale with Coinbase, then confirm the exact USDC transfer from your Basemate Account.
+          Configure your sale with Coinbase, then approve the exact USDC transfer from your Base Account.
         </p>
       </div>
     </header>
@@ -151,24 +127,12 @@ async function resolveFundSession(
   const endpoint = new URL("/api/agent/fund-session", apiHost.replace(/\/$/, ""));
   endpoint.searchParams.set("token", token);
 
-  const h = await headers();
-  const endUserIp =
-    h.get("cf-connecting-ip")?.trim() ||
-    h.get("x-vercel-forwarded-for")?.trim()?.split(",")[0]?.trim() ||
-    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    undefined;
-
   try {
     const res = await fetch(endpoint, {
       cache: "no-store",
-      headers: { accept: "application/json", ...forwardClientIpHeaders(endUserIp) },
+      headers: { accept: "application/json" },
     });
-    const body = (await res.json()) as Partial<FundSessionResponse> & {
-      error?: string;
-      limitUpgradeEligible?: boolean;
-      headlessBlockedReason?: string;
-      limitUpgradeComplete?: boolean;
-    };
+    const body = (await res.json()) as Partial<FundSessionResponse> & { error?: string };
 
     if (!res.ok || !body.paymentLinkUrl || !body.expiresAt) {
       return { error: body.error ?? "This fund link is invalid or expired." };
@@ -177,15 +141,7 @@ async function resolveFundSession(
     return {
       paymentLinkUrl: body.paymentLinkUrl,
       paymentLinkOptions: body.paymentLinkOptions?.filter(isFundPaymentLinkOption),
-      hostedFallbackUrl:
-        typeof body.hostedFallbackUrl === "string" && body.hostedFallbackUrl.startsWith("https://")
-          ? body.hostedFallbackUrl
-          : undefined,
       expiresAt: body.expiresAt,
-      headlessBlockedReason:
-        typeof body.headlessBlockedReason === "string" ? body.headlessBlockedReason : undefined,
-      limitUpgradeEligible: body.limitUpgradeEligible === true,
-      limitUpgradeComplete: body.limitUpgradeComplete === true,
     };
   } catch (err) {
     return {
@@ -195,10 +151,19 @@ async function resolveFundSession(
 }
 
 function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
-  return resolveEmbeddablePaymentLinks({
+  const embeddable = resolveEmbeddablePaymentLinks({
     paymentLinkUrl: session.paymentLinkUrl,
     paymentLinkOptions: session.paymentLinkOptions,
   });
+  if (embeddable.length > 0) return embeddable;
+
+  return [
+    {
+      method: session.paymentLinkUrl.toLowerCase().includes("google") ? "google_pay" : "apple_pay",
+      label: session.paymentLinkUrl.toLowerCase().includes("google") ? "Google Pay" : "Apple Pay",
+      url: session.paymentLinkUrl,
+    },
+  ];
 }
 
 function flowForPaymentUrl(url: string): "onramp" | "offramp" {
