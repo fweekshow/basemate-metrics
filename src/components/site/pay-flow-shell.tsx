@@ -25,11 +25,11 @@ export function PayFlowShell({ children }: Readonly<{ children: React.ReactNode 
             style={{ boxShadow: "var(--shadow-card)" }}
           >
             <Image
-              src="/brand/logo/basemate-logo-flat.png"
+              src="/brand/mascot/mate-eyes-blue.png"
               alt="@basemate"
-              width={24}
-              height={24}
-              className="rounded-md"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg object-cover"
               priority
             />
             <span className="font-mono text-xs font-semibold tracking-tight">{SITE.name}</span>

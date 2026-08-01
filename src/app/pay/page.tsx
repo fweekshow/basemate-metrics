@@ -131,28 +131,24 @@ function PayFundHeader({
     <header
       className={
         variant === "inCard"
-          ? "flex items-start gap-4 border-b border-border/60 bg-gradient-to-b from-secondary/50 to-card px-5 py-5 text-left"
+          ? "flex flex-col items-center gap-4 border-b border-border/60 bg-gradient-to-b from-secondary/40 to-card px-5 pb-6 pt-6 text-center"
           : "flex flex-col items-center gap-4 text-center"
       }
     >
-      <div
+      <Image
+        src="/brand/mascot/mate-eyes-blue.png"
+        alt=""
+        width={variant === "inCard" ? 128 : 96}
+        height={variant === "inCard" ? 128 : 96}
         className={
           variant === "inCard"
-            ? "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-card p-1.5"
-            : "flex h-[72px] w-[72px] items-center justify-center rounded-2xl border border-border/80 bg-card p-2"
+            ? "h-28 w-28 shrink-0 rounded-[22px] object-cover shadow-sm sm:h-32 sm:w-32"
+            : "h-24 w-24 shrink-0 rounded-[20px] object-cover"
         }
-        style={variant === "inCard" ? undefined : { boxShadow: "var(--shadow-card)" }}
-      >
-        <Image
-          src="/brand/mascot/mate-peace.png"
-          alt=""
-          width={variant === "inCard" ? 44 : 56}
-          height={variant === "inCard" ? 44 : 56}
-          className={variant === "inCard" ? "h-11 w-11 object-contain" : "h-14 w-14 object-contain"}
-          priority
-        />
-      </div>
-      <div className={variant === "inCard" ? "min-w-0 flex-1 space-y-1" : "space-y-2"}>
+        style={variant === "inCard" ? { boxShadow: "var(--shadow-card)" } : { boxShadow: "var(--shadow-card)" }}
+        priority
+      />
+      <div className={variant === "inCard" ? "w-full max-w-sm space-y-1.5" : "space-y-2"}>
         <h1
           className={
             variant === "inCard"
