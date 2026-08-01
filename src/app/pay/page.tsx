@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 
 import { AlertCircle, Wallet } from "lucide-react";
 
-import { PayFundClient } from "@/app/pay/pay-fund-client";
+import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
 import { HeadlessOnrampCheckout } from "@/app/pay/headless-onramp-checkout";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { SiteShell } from "@/components/site/site-shell";
@@ -88,10 +88,7 @@ export default async function PayPage({
 
         {session?.paymentLinkUrl && token ? (
           (() => {
-            const embedOptions = resolveEmbeddablePaymentLinks({
-              paymentLinkUrl: session.paymentLinkUrl,
-              paymentLinkOptions: session.paymentLinkOptions,
-            });
+            const embedOptions = paymentLinkOptionsForSession(session);
             if (embedOptions.length > 0) {
               return (
                 <HeadlessOnrampCheckout
@@ -102,17 +99,12 @@ export default async function PayPage({
               );
             }
             return (
-              <PayFundClient
+              <OnrampPaymentFrame
+                flow={flow}
+                paymentLinkOptions={[]}
+                hostedFallbackUrl={session.hostedFallbackUrl}
+                expiresAt={session.expiresAt}
                 sessionToken={token}
-                initialPaymentLinkUrl={session.paymentLinkUrl}
-                initialSession={{
-                  paymentLinkOptions: [],
-                  hostedFallbackUrl: session.hostedFallbackUrl,
-                  expiresAt: session.expiresAt,
-                  headlessBlockedReason: session.headlessBlockedReason,
-                  limitUpgradeEligible: session.limitUpgradeEligible,
-                  limitUpgradeComplete: session.limitUpgradeComplete,
-                }}
               />
             );
           })()
@@ -200,6 +192,13 @@ async function resolveFundSession(
       error: err instanceof Error ? err.message : "Could not load this fund link.",
     };
   }
+}
+
+function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
+  return resolveEmbeddablePaymentLinks({
+    paymentLinkUrl: session.paymentLinkUrl,
+    paymentLinkOptions: session.paymentLinkOptions,
+  });
 }
 
 function flowForPaymentUrl(url: string): "onramp" | "offramp" {
