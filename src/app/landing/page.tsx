@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
-import { IMESSAGE_HREF, SITE } from "@/lib/site";
+import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
 import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 
@@ -146,7 +146,7 @@ export default async function LandingPage() {
   return (
     <SiteShell>
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative mx-auto max-w-5xl px-4 pb-10 pt-10 sm:px-6 sm:pt-14">
+      <section id="start" className="relative mx-auto max-w-5xl px-4 pb-10 pt-10 sm:px-6 sm:pt-14">
         <div className="max-w-2xl space-y-5">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             Live on iMessage · Base App
@@ -183,12 +183,19 @@ export default async function LandingPage() {
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              Opens iMessage with a draft to our line.{" "}
-              <Link
-                href="/waitlist"
+              Opens iMessage with a draft to our line. Android or SMS:{" "}
+              <a
+                href={SMS_TOLL_FREE_HREF}
                 className="font-medium text-primary underline-offset-4 hover:underline"
               >
-                Or join the waitlist
+                text {SITE.smsTollFreeDisplay}
+              </a>
+              .{" "}
+              <Link
+                href="/messaging"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Messaging &amp; opt-in
               </Link>
               .
             </p>
@@ -420,12 +427,6 @@ export default async function LandingPage() {
                   Text
                   <span className="font-mono">{SITE.imessagePhoneDisplay}</span>
                 </a>
-                <Link
-                  href="/waitlist"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
-                >
-                  Join the waitlist
-                </Link>
                 <a
                   href={SITE.metricsUrl}
                   target="_blank"

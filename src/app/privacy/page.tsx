@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <ul>
           <li>
             <strong>Contact information</strong> — name, email, phone number, and
-            country when you join our waitlist or use Basemate.
+            country when you message or use Basemate from your phone number.
           </li>
           <li>
             <strong>Messages and transactions</strong> — content you send to Basemate
@@ -51,17 +51,21 @@ export default function PrivacyPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection heading="Text messages (SMS)">
+      <LegalSection heading="Text messages (SMS) and chat">
         <p>
-          If you opt in on our{" "}
-          <a href={`${SITE_URL}/waitlist`}>waitlist</a> or otherwise give consent,
-          we may send SMS from {SITE.smsTollFreeDisplay} about:
+          See our{" "}
+          <a href={`${SITE_URL}/messaging`}>Messaging program</a>. In summary, we
+          send SMS from {SITE.smsTollFreeDisplay} when:
         </p>
         <ul>
-          <li>Waitlist status and product-access invites.</li>
           <li>
-            Transactional notices (for example, when someone sends you money and
-            you need steps to receive it).
+            You <strong>text us first</strong> from your number and we reply in that
+            thread (iMessage, SMS, or WhatsApp depending on channel).
+          </li>
+          <li>
+            Someone sends you money via Basemate to a number in their{" "}
+            <strong>contacts</strong> — we send a transactional notice so you can
+            claim funds.
           </li>
           <li>Account and funding confirmations tied to actions you take.</li>
         </ul>

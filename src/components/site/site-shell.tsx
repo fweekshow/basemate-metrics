@@ -8,7 +8,7 @@ import { SITE } from "@/lib/site";
 // nav items. The logo links home, so Home isn't a nav item either.
 const nav = [
   { href: "/relay", label: "Relay", external: false },
-  { href: "/waitlist", label: "Waitlist", external: false },
+  { href: "/landing", label: "Home", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
 ] as const;
 
@@ -90,6 +90,9 @@ export function SiteShell({
             </Link>
             <Link href="/relay" className="py-2 hover:text-foreground transition-colors">
               Relay
+            </Link>
+            <Link href="/messaging" className="py-2 hover:text-foreground transition-colors">
+              Messaging
             </Link>
             <Link href="/privacy" className="py-2 hover:text-foreground transition-colors">
               Privacy

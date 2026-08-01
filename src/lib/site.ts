@@ -26,12 +26,13 @@ export const SITE = {
   /** Basemate's iMessage line — E.164 for links, display form for labels. */
   imessagePhone: "+16283165638",
   imessagePhoneDisplay: "+1 (628) 316-5638",
-  /** Toll-free SMS (waitlist invites, transactional notifications). */
+  /** Toll-free SMS (inbound chat + transactional transfer notices). */
   smsTollFree: "+18889712164",
   smsTollFreeDisplay: "+1 (888) 971-2164",
   supportEmail: "support@basemate.app",
   privacyUrl: "https://basemate.app/privacy",
   termsUrl: "https://basemate.app/terms",
+  messagingProgramUrl: "https://basemate.app/messaging",
 } as const;
 
 /**
@@ -40,3 +41,6 @@ export const SITE = {
  * Android parse correctly.
  */
 export const IMESSAGE_HREF = `sms:${SITE.imessagePhone}?&body=${encodeURIComponent("gm")}`;
+
+/** Toll-free SMS entry (same opt-in pattern as iMessage). */
+export const SMS_TOLL_FREE_HREF = `sms:${SITE.smsTollFree}?&body=${encodeURIComponent("gm")}`;

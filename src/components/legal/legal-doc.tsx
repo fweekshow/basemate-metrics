@@ -36,8 +36,8 @@ export function LegalDoc({
             {SITE.supportEmail}
           </a>
           {" · "}
-          <Link href="/waitlist" className="text-primary underline-offset-4 hover:underline">
-            Waitlist
+          <Link href="/landing" className="text-primary underline-offset-4 hover:underline">
+            Get started
           </Link>
         </p>
       </article>

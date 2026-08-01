@@ -49,18 +49,18 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="Text messaging program">
+      <LegalSection heading="Messaging (SMS, iMessage, WhatsApp)">
         <p>
-          When you opt in on our{" "}
-          <a href={`${SITE_URL}/waitlist`}>waitlist</a> (or as otherwise disclosed),
-          you agree to receive automated SMS from {SITE.smsTollFreeDisplay} about
-          waitlist access, product invites, and related service notices.
+          Basemate is a chat-first service. You opt in by messaging us from your
+          phone number, as described on our{" "}
+          <a href={`${SITE_URL}/messaging`}>Messaging program</a> page. We may send
+          automated service messages from {SITE.smsTollFreeDisplay} (SMS) or our
+          WhatsApp Business number in the thread you opened.
         </p>
         <ul>
           <li>
-            <strong>Consent.</strong> Joining the waitlist requires checking the SMS
-            opt-in box on the form; we only text numbers that opted in there (or as
-            otherwise disclosed for transactional service messages).
+            <strong>Consent.</strong> You start the conversation; we do not cold-text
+            for marketing. Transfer notices may arrive when a contact sends you money.
           </li>
           <li>
             <strong>Frequency</strong> varies. <strong>Msg &amp; data rates</strong>{" "}
