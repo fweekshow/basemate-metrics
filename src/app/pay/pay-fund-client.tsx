@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { OnrampPaymentFrame, type FundCheckoutSession } from "@/app/pay/onramp-payment-frame";
 
@@ -28,6 +28,10 @@ export function PayFundClient({
       limitUpgradeComplete: body.limitUpgradeComplete ?? false,
     });
   }, [sessionToken]);
+
+  useEffect(() => {
+    void refetchSession().catch(() => {});
+  }, [refetchSession]);
 
   const requestLimitUpgradeUrl = useCallback(async () => {
     const res = await fetch("/api/pay/limit-upgrade-url", {

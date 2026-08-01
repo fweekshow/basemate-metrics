@@ -137,14 +137,21 @@ export function OnrampPaymentFrame({
 
   const safePaymentOptions = paymentLinkOptions.filter((o) => !isHostedCoinbaseOnrampUrl(o.url));
   const needsLimitUpgrade = limitUpgradeEligible === true && !limitUpgradeComplete;
-  const showWalletLimitFlow =
+  /** Upgraded users often lose API flags; treat guest cap + not eligible as complete. */
+  const limitUpgradeCompleteEffective =
+    limitUpgradeComplete === true ||
+    (guestLimitHit && !needsLimitUpgrade && limitUpgradeEligible !== true);
+
+  const showWalletTab =
     safePaymentOptions.length > 0 ||
     needsLimitUpgrade ||
-    (limitUpgradeComplete === true && safePaymentOptions.length === 0);
+    limitUpgradeCompleteEffective ||
+    Boolean(headlessBlockedReason) ||
+    (flow === "onramp" && Boolean(onRequestLimitUpgradeUrl));
 
   const [checkoutMode, setCheckoutMode] = useState<"wallet" | "hosted">(() => {
     if (safePaymentOptions.length > 0) return "wallet";
-    if (showWalletLimitFlow) return "wallet";
+    if (showWalletTab) return "wallet";
     return "hosted";
   });
   const [selectedMethod, setSelectedMethod] = useState(() =>
@@ -277,12 +284,25 @@ export function OnrampPaymentFrame({
   }
 
   async function refreshCheckout() {
+    setUpgradeBusy(true);
     setUpgradeError(null);
     setStatus(EVENT_COPY["onramp_api.load_pending"]);
-    await onLimitUpgradeCompleteRef.current?.();
+    try {
+      await onLimitUpgradeCompleteRef.current?.();
+    } catch (e) {
+      setUpgradeError(e instanceof Error ? e.message : "Could not refresh checkout.");
+    } finally {
+      setUpgradeBusy(false);
+    }
   }
 
-  if (!safePaymentOptions.length && !hostedFallbackUrl && !limitUpgradeEligible && !limitUpgradeComplete) {
+  if (
+    !safePaymentOptions.length &&
+    !hostedFallbackUrl &&
+    !limitUpgradeEligible &&
+    !limitUpgradeComplete &&
+    !onRequestLimitUpgradeUrl
+  ) {
     return null;
   }
 
@@ -319,15 +339,23 @@ export function OnrampPaymentFrame({
   const showGuestLimitPanel =
     needsLimitUpgrade && checkoutMode === "wallet" && !upgradeMode;
   const showUpgradeCompletePanel =
-    limitUpgradeComplete &&
+    limitUpgradeCompleteEffective &&
     safePaymentOptions.length === 0 &&
     checkoutMode === "wallet" &&
-    !upgradeMode;
+    !upgradeMode &&
+    !needsLimitUpgrade;
+  const showApplePayHelpPanel =
+    checkoutMode === "wallet" &&
+    safePaymentOptions.length === 0 &&
+    !upgradeMode &&
+    !showGuestLimitPanel &&
+    !showUpgradeCompletePanel &&
+    flow === "onramp";
 
   return (
     <div className="mx-auto grid w-full max-w-md gap-4">
       <div className="grid gap-2 rounded-2xl border border-border/70 bg-card/80 p-2 shadow-sm">
-        {showWalletLimitFlow ? (
+        {showWalletTab ? (
           <button
             type="button"
             onClick={() => setCheckoutMode("wallet")}
@@ -340,15 +368,17 @@ export function OnrampPaymentFrame({
           >
             {needsLimitUpgrade && safePaymentOptions.length === 0
               ? "Apple Pay — increase limits"
-              : limitUpgradeComplete && safePaymentOptions.length === 0
+              : limitUpgradeCompleteEffective && safePaymentOptions.length === 0
                 ? "Apple Pay"
                 : "Apple Pay / Google Pay"}
             <span className="mt-0.5 block text-xs font-normal opacity-80">
               {needsLimitUpgrade && safePaymentOptions.length === 0
                 ? "Guest checkout cap — verify with Coinbase to continue"
-                : limitUpgradeComplete && safePaymentOptions.length === 0
+                : limitUpgradeCompleteEffective && safePaymentOptions.length === 0
                   ? "Verified with Coinbase — refresh if the button does not load"
-                  : "Pay here — no Coinbase account needed"}
+                  : safePaymentOptions.length === 0
+                    ? "Pay here with Apple Pay — tap Refresh if the button does not appear"
+                    : "Pay here — no Coinbase account needed"}
             </span>
           </button>
         ) : null}
@@ -392,6 +422,39 @@ export function OnrampPaymentFrame({
             {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Refresh checkout
           </button>
+        </div>
+      ) : showApplePayHelpPanel ? (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Coinbase did not return an Apple Pay button for this link yet. That usually means a server-side
+            check failed (limits, region, or site config) — not a bug in your browser, so nothing shows in the
+            console.
+          </p>
+          {headlessBlockMessage(headlessBlockedReason) ? (
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+              {headlessBlockMessage(headlessBlockedReason)}
+            </p>
+          ) : null}
+          {upgradeError ? <p className="text-sm text-destructive">{upgradeError}</p> : null}
+          <button
+            type="button"
+            disabled={upgradeBusy}
+            onClick={() => void refreshCheckout()}
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+          >
+            {upgradeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Refresh checkout
+          </button>
+          {onRequestLimitUpgradeUrl ? (
+            <button
+              type="button"
+              disabled={upgradeBusy}
+              onClick={() => void startLimitUpgrade()}
+              className="text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Increase limits with Coinbase
+            </button>
+          ) : null}
         </div>
       ) : showGuestLimitPanel ? (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-sm">
@@ -534,7 +597,7 @@ export function OnrampPaymentFrame({
         </>
       ) : null}
 
-      {!showGuestLimitPanel && !showUpgradeCompletePanel && checkoutMode !== "hosted" ? (
+      {!showGuestLimitPanel && !showUpgradeCompletePanel && !showApplePayHelpPanel && checkoutMode !== "hosted" ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
           <div className="flex items-start gap-3">
             <StatusIcon tone={status.tone} />
