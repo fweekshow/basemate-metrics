@@ -36,6 +36,12 @@ function DeckToolbar({ deck }: { deck: DeckConfig }) {
         </span>
       </Link>
       <div className="flex shrink-0 items-center gap-2">
+        <Link
+          href="/data-room"
+          className="hidden h-9 items-center rounded-full px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+        >
+          Data room
+        </Link>
         <a
           href={deck.pdfUrl}
           target="_blank"
