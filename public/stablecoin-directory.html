@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Base Stablecoin World Directory — Basemate Partnerships</title>
+<style>
+:root {
+  --bg:       #EAE8F5;
+  --canvas:   #FFFFFF;
+  --surface:  #F4F2FB;
+  --blue:     #0505FF;
+  --blue-50:  #E8E8FF;
+  --blue-dim: rgba(5,5,255,0.07);
+  --blue-bdr: rgba(5,5,255,0.18);
+  --text:     #0A0A1A;
+  --text-2:   #44446A;
+  --text-3:   rgba(10,10,26,0.38);
+  --border:   #DDD9EF;
+  --green:    #16A34A;
+  --gdim:     rgba(22,163,74,0.10);
+  --gbdr:     rgba(22,163,74,0.22);
+  --amber:    #D97706;
+  --adim:     rgba(217,119,6,0.09);
+  --abdr:     rgba(217,119,6,0.22);
+  --sans: system-ui,-apple-system,'Segoe UI','Helvetica Neue',sans-serif;
+  --mono: ui-monospace,'SF Mono','Fira Code','Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:1100px;margin:0 auto;padding:52px 36px 80px}
+
+/* header */
+.hdr{margin-bottom:40px}
+.eye{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.eye-dot{width:7px;height:7px;background:var(--blue);border-radius:1px;flex-shrink:0}
+h1{font-size:44px;font-weight:700;letter-spacing:-.035em;line-height:1.05;margin-bottom:10px;text-wrap:balance}
+.sub{font-size:15px;color:var(--text-2);max-width:640px;line-height:1.6;margin-bottom:20px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;letter-spacing:.10em;padding:4px 12px;border-radius:999px;border:1px solid;font-weight:600;white-space:nowrap}
+.pb{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bdr)}
+.pg{color:var(--green);background:var(--gdim);border-color:var(--gbdr)}
+.pa{color:var(--amber);background:var(--adim);border-color:var(--abdr)}
+.pm{color:var(--text-2);background:rgba(68,68,106,.07);border-color:rgba(68,68,106,.18)}
+.px{color:var(--text-3);background:transparent;border-color:var(--border)}
+
+/* stat bar */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:48px}
+.scard{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.sn{font-size:30px;font-weight:700;color:var(--blue);letter-spacing:-.04em;line-height:1;margin-bottom:3px;font-variant-numeric:tabular-nums}
+.sl{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-3)}
+
+/* section */
+.sec{margin-bottom:52px}
+.sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.sec-n{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--text-3);text-transform:uppercase;flex-shrink:0}
+.sec-t{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.sec-r{flex:1;height:1px;background:var(--border)}
+
+/* callout */
+.callout{background:var(--blue-dim);border:1px solid var(--blue-bdr);border-radius:12px;padding:16px 20px;margin-bottom:20px}
+.clbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.ctxt{font-size:13px;color:var(--text-2);line-height:1.55}
+.ctxt strong{color:var(--text);font-weight:600}
+
+/* region */
+.rg{display:flex;align-items:center;gap:10px;margin:28px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.rg-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:600}
+.rg-r{flex:1;height:1px;background:var(--border)}
+.rg-n{font-family:var(--mono);font-size:9px;color:var(--text-3)}
+
+/* table */
+.tw{background:var(--canvas);border:1px solid var(--border);border-radius:14px;overflow:hidden;overflow-x:auto;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+thead th{background:var(--surface);font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-3);font-weight:600;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(234,232,245,.45)}
+.flag{font-size:20px;line-height:1}
+.cn{font-weight:600;color:var(--text);font-size:13px}
+.cc{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--text-3);display:block;margin-top:1px}
+.tok{font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--text);letter-spacing:.06em}
+.iss{color:var(--text-2);font-size:12.5px}
+.ceo{color:var(--text);font-size:12.5px;font-weight:500}
+.tw-h{font-family:var(--mono);font-size:11px;color:var(--blue);display:block;margin-top:1px}
+.em{font-family:var(--mono);font-size:10.5px;color:var(--text-3);display:block;margin-top:1px}
+
+/* status */
+.dot{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;white-space:nowrap}
+.dot::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dg::before{background:var(--green)}.dg{color:var(--green)}
+.da::before{background:var(--amber)}.da{color:var(--amber)}
+.dr::before{background:var(--text-3)}.dr{color:var(--text-3)}
+
+/* priority */
+.pri{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.p1{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bdr)}
+.p2{color:var(--amber);background:var(--adim);border-color:var(--abdr)}
+.p3{color:var(--text-2);background:rgba(68,68,106,.06);border-color:rgba(68,68,106,.16)}
+.pw{color:var(--text-3);background:transparent;border-color:var(--border)}
+
+/* corridor */
+.cgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.ccard{background:var(--canvas);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.crt{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.01em;margin-bottom:3px}
+.cv{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.cst{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.cnote{font-size:12px;color:var(--text-2);line-height:1.5}
+.cnote strong{color:var(--text)}
+
+/* 3 col */
+.tcol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.blk{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:18px}
+.bt{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.blk ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.blk li{display:flex;gap:9px;font-size:12.5px;color:var(--text-2);line-height:1.5}
+.blk li::before{content:'→';color:var(--blue);flex-shrink:0;font-family:var(--mono);font-size:11px;margin-top:1px}
+.blk li strong{color:var(--text);font-weight:600}
+
+/* lobby */
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.lcard{background:var(--canvas);border:1px solid var(--border);border-radius:12px;padding:14px 16px;opacity:.72}
+.lf{font-size:22px;margin-bottom:6px}
+.lc{font-size:13px;font-weight:600;color:var(--text)}
+.lcur{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--text-3);text-transform:uppercase}
+.ltk{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-2);margin:6px 0 3px}
+.li{font-size:11.5px;color:var(--text-2)}
+.ln{font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.4}
+
+hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+
+.dim td{opacity:.52}
+
+.ftr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:24px;border-top:1px solid var(--border)}
+.fb{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.fs{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--text-3);margin-top:2px}
+.fsrc{font-family:var(--mono);font-size:9.5px;color:var(--text-3);text-align:right;line-height:1.7}
+
+@media(max-width:768px){
+  .page{padding:28px 16px 60px}
+  .stats{grid-template-columns:1fr 1fr}
+  .tcol,.cgrid{grid-template-columns:1fr}
+  h1{font-size:30px}
+  .lgrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="eye"><div class="eye-dot"></div>Basemate Partnerships · Global Stablecoin Directory · 2026-08-09</div>
+  <h1>Every Country.<br>One Stablecoin.<br>On Base.</h1>
+  <p class="sub">The Basemate model: each country gets a phone number. That phone number runs on the local-currency stablecoin deployed on Base. This directory maps every confirmed, launching, and lobbying-target stablecoin — country by country, corridor by corridor — with the founder contact behind each one.</p>
+  <div class="pills">
+    <span class="pill pb">20+ confirmed on Base</span>
+    <span class="pill pb">16+ country currencies live</span>
+    <span class="pill pg">B20 standard active Jul 2026</span>
+    <span class="pill pa">Base goal: every currency</span>
+    <span class="pill pm">0 LOIs signed — target: 10 this raise</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="scard"><div class="sn">20+</div><div class="sl">On Base now</div></div>
+  <div class="scard"><div class="sn">16+</div><div class="sl">Currencies live</div></div>
+  <div class="scard"><div class="sn">$17T</div><div class="sl">Base stablecoin vol 2026</div></div>
+  <div class="scard"><div class="sn">$800B</div><div class="sl">Global remittance / yr</div></div>
+  <div class="scard"><div class="sn">0→10</div><div class="sl">LOI target this raise</div></div>
+</div>
+
+
+<!-- ── SECTION 1 ── -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-n">01</span><h2 class="sec-t">Confirmed on Base — Country by Country</h2><div class="sec-r"></div></div>
+
+  <div class="callout">
+    <div class="clbl">Source: Base (@base on X, Aug 2026) + BaseScan + DeFiLlama + CoinGecko</div>
+    <div class="ctxt">Base officially confirmed 20+ stablecoins across global currencies. From the official tweet: "Base is for every currency — USDC, EURC, MXNB, XSGD, AUDD, BRZ, CNGN, TGBP, CADC, ZARP, IDRX, VCHF, MYRC, BRLA, BRLY, ARGT — transact with local stablecoins on Base." <strong>Every full-opacity row is confirmed on-chain. Dimmed rows are lobby targets.</strong></div>
+  </div>
+
+  <!-- AMERICAS -->
+  <div class="rg"><span class="rg-l">Americas</span><div class="rg-r"></div><span class="rg-n">4 currencies · 9 issuers</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Country</th><th>Ticker</th><th>Issuer</th><th>Founder / CEO</th><th>Twitter / X</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="flag">🇲🇽</span></td>
+        <td><span class="cn">Mexico</span><span class="cc">MXN</span></td>
+        <td class="tok">MXNB</td>
+        <td class="iss">Bitso / Juno Finance</td>
+        <td><span class="ceo">Daniel Vogel, CEO</span><span class="tw-h">@danielvogel</span></td>
+        <td><span class="tw-h">@bitso</span></td>
+        <td class="em">mxnb.mx</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇲🇽</span></td>
+        <td><span class="cn">Mexico</span><span class="cc">MXN</span></td>
+        <td class="tok">MXNe</td>
+        <td class="iss">Etherfuse + Brale</td>
+        <td><span class="ceo">David Taylor, CEO</span><span class="tw-h">@etherfuse</span></td>
+        <td><span class="tw-h">@etherfuse</span></td>
+        <td class="em">contact@etherfuse.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇧🇷</span></td>
+        <td><span class="cn">Brazil</span><span class="cc">BRL</span></td>
+        <td class="tok">BRZ</td>
+        <td class="iss">Transfero</td>
+        <td><span class="ceo">Márlyson Silva, CEO</span><span class="tw-h">@marly_silva</span></td>
+        <td><span class="tw-h">@Transfero_Group</span></td>
+        <td class="em">transfero.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇧🇷</span></td>
+        <td><span class="cn">Brazil</span><span class="cc">BRL</span></td>
+        <td class="tok">BRLA</td>
+        <td class="iss">Bitso Brazil</td>
+        <td><span class="ceo">Daniel Vogel (Bitso)</span><span class="tw-h">@bitso</span></td>
+        <td><span class="tw-h">@bitso</span></td>
+        <td class="em">bitso.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇧🇷</span></td>
+        <td><span class="cn">Brazil</span><span class="cc">BRL</span></td>
+        <td class="tok">BRL1</td>
+        <td class="iss">Mercado Bitcoin + Foxbit consortium</td>
+        <td><span class="ceo">Fabricio Tota (MB)</span><span class="tw-h">@MercadoBitcoin</span></td>
+        <td><span class="tw-h">@brl1_io</span></td>
+        <td class="em">brl1.io</td>
+        <td><span class="dot da">LAUNCHING</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇦🇷</span></td>
+        <td><span class="cn">Argentina</span><span class="cc">ARS</span></td>
+        <td class="tok">ARGT</td>
+        <td class="iss">Ripio</td>
+        <td><span class="ceo">Sebastián Serrano, CEO</span><span class="tw-h">@sebasserrano</span></td>
+        <td><span class="tw-h">@ripio</span></td>
+        <td class="em">ripio.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇨🇦</span></td>
+        <td><span class="cn">Canada</span><span class="cc">CAD</span></td>
+        <td class="tok">CADC</td>
+        <td class="iss">Paytrie / Loon</td>
+        <td><span class="ceo">Haseeb Awan, CEO (Loon)</span><span class="tw-h">@haseeb</span></td>
+        <td><span class="tw-h">@paytrie</span></td>
+        <td class="em">paytrie.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇨🇦</span></td>
+        <td><span class="cn">Canada</span><span class="cc">CAD</span></td>
+        <td class="tok">QCAD</td>
+        <td class="iss">Stablecorp (Coinbase-backed)</td>
+        <td><span class="ceo">Fred Pye, Co-founder</span><span class="tw-h">@fredpye</span></td>
+        <td><span class="tw-h">@stablecorp_inc</span></td>
+        <td class="em">stablecorp.io</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇨🇴</span></td>
+        <td><span class="cn">Colombia</span><span class="cc">COP</span></td>
+        <td class="tok">cCOP</td>
+        <td class="iss">Mento Labs (on Celo)</td>
+        <td><span class="ceo">Markus Franke, CEO</span><span class="tw-h">@markusfrankede</span></td>
+        <td><span class="tw-h">@MentoLabs</span></td>
+        <td class="em">mento.org</td>
+        <td><span class="dot dr">CELO ONLY</span></td>
+        <td><span class="pri pw">BRIDGE?</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- EUROPE -->
+  <div class="rg"><span class="rg-l">Europe</span><div class="rg-r"></div><span class="rg-n">5 currencies · 8 issuers</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Country</th><th>Ticker</th><th>Issuer</th><th>Founder / CEO</th><th>Twitter / X</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="flag">🇪🇺</span></td>
+        <td><span class="cn">Eurozone (27)</span><span class="cc">EUR</span></td>
+        <td class="tok">EURC</td>
+        <td class="iss">Circle Internet Group</td>
+        <td><span class="ceo">Jeremy Allaire, CEO</span><span class="tw-h">@jerallaire</span></td>
+        <td><span class="tw-h">@circle</span></td>
+        <td class="em">partnerships@circle.com</td>
+        <td><span class="dot dg">NATIVE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇪🇺</span></td>
+        <td><span class="cn">Eurozone (27)</span><span class="cc">EUR</span></td>
+        <td class="tok">EURAU</td>
+        <td class="iss">AllUnity (DWS + Flow Traders + Galaxy)</td>
+        <td><span class="ceo">Alexander Höptner, CEO</span><span class="tw-h">@AllUnity_io</span></td>
+        <td><span class="tw-h">@AllUnity_io</span></td>
+        <td class="em">press@allunity.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇬🇧</span></td>
+        <td><span class="cn">United Kingdom</span><span class="cc">GBP</span></td>
+        <td class="tok">TGBP</td>
+        <td class="iss">Confirm via Base BD</td>
+        <td><span class="ceo">Verify issuer</span><span class="tw-h">—</span></td>
+        <td><span class="tw-h">—</span></td>
+        <td class="em">—</td>
+        <td><span class="dot dg">BASE ✓ (issuer TBV)</span></td>
+        <td><span class="pri p1">IDENTIFY NOW</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇬🇧</span></td>
+        <td><span class="cn">United Kingdom</span><span class="cc">GBP</span></td>
+        <td class="tok">GBPA</td>
+        <td class="iss">Agant (FCA-registered)</td>
+        <td><span class="ceo">Andrew MacKenzie, CEO</span><span class="tw-h">@agant_io</span></td>
+        <td><span class="tw-h">@agant_io</span></td>
+        <td class="em">agant.io</td>
+        <td><span class="dot dr">ETH ONLY</span></td>
+        <td><span class="pri pw">LOBBY</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇨🇭</span></td>
+        <td><span class="cn">Switzerland</span><span class="cc">CHF</span></td>
+        <td class="tok">VCHF</td>
+        <td class="iss">AllUnity (CHFAU) / verify ticker</td>
+        <td><span class="ceo">Alexander Höptner, CEO</span><span class="tw-h">@AllUnity_io</span></td>
+        <td><span class="tw-h">@AllUnity_io</span></td>
+        <td class="em">press@allunity.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇸🇪</span></td>
+        <td><span class="cn">Sweden</span><span class="cc">SEK</span></td>
+        <td class="tok">SEKAU</td>
+        <td class="iss">AllUnity — world's first MiCA SEK stablecoin</td>
+        <td><span class="ceo">Alexander Höptner, CEO</span><span class="tw-h">@AllUnity_io</span></td>
+        <td><span class="tw-h">@AllUnity_io</span></td>
+        <td class="em">press@allunity.com</td>
+        <td><span class="dot dg">BASE ✓ Jun 2026</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇹🇷</span></td>
+        <td><span class="cn">Turkey</span><span class="cc">TRY</span></td>
+        <td class="tok">TRYB</td>
+        <td class="iss">BiLira</td>
+        <td><span class="ceo">Sinan Koç, CEO</span><span class="tw-h">@bilira_co</span></td>
+        <td><span class="tw-h">@bilira_co</span></td>
+        <td class="em">bilira.co</td>
+        <td><span class="dot dr">6 CHAINS, NOT BASE</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇵🇱</span></td>
+        <td><span class="cn">Poland</span><span class="cc">PLN</span></td>
+        <td class="tok">PLNQ</td>
+        <td class="iss">Quantoz (Kraken-backed, MiCA Apr 2026)</td>
+        <td><span class="ceo">Daniel Coheur, CEO</span><span class="tw-h">@quantoz</span></td>
+        <td><span class="tw-h">@quantoz</span></td>
+        <td class="em">quantoz.com</td>
+        <td><span class="dot dr">ETH ONLY</span></td>
+        <td><span class="pri pw">LOBBY</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- AFRICA -->
+  <div class="rg"><span class="rg-l">Africa</span><div class="rg-r"></div><span class="rg-n">5 currencies · 7 issuers · 79% global stablecoin adoption rate</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Country</th><th>Ticker</th><th>Issuer</th><th>Founder / CEO</th><th>Twitter / X</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="flag">🇿🇦</span></td>
+        <td><span class="cn">South Africa</span><span class="cc">ZAR</span></td>
+        <td class="tok">ZARP</td>
+        <td class="iss">Stablecoin ZA</td>
+        <td><span class="ceo">Simon Dingle, Co-founder</span><span class="tw-h">@simondingle</span></td>
+        <td><span class="tw-h">@zarpcoin</span></td>
+        <td class="em">zarp.network</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇳🇬</span></td>
+        <td><span class="cn">Nigeria</span><span class="cc">NGN</span></td>
+        <td class="tok">CNGN</td>
+        <td class="iss">WrappedCBDC (Convexity + Interstellar)</td>
+        <td><span class="ceo">Uyoyo Ogedegbe, MD</span><span class="tw-h">@uyoyoogedegbe</span></td>
+        <td><span class="tw-h">@WrappedCBDC</span></td>
+        <td class="em">wrappedcbdc.io</td>
+        <td><span class="dot da">LAUNCHING BASE</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇰🇪</span></td>
+        <td><span class="cn">Kenya</span><span class="cc">KES</span></td>
+        <td class="tok">cKES</td>
+        <td class="iss">Mento Labs (Celo L2)</td>
+        <td><span class="ceo">Markus Franke, CEO</span><span class="tw-h">@markusfrankede</span></td>
+        <td><span class="tw-h">@MentoLabs</span></td>
+        <td class="em">mento.org</td>
+        <td><span class="dot dr">CELO ONLY</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇬🇭</span></td>
+        <td><span class="cn">Ghana</span><span class="cc">GHS</span></td>
+        <td class="tok">cGHS</td>
+        <td class="iss">Mento Labs / Celo Africa DAO</td>
+        <td><span class="ceo">Markus Franke, CEO</span><span class="tw-h">@markusfrankede</span></td>
+        <td><span class="tw-h">@MentoLabs</span></td>
+        <td class="em">mento.org</td>
+        <td><span class="dot dr">CELO ONLY</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🌍</span></td>
+        <td><span class="cn">West Africa (8)</span><span class="cc">XOF · CFA FRANC</span></td>
+        <td class="tok">eXOF</td>
+        <td class="iss">Dunia (Mento ecosystem)</td>
+        <td><span class="ceo">Serge Kiema, CEO</span><span class="tw-h">@SergeKiema</span></td>
+        <td><span class="tw-h">@dunia_finance</span></td>
+        <td class="em">dunia.finance</td>
+        <td><span class="dot dr">CELO ONLY</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇿🇦</span></td>
+        <td><span class="cn">South Africa</span><span class="cc">ZAR</span></td>
+        <td class="tok">ZARU</td>
+        <td class="iss">Luno + Sanlam + EasyEquities consortium</td>
+        <td><span class="ceo">Marcus Swanepoel, CEO (Luno)</span><span class="tw-h">@marcusswanepoel</span></td>
+        <td><span class="tw-h">@Luno</span></td>
+        <td class="em">luno.com</td>
+        <td><span class="dot dr">SOLANA (Feb 2026)</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- ASIA-PACIFIC -->
+  <div class="rg"><span class="rg-l">Asia-Pacific</span><div class="rg-r"></div><span class="rg-n">9 currencies · 13 issuers</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Country</th><th>Ticker</th><th>Issuer</th><th>Founder / CEO</th><th>Twitter / X</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="flag">🇸🇬</span></td>
+        <td><span class="cn">Singapore</span><span class="cc">SGD</span></td>
+        <td class="tok">XSGD</td>
+        <td class="iss">StraitsX / Fazz Financial</td>
+        <td><span class="ceo">Tianwei Liu, CEO</span><span class="tw-h">@tianwei_liu</span></td>
+        <td><span class="tw-h">@StraitsX</span></td>
+        <td class="em">straitsx.com</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇮🇩</span></td>
+        <td><span class="cn">Indonesia</span><span class="cc">IDR</span></td>
+        <td class="tok">IDRX</td>
+        <td class="iss">IDRX</td>
+        <td><span class="ceo">Nathanael Christian, CEO</span><span class="tw-h">@natechristi_n</span></td>
+        <td><span class="tw-h">@idrx_co</span></td>
+        <td class="em">home.idrx.co</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p1">TOP 1</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇦🇺</span></td>
+        <td><span class="cn">Australia</span><span class="cc">AUD</span></td>
+        <td class="tok">AUDD</td>
+        <td class="iss">Novatti / AUDC Pty Ltd</td>
+        <td><span class="ceo">Mark Healy, CEO</span><span class="tw-h">@markhealy</span></td>
+        <td><span class="tw-h">@NovattiBiz</span></td>
+        <td class="em">audd.digital</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🇲🇾</span></td>
+        <td><span class="cn">Malaysia</span><span class="cc">MYR</span></td>
+        <td class="tok">MYRC</td>
+        <td class="iss">BLOX Digital</td>
+        <td><span class="ceo">Ethan Chung, CEO</span><span class="tw-h">@ethan_blox</span></td>
+        <td><span class="tw-h">@BLOX_digital</span></td>
+        <td class="em">blox.my</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇵🇭</span></td>
+        <td><span class="cn">Philippines</span><span class="cc">PHP</span></td>
+        <td class="tok">PHPC</td>
+        <td class="iss">Coins.ph (BSP-licensed)</td>
+        <td><span class="ceo">Wei Zhou, CEO (ex-Binance CFO)</span><span class="tw-h">@coinsPH</span></td>
+        <td><span class="tw-h">@coinsPH</span></td>
+        <td class="em">coins.ph</td>
+        <td><span class="dot dr">POLYGON/RONIN</span></td>
+        <td><span class="pri p1">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇯🇵</span></td>
+        <td><span class="cn">Japan</span><span class="cc">JPY</span></td>
+        <td class="tok">JPYC</td>
+        <td class="iss">JPYC Inc. (FSA-licensed Oct 2025)</td>
+        <td><span class="ceo">Noritaka Okabe, CEO</span><span class="tw-h">@jcam_eth</span></td>
+        <td><span class="tw-h">@JPYC_Inc</span></td>
+        <td class="em">corporate.jpyc.co.jp</td>
+        <td><span class="dot dr">ETH/AVAX/POLY</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇰🇷</span></td>
+        <td><span class="cn">South Korea</span><span class="cc">KRW</span></td>
+        <td class="tok">KRW1</td>
+        <td class="iss">BDACS (Woori Bank-backed)</td>
+        <td><span class="ceo">Harry Ryoo, CEO</span><span class="tw-h">@BDACS_official</span></td>
+        <td><span class="tw-h">@BDACS_official</span></td>
+        <td class="em">bdacs.com</td>
+        <td><span class="dot dr">AVAX/PLUME</span></td>
+        <td><span class="pri pw">MONITOR</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇭🇰</span></td>
+        <td><span class="cn">Hong Kong</span><span class="cc">HKD</span></td>
+        <td class="tok">HKDAP</td>
+        <td class="iss">Anchorpoint (StanChart + HKT + Animoca)</td>
+        <td><span class="ceo">Dominic Maffei, CEO</span><span class="tw-h">@anchorpoint_hk</span></td>
+        <td><span class="tw-h">@anchorpoint_hk</span></td>
+        <td class="em">media@anchorpoint.hk</td>
+        <td><span class="dot dr">HK-ONLY LAUNCH</span></td>
+        <td><span class="pri pw">MONITOR</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇻🇳</span></td>
+        <td><span class="cn">Vietnam</span><span class="cc">VND</span></td>
+        <td class="tok">VNDC</td>
+        <td class="iss">VNDC / ONUS</td>
+        <td><span class="ceo">Hoa Tu, CEO</span><span class="tw-h">@VNDCtoken</span></td>
+        <td><span class="tw-h">@VNDCtoken</span></td>
+        <td class="em">vndc.io</td>
+        <td><span class="dot dr">ETH/BNB/ONUS</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇮🇳</span></td>
+        <td><span class="cn">India</span><span class="cc">INR</span></td>
+        <td class="tok">ARC</td>
+        <td class="iss">Polygon + Anq</td>
+        <td><span class="ceo">—</span></td>
+        <td><span class="tw-h">@anq_finance</span></td>
+        <td class="em">anq.finance</td>
+        <td><span class="dot dr">INDIA-ONLY</span></td>
+        <td><span class="pri pw">REGULATORY 2027</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- MIDDLE EAST -->
+  <div class="rg"><span class="rg-l">Middle East</span><div class="rg-r"></div><span class="rg-n">3 currencies · 3 issuers</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Country</th><th>Ticker</th><th>Issuer</th><th>Founder / CEO</th><th>Twitter / X</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr class="dim">
+        <td><span class="flag">🇦🇪</span></td>
+        <td><span class="cn">UAE</span><span class="cc">AED</span></td>
+        <td class="tok">AECoin</td>
+        <td class="iss">AED Stablecoin LLC (CBUAE-licensed)</td>
+        <td><span class="ceo">Ramez Rafeek</span><span class="tw-h">@AECoin_io</span></td>
+        <td><span class="tw-h">@AECoin_io</span></td>
+        <td class="em">aecoin.io</td>
+        <td><span class="dot dr">ADI CHAIN/ETH</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+      <tr class="dim">
+        <td><span class="flag">🇮🇱</span></td>
+        <td><span class="cn">Israel</span><span class="cc">ILS</span></td>
+        <td class="tok">BILS</td>
+        <td class="iss">Bits of Gold (ISA-approved Apr 2026)</td>
+        <td><span class="ceo">Yuval Roash, CEO</span><span class="tw-h">@BitsofGold_il</span></td>
+        <td><span class="tw-h">@BitsofGold_il</span></td>
+        <td class="em">bitsofgold.co.il</td>
+        <td><span class="dot dr">SOLANA</span></td>
+        <td><span class="pri pw">LOBBY BASE</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- GLOBAL USD -->
+  <div class="rg"><span class="rg-l">Global USD — Settlement Layer</span><div class="rg-r"></div><span class="rg-n">the base asset under every corridor</span></div>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Asset</th><th>Ticker</th><th>Issuer</th><th>CEO</th><th>Twitter</th><th>Contact</th><th>Base</th><th>LOI</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="flag">🌍</span></td>
+        <td><span class="cn">US Dollar</span><span class="cc">USD</span></td>
+        <td class="tok">USDC</td>
+        <td class="iss">Circle Internet Group</td>
+        <td><span class="ceo">Jeremy Allaire</span><span class="tw-h">@jerallaire</span></td>
+        <td><span class="tw-h">@circle</span></td>
+        <td class="em">partnerships@circle.com</td>
+        <td><span class="dot dg">NATIVE</span></td>
+        <td><span class="pri p1">ACTIVE COLLAB</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🌍</span></td>
+        <td><span class="cn">US Dollar</span><span class="cc">USD</span></td>
+        <td class="tok">USDT</td>
+        <td class="iss">Tether</td>
+        <td><span class="ceo">Paolo Ardoino</span><span class="tw-h">@paoloardoino</span></td>
+        <td><span class="tw-h">@Tether_to</span></td>
+        <td class="em">tether.to</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+      <tr>
+        <td><span class="flag">🌍</span></td>
+        <td><span class="cn">US Dollar</span><span class="cc">USD</span></td>
+        <td class="tok">USDe</td>
+        <td class="iss">Ethena Labs</td>
+        <td><span class="ceo">Guy Young</span><span class="tw-h">@gdog97_</span></td>
+        <td><span class="tw-h">@ethena_labs</span></td>
+        <td class="em">ethena.fi</td>
+        <td><span class="dot dg">BASE ✓</span></td>
+        <td><span class="pri p2">TIER 2</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <p style="font-size:11.5px;color:var(--text-3);margin-top:10px;padding-left:2px;">Full rows = confirmed on Base. Dimmed rows = stablecoin exists but not yet on Base — lobby targets.</p>
+</div>
+
+<hr>
+
+<!-- ── SECTION 2 ── -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-n">02</span><h2 class="sec-t">Priority Corridors for Basemate</h2><div class="sec-r"></div></div>
+  <div class="cgrid">
+    <div class="ccard">
+      <div class="crt">🇺🇸 → 🇲🇽 US–Mexico</div>
+      <div class="cv">$65B/yr · World's largest corridor</div>
+      <div class="cst"><span class="pill pb">MXNB ✓</span><span class="pill pb">MXNe ✓</span></div>
+      <div class="cnote"><strong>Two issuers, both on Base.</strong> MXNB (Bitso) = biggest liquidity. MXNe (Etherfuse) = founder-run, easy to close. Two LOIs, this week.</div>
+    </div>
+    <div class="ccard">
+      <div class="crt">🌍 → 🇳🇬 US/UK–Nigeria</div>
+      <div class="cv">$20B+/yr · Africa's #1 market</div>
+      <div class="cst"><span class="pill pa">CNGN launching</span></div>
+      <div class="cnote"><strong>Mid-launch timing is optimal.</strong> DM @WrappedCBDC now — LOI positions Basemate as a launch distribution partner before they go live.</div>
+    </div>
+    <div class="ccard">
+      <div class="crt">🇸🇬 ↔ 🇮🇩 SE Asia Hub</div>
+      <div class="cv">$12B+/yr · SGD ↔ IDR</div>
+      <div class="cst"><span class="pill pb">XSGD ✓</span><span class="pill pb">IDRX ✓</span></div>
+      <div class="cnote"><strong>Both confirmed on Base.</strong> StraitsX processed $18B in 2025. Two LOIs, one hub. Basemate's SE Asia anchor.</div>
+    </div>
+    <div class="ccard">
+      <div class="crt">🌍 → 🇵🇭 US–Philippines</div>
+      <div class="cv">$40B/yr · BIGGEST GAP</div>
+      <div class="cst"><span class="pill px">PHPC Polygon/Ronin only</span></div>
+      <div class="cnote"><strong>Critical missing piece.</strong> Email Coins.ph — "Deploy PHPC on Base, Basemate puts it in every iPhone sending to Manila." Wei Zhou is ex-Binance CFO, sophisticated audience.</div>
+    </div>
+    <div class="ccard">
+      <div class="crt">🇿🇦 South Africa</div>
+      <div class="cv">Africa's largest economy</div>
+      <div class="cst"><span class="pill pb">ZARP ✓ BASE</span></div>
+      <div class="cnote"><strong>ZARP confirmed on Base.</strong> Simon Dingle is a crypto native, very reachable. Africa leads global stablecoin adoption at 79%. LOI = strong investor signal.</div>
+    </div>
+    <div class="ccard">
+      <div class="crt">🇪🇺 Europe — AllUnity Play</div>
+      <div class="cv">1 call = EUR + CHF + SEK</div>
+      <div class="cst"><span class="pill pb">EURAU ✓</span><span class="pill pb">VCHF ✓</span><span class="pill pb">SEKAU ✓</span></div>
+      <div class="cnote"><strong>One LOI, three currencies.</strong> Email press@allunity.com. Alexander Höptner (ex-BitMEX CEO), DWS + Galaxy JV. Eurozone + Switzerland + Sweden in one signature.</div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ── SECTION 3 ── -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-n">03</span><h2 class="sec-t">LOI Outreach Sequence</h2><div class="sec-r"></div></div>
+
+  <div class="callout">
+    <div class="clbl">Basemate LOI terms (standard)</div>
+    <div class="ctxt">Non-binding. 90-day window to negotiate definitive agreement. What we're asking: "Exclusive preferred distribution partner for [TOKEN] in Basemate iMessage + WhatsApp." What we offer: the first money-in-chat rail for their stablecoin, access to the Base ecosystem, and investor signal in the raise. Use the <strong>B1 cold DM template</strong> from <code>manifest/partner-outreach.md</code> for all first touches. Ask type: <strong>Type B — Corridor / local number.</strong></div>
+  </div>
+
+  <div class="tcol">
+    <div class="blk">
+      <div class="bt">Week 1 · Fast closes</div>
+      <ul>
+        <li><strong>MXNB / Bitso:</strong> DM @bitso + DM @danielvogel. Two Mexico stablecoins = two LOIs in one call.</li>
+        <li><strong>CNGN / WrappedCBDC:</strong> DM @WrappedCBDC now — they're mid-launch. Best timing. Nigeria Type B.</li>
+        <li><strong>ZARP / Simon Dingle:</strong> DM @simondingle. Crypto native, easy to close. ZA + SA corridor.</li>
+        <li><strong>IDRX / Nathanael:</strong> DM @idrx_co or @natechristi_n. Founder-led. Indonesia = SEA's largest economy.</li>
+      </ul>
+    </div>
+    <div class="blk">
+      <div class="bt">Week 2 · Slightly larger orgs</div>
+      <ul>
+        <li><strong>XSGD / StraitsX:</strong> LinkedIn to Tianwei Liu. YC alumni. $18B vol in 2025. Opens full SE Asia hub.</li>
+        <li><strong>AllUnity (EURAU+VCHF+SEKAU):</strong> press@allunity.com — one email, three corridors. EUR, CHF, SEK.</li>
+        <li><strong>BRZ / Transfero:</strong> @Transfero_Group. Márlyson Silva. Most liquid LATAM stablecoin by Base volume.</li>
+        <li><strong>AUDD / Novatti:</strong> audd.digital. Mark Healy. First AUD on Coinbase retail — warm signal.</li>
+      </ul>
+    </div>
+    <div class="blk">
+      <div class="bt">Week 3 · Lobby for Base deployment</div>
+      <ul>
+        <li><strong>Coins.ph (PHPC):</strong> @coinsPH. "Deploy on Base, Basemate puts PHPC in every iPhone sending to Manila. $40B corridor."</li>
+        <li><strong>Mento Labs (10+ African):</strong> @markusfrankede. One call = cKES, cGHS, eXOF (via Dunia), PUSO, cCOP. Pitch a Base bridge.</li>
+        <li><strong>BiLira (TRYB):</strong> @bilira_co. Turkey top-5 global crypto adoption. 6 chains but not Base — easy pitch.</li>
+        <li><strong>JPYC (Japan):</strong> @JPYC_Inc. FSA-licensed. ¥4.6B Series B. JPY settlement opens Japan corridor.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ── SECTION 4 ── -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-n">04</span><h2 class="sec-t">Critical Gaps — No Stablecoin On Base Yet</h2><div class="sec-r"></div></div>
+  <div class="lgrid">
+    <div class="lcard">
+      <div class="lf">🇬🇧</div><div class="lc">United Kingdom</div><div class="lcur">GBP · Pound</div>
+      <div class="ltk">TGBP (on Base — issuer TBV)</div>
+      <div class="li">Base confirmed TGBP in official tweet. Identify issuer via Base BD immediately.</div>
+      <div class="ln">UK→Nigeria + UK→India = some of the world's largest corridors. Enormous if cracked.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇵🇭</div><div class="lc">Philippines</div><div class="lcur">PHP · Peso</div>
+      <div class="ltk">PHPC (Coins.ph)</div>
+      <div class="li">BSP-licensed. $40B US→PH corridor. Polygon/Ronin. Wei Zhou CEO.</div>
+      <div class="ln">Lobby to deploy on Base. Distribution pitch: every iPhone in the US sending to Manila.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇯🇵</div><div class="lc">Japan</div><div class="lcur">JPY · Yen</div>
+      <div class="ltk">JPYC</div>
+      <div class="li">FSA-licensed, ¥4.6B Series B. ETH/AVAX/Polygon. Not on Base yet.</div>
+      <div class="ln">US→Japan is a major corridor. JPY settlement is essential for Asia trades.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇰🇷</div><div class="lc">South Korea</div><div class="lcur">KRW · Won</div>
+      <div class="ltk">KRW1 (BDACS)</div>
+      <div class="li">Woori Bank-backed, Avalanche/Plume. 6 players racing for KRW stablecoin in 2026.</div>
+      <div class="ln">Get in early — lobby Base to partner with the winner. KR diaspora in US is large.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇰🇪</div><div class="lc">Kenya</div><div class="lcur">KES · Shilling</div>
+      <div class="ltk">cKES (Mento, Celo)</div>
+      <div class="li">Mento Labs. Growing fast, CBK licensing framework active.</div>
+      <div class="ln">Lobby for Base bridge. One Mento conversation covers Kenya + Ghana + West Africa.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇹🇷</div><div class="lc">Turkey</div><div class="lcur">TRY · Lira</div>
+      <div class="ltk">TRYB (BiLira)</div>
+      <div class="li">Sinan Koç. 6 chains, not Base. Top-5 global crypto adoption.</div>
+      <div class="ln">TRY instability drives massive stablecoin demand. Easy pitch to add Base as chain 7.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🌍</div><div class="lc">West Africa (8 nations)</div><div class="lcur">XOF · CFA Franc</div>
+      <div class="ltk">eXOF (Dunia/Mento)</div>
+      <div class="li">Serge Kiema (Dunia), Mento. Celo L2 only.</div>
+      <div class="ln">Senegal, Ivory Coast, Mali + 5 more. 79% Africa stablecoin adoption. One LOI = 8 corridors.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇻🇳</div><div class="lc">Vietnam</div><div class="lcur">VND · Dong</div>
+      <div class="ltk">VNDC</div>
+      <div class="li">VNDC/ONUS. ETH/BNB. Fastest crypto adoption in SE Asia after PH.</div>
+      <div class="ln">US/Korea→Vietnam corridor growing fast. Diaspora outreach model fits perfectly.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇪🇬</div><div class="lc">Egypt</div><div class="lcur">EGP · Pound</div>
+      <div class="ltk">None found</div>
+      <div class="li">No confirmed issuer as of Aug 2026. Africa's #2 economy.</div>
+      <div class="ln">$28B remittances/yr. First mover on EGP stablecoin on Base wins a massive untouched market.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇲🇦</div><div class="lc">Morocco</div><div class="lcur">MAD · Dirham</div>
+      <div class="ltk">None found</div>
+      <div class="li">No confirmed issuer. AMMC crypto framework active 2025.</div>
+      <div class="ln">France→Morocco is one of Europe's largest corridors. Total gap, first mover wins.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇦🇪</div><div class="lc">UAE</div><div class="lcur">AED · Dirham</div>
+      <div class="ltk">AECoin (CBUAE-licensed)</div>
+      <div class="li">AED Stablecoin LLC. CBUAE licensed. Not on Base.</div>
+      <div class="ln">UAE→India/Pakistan are major corridors. License is live — lobby for Base deployment.</div>
+    </div>
+    <div class="lcard">
+      <div class="lf">🇮🇱</div><div class="lc">Israel</div><div class="lcur">ILS · Shekel</div>
+      <div class="ltk">BILS (Bits of Gold)</div>
+      <div class="li">ISA-approved Apr 2026. First Mid-East govt-approved stablecoin. Solana.</div>
+      <div class="ln">US→Israel corridor + Israeli tech company USD payroll. New market, well-regulated.</div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ── SECTION 5 ── -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-n">05</span><h2 class="sec-t">Investor Signal — LOI Pipeline</h2><div class="sec-r"></div></div>
+  <div class="callout">
+    <div class="clbl">How this maps to the raise</div>
+    <div class="ctxt">Each signed LOI = one country phone number lit up on the Basemate world map. The target for this raise is <strong>10 LOI signatures</strong> — that represents 10 corridors, covering an estimated $200B+/yr in annual remittance flow. The metric on the investor slide: <strong>"X/10 corridor LOIs signed."</strong> Update before every meeting. Signed PDFs go in <code>collateral/lois/signed/</code>. Reference in <code>manifest/canon.md</code> under Partnerships once first LOI closes. <br><br>Signal sequence: <strong>MXNB LOI → cNGN LOI → XSGD+IDRX → raise closes.</strong></div>
+  </div>
+
+  <div class="tcol">
+    <div class="blk">
+      <div class="bt">Breadboard repo structure</div>
+      <ul>
+        <li><strong>partnerships/stablecoin-directory.html</strong> — this file</li>
+        <li><strong>partnerships/registry.json</strong> — structured data version for agent reads</li>
+        <li><strong>partnerships/loi-template.md</strong> — standard LOI template</li>
+        <li><strong>partnerships/outreach/{ticker}.md</strong> — per-issuer DM drafts</li>
+        <li><strong>collateral/lois/signed/</strong> — signed PDFs</li>
+      </ul>
+    </div>
+    <div class="blk">
+      <div class="bt">Airtable CRM</div>
+      <ul>
+        <li>Stages: Identified → Contacted → Responded → Meeting → LOI Sent → LOI Signed → Active</li>
+        <li>Fields: Country, Ticker, Issuer, Tier, Founder, Twitter, Email, Stage, Last Touch, Corridor Volume ($B/yr)</li>
+        <li>Auto-flag contacts untouched 5+ days</li>
+        <li>Sort by Corridor Volume to stay on biggest wins</li>
+        <li>Signed LOI → auto-link PDF in collateral/</li>
+      </ul>
+    </div>
+    <div class="blk">
+      <div class="bt">Outreach automation</div>
+      <ul>
+        <li>Use <code>manifest/partner-outreach.md</code> + this file to draft every DM</li>
+        <li>Ask type for all stablecoin issuers: <strong>Type B — Corridor / local number</strong></li>
+        <li>DM template: B1 cold DM from partner-outreach.md</li>
+        <li>One ask per first touch — never stack integration AND LOI in same message</li>
+        <li>Follow-up at 5 days with 2-line bump (see follow-up skeleton)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ftr">
+  <div>
+    <div class="fb">Basemate</div>
+    <div class="fs">mateo@basemate.app · Base Batches 002 · money in chat</div>
+  </div>
+  <div class="fsrc">
+    Sources: @base on X · basescan.org · DeFiLlama · CoinGecko<br>
+    straitsx.com · idrx.co · mento.org · allunity.com<br>
+    partnerships/ directory · Generated 2026-08-09
+  </div>
+</div>
+
+</div>
+</body>
+</html>

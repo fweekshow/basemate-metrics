@@ -287,6 +287,120 @@ export function DataRoomContent({
           </div>
         </section>
 
+        {/* Stablecoin corridors */}
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight">
+                Stablecoin corridors
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Every country gets a Mate number. 20+ local-currency stablecoins are live on Base.
+                Target: 10 LOI signatures this raise.
+              </p>
+            </div>
+            <a
+              href="/stablecoin-directory.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center rounded-full border border-border bg-white px-4 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Full directory ↗
+            </a>
+          </div>
+
+          {/* LOI stats */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { label: "LOIs Signed", value: "0 / 10", note: "Target: 10 this raise" },
+              { label: "Confirmed on Base", value: "20+", note: "Local-currency stablecoins live" },
+              { label: "Corridor Volume", value: "$800B", note: "Global remittance / yr" },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-[20px] border border-border bg-white p-5 shadow-sm">
+                <Mono className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  {stat.label}
+                </Mono>
+                <p className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground">
+                  {stat.value}
+                </p>
+                <p className="mt-1.5 text-sm text-muted-foreground">{stat.note}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Corridor table */}
+          <div className="overflow-hidden rounded-[20px] border border-border bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    {["Country", "Ticker", "Issuer", "Contact", "Status"].map((h) => (
+                      <th key={h} className="px-4 py-2.5 text-left font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {[
+                    { flag: "🇲🇽", country: "Mexico",       currency: "MXN", ticker: "MXNB",  issuer: "Bitso",          contact: "@bitso",          status: "BASE ✓",   live: true  },
+                    { flag: "🇧🇷", country: "Brazil",        currency: "BRL", ticker: "BRZ",   issuer: "Transfero",      contact: "@Transfero_Group",status: "BASE ✓",   live: true  },
+                    { flag: "🇿🇦", country: "South Africa",  currency: "ZAR", ticker: "ZARP",  issuer: "Stablecoin ZA",  contact: "@simondingle",    status: "BASE ✓",   live: true  },
+                    { flag: "🇳🇬", country: "Nigeria",       currency: "NGN", ticker: "CNGN",  issuer: "WrappedCBDC",   contact: "@WrappedCBDC",    status: "LAUNCHING",live: true  },
+                    { flag: "🇸🇬", country: "Singapore",     currency: "SGD", ticker: "XSGD",  issuer: "StraitsX",       contact: "@StraitsX",       status: "BASE ✓",   live: true  },
+                    { flag: "🇮🇩", country: "Indonesia",     currency: "IDR", ticker: "IDRX",  issuer: "IDRX",           contact: "@idrx_co",        status: "BASE ✓",   live: true  },
+                    { flag: "🇲🇾", country: "Malaysia",      currency: "MYR", ticker: "MYRC",  issuer: "BLOX",           contact: "@BLOX_digital",   status: "BASE ✓",   live: true  },
+                    { flag: "🇦🇺", country: "Australia",     currency: "AUD", ticker: "AUDD",  issuer: "Novatti",        contact: "@NovattiBiz",     status: "BASE ✓",   live: true  },
+                    { flag: "🇬🇧", country: "UK",            currency: "GBP", ticker: "TGBP",  issuer: "TBV (on Base)",  contact: "—",               status: "BASE ✓",   live: true  },
+                    { flag: "🇨🇭", country: "Switzerland",   currency: "CHF", ticker: "VCHF",  issuer: "AllUnity",       contact: "@AllUnity_io",    status: "BASE ✓",   live: true  },
+                    { flag: "🇸🇪", country: "Sweden",        currency: "SEK", ticker: "SEKAU", issuer: "AllUnity",       contact: "@AllUnity_io",    status: "BASE ✓",   live: true  },
+                    { flag: "🇵🇭", country: "Philippines",   currency: "PHP", ticker: "PHPC",  issuer: "Coins.ph",       contact: "@coinsPH",        status: "LOBBY",    live: false },
+                    { flag: "🇯🇵", country: "Japan",         currency: "JPY", ticker: "JPYC",  issuer: "JPYC Inc.",      contact: "@JPYC_Inc",       status: "LOBBY",    live: false },
+                    { flag: "🇰🇪", country: "Kenya",         currency: "KES", ticker: "cKES",  issuer: "Mento Labs",     contact: "@MentoLabs",      status: "LOBBY",    live: false },
+                  ].map((row) => (
+                    <tr key={`${row.country}-${row.ticker}`} className={row.live ? "" : "opacity-45"}>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="mr-2 text-base">{row.flag}</span>
+                        <span className="font-medium text-foreground">{row.country}</span>
+                        <Mono className="ml-2 text-[10px] text-muted-foreground">{row.currency}</Mono>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Mono className="text-sm font-bold text-foreground">{row.ticker}</Mono>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">{row.issuer}</td>
+                      <td className="px-4 py-3">
+                        <Mono className="text-xs text-primary">{row.contact}</Mono>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block rounded-full border px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider whitespace-nowrap ${
+                          row.status === "BASE ✓"   ? "border-green-200  bg-green-50  text-green-700"  :
+                          row.status === "LAUNCHING" ? "border-amber-200  bg-amber-50  text-amber-700"  :
+                                                       "border-border     bg-muted     text-muted-foreground"
+                        }`}>
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-border px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+              <p className="text-xs text-muted-foreground">
+                Dimmed rows = lobby targets. Full rows confirmed on Base.
+              </p>
+              <a
+                href="/stablecoin-directory.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Full directory with founder contacts ↗
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* Milestone */}
         <section className="rounded-[20px] border border-border bg-white p-6 shadow-sm sm:p-8">
           <Mono className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
