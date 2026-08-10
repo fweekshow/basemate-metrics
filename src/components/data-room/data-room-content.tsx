@@ -6,6 +6,7 @@ import {
   formatStage,
   type TalkingToContact,
 } from "@/lib/data-room-db";
+import type { DataRoomInvestorView } from "@/lib/data-room-content";
 import { INVESTOR } from "@/lib/investor";
 
 function Mono({
@@ -39,10 +40,12 @@ export function DataRoomContent({
   visitorName,
   visitorFirm,
   talkingTo,
+  investorView,
 }: {
   visitorName: string;
   visitorFirm: string;
   talkingTo: TalkingToContact[];
+  investorView: DataRoomInvestorView;
 }) {
   const visitorLabel = visitorFirm
     ? `${visitorName} · ${visitorFirm}`
@@ -55,7 +58,7 @@ export function DataRoomContent({
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-2">
             <Mono className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Investor data room · {INVESTOR.round} {INVESTOR.year}
+              Investor data room · {investorView.round} {investorView.year}
             </Mono>
             <span className="rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">
               Actively closing
@@ -65,10 +68,10 @@ export function DataRoomContent({
             className="max-w-2xl font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
             style={{ textWrap: "balance" }}
           >
-            {INVESTOR.headline}
+            {investorView.headline}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {INVESTOR.subhead}
+            {investorView.subhead}
           </p>
           <p className="text-sm text-muted-foreground">
             Signed in as{" "}
@@ -97,12 +100,12 @@ export function DataRoomContent({
               Who we&apos;re talking to
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Live pipeline from Mate. Update anytime by text —{" "}
-              <Mono className="text-xs text-foreground">/vc stage &lt;firm&gt; &lt;stage&gt;</Mono>
-              {" · "}
-              <Mono className="text-xs text-foreground">/vc meet &lt;firm&gt; thursday</Mono>
-              {" · "}
-              <Mono className="text-xs text-foreground">/investors</Mono>
+              Live from Notion → sync. Add firms in{" "}
+              <span className="font-medium text-foreground">VC pipeline</span>, check{" "}
+              <span className="font-medium text-foreground">Show on site</span>, then sync.
+              Optional: Mate{" "}
+              <Mono className="text-xs text-foreground">/vc stage &lt;firm&gt; &lt;stage&gt;</Mono> when
+              pipeline DB is empty.
             </p>
           </div>
           {talkingTo.length === 0 ? (
@@ -163,18 +166,18 @@ export function DataRoomContent({
           {[
             {
               label: "Target",
-              value: INVESTOR.target,
-              note: INVESTOR.targetNote,
+              value: investorView.target,
+              note: investorView.targetNote,
             },
             {
               label: "Committed",
-              value: INVESTOR.committed,
-              note: INVESTOR.committedNote,
+              value: investorView.committed,
+              note: investorView.committedNote,
             },
             {
               label: "Status",
               value: "Pre-seed",
-              note: INVESTOR.status,
+              note: investorView.status,
             },
           ].map((stat) => (
             <div
@@ -273,7 +276,7 @@ export function DataRoomContent({
             </a>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {INVESTOR.traction.map((stat) => (
+            {investorView.traction.map((stat) => (
               <div
                 key={stat.label}
                 className="rounded-[20px] border border-border bg-white p-4 shadow-sm"

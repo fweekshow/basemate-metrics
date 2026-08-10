@@ -29,7 +29,7 @@ function databaseUrl(): string | undefined {
   return process.env.DATABASE_URL?.trim() || process.env.SHARED_GROUPS_DATABASE_URL?.trim();
 }
 
-function getPool(): Pool | null {
+export function getPool(): Pool | null {
   const url = databaseUrl();
   if (!url) return null;
   if (!poolCache || poolCache.databaseUrl !== url) {
@@ -94,9 +94,69 @@ const ACTIVE_STAGES = [
  * Active raise conversations from the agent investor funnel.
  * Updated by texting Mate: `/vc stage <firm> <stage>`, `/vc meet <firm> <day>`, etc.
  */
+function mapTalkingRows(
+  rows: {
+    name: string;
+    firm: string;
+    stage: string;
+    meeting_date: Date | string | null;
+    notes: string | null;
+    tier: string | null;
+  }[],
+): TalkingToContact[] {
+  return rows.map((row) => ({
+    name: row.name,
+    firm: row.firm,
+    stage: row.stage,
+    meetingDate: row.meeting_date
+      ? new Date(row.meeting_date).toISOString()
+      : null,
+    notes: row.notes,
+    tier: row.tier,
+  }));
+}
+
+const ORDER_BY_STAGE = `
+  ORDER BY
+    CASE stage
+      WHEN 'term_sheet' THEN 0
+      WHEN 'follow_up' THEN 1
+      WHEN 'meeting_done' THEN 2
+      WHEN 'meeting_scheduled' THEN 3
+      WHEN 'outreach_sent' THEN 4
+      ELSE 5
+    END,
+    meeting_date NULLS LAST,
+    firm ASC`;
+
+/**
+ * Active conversations: Notion-synced `data_room_pipeline` first, else Mate `investor_contacts`.
+ */
 export async function getTalkingTo(): Promise<TalkingToContact[]> {
   const pool = getPool();
   if (!pool) return [];
+
+  try {
+    const notionPipeline = await pool.query<{
+      name: string;
+      firm: string;
+      stage: string;
+      meeting_date: Date | string | null;
+      notes: string | null;
+      tier: string | null;
+    }>(
+      `SELECT name, firm, stage, meeting_date, notes, tier
+       FROM data_room_pipeline
+       WHERE show_on_site = true OR stage = ANY($1::text[])
+       ${ORDER_BY_STAGE}`,
+      [ACTIVE_STAGES],
+    );
+    if (notionPipeline.rowCount && notionPipeline.rowCount > 0) {
+      return mapTalkingRows(notionPipeline.rows);
+    }
+  } catch {
+    // table may not exist until first Notion sync
+  }
 
   try {
     const result = await pool.query<{
@@ -110,32 +170,11 @@ export async function getTalkingTo(): Promise<TalkingToContact[]> {
       `SELECT name, firm, stage, meeting_date, notes, tier
        FROM investor_contacts
        WHERE stage = ANY($1::text[])
-       ORDER BY
-         CASE stage
-           WHEN 'term_sheet' THEN 0
-           WHEN 'follow_up' THEN 1
-           WHEN 'meeting_done' THEN 2
-           WHEN 'meeting_scheduled' THEN 3
-           WHEN 'outreach_sent' THEN 4
-           ELSE 5
-         END,
-         meeting_date NULLS LAST,
-         firm ASC`,
+       ${ORDER_BY_STAGE}`,
       [ACTIVE_STAGES],
     );
-
-    return result.rows.map((row) => ({
-      name: row.name,
-      firm: row.firm,
-      stage: row.stage,
-      meetingDate: row.meeting_date
-        ? new Date(row.meeting_date).toISOString()
-        : null,
-      notes: row.notes,
-      tier: row.tier,
-    }));
+    return mapTalkingRows(result.rows);
   } catch {
-    // Table may not exist until the agent migration runs.
     return [];
   }
 }

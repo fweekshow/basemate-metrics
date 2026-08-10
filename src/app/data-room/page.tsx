@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { DataRoomContent } from "@/components/data-room/data-room-content";
 import { DataRoomGate } from "@/components/data-room/data-room-gate";
 import { getDataRoomSession } from "@/lib/data-room-auth";
+import { getDataRoomInvestorView } from "@/lib/data-room-content";
 import { getTalkingTo } from "@/lib/data-room-db";
 
 export const metadata: Metadata = {
@@ -33,13 +34,17 @@ export default async function DataRoomPage({
     return <DataRoomGate nextPath={nextPath} />;
   }
 
-  const talkingTo = await getTalkingTo();
+  const [talkingTo, investorView] = await Promise.all([
+    getTalkingTo(),
+    getDataRoomInvestorView(),
+  ]);
 
   return (
     <DataRoomContent
       visitorName={session.name}
       visitorFirm={session.firm}
       talkingTo={talkingTo}
+      investorView={investorView}
     />
   );
 }
