@@ -1,0 +1,58 @@
+/* Basemate /app — scoped tokens (lavender wallet shell) */
+
+.app-dashboard {
+  /* Same display face as marketing site (Clash Display in globals.css) */
+  --font-app-display: "Clash Display", var(--font-geist-sans), system-ui, sans-serif;
+
+  --app-radius-lg: 20px;
+  --app-radius-pill: 999px;
+  --app-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --app-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --app-dur-base: 200ms;
+
+  --app-mark-blue: #0505ff;
+  --app-canvas: #eae8f5;
+  --app-surface: #ffffff;
+  --app-shadow-card: 0 1px 2px rgba(10, 10, 26, 0.05), 0 10px 30px rgba(40, 30, 90, 0.07);
+  --app-shadow-mark: 0 4px 14px rgba(5, 5, 255, 0.25);
+}
+
+.app-dashboard .font-app-display {
+  font-family: var(--font-app-display);
+}
+
+.app-dashboard .app-hero {
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-card);
+  border: 1px solid var(--border);
+}
+
+.app-dashboard .app-stack {
+  box-shadow: var(--app-shadow-card);
+}
+
+.app-dashboard .app-money {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes app-mate-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.app-dashboard .app-mate-animate {
+  animation: app-mate-in 0.45s var(--app-ease-spring) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-dashboard .app-mate-animate {
+    animation: none;
+  }
+}

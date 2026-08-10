@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { agentHost, getAppSession } from "@/lib/app-session";
+import { appUiPreviewServerEnabled, isUiPreviewSession, mockAppApiResponse } from "@/lib/app-ui-preview";
 import { clientIpFromRequest, forwardClientIpHeaders } from "@/lib/client-ip";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,19 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
   if (!session) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
+
+  if (appUiPreviewServerEnabled() && isUiPreviewSession(session)) {
+    const body =
+      method === "POST" ? ((await req.json().catch(() => ({}))) as Record<string, unknown>) : {};
+    const mocked = mockAppApiResponse(segments, method, body, req.nextUrl.searchParams);
+    if (mocked) {
+      return NextResponse.json(mocked.data, {
+        status: mocked.status,
+        headers: { "cache-control": "no-store" },
+      });
+    }
+  }
+
   const host = agentHost();
   if (!host) {
     return NextResponse.json({ error: "Dashboard API is not configured (set AGENT_API_HOST)." }, { status: 500 });
