@@ -35,6 +35,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./app-dashboard.tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -223,6 +224,11 @@
 
   .text-glow {
     text-shadow: 0 0 14px currentColor;
+  }
+
+  /* Basemate wallet (/app) — light lavender; see app-dashboard.tokens.css */
+  .app-dashboard {
+    color-scheme: light;
   }
 }
 

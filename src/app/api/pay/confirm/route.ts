@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAppSession } from "@/lib/app-session";
+import { isUiPreviewSession, mockPayConfirmResponse } from "@/lib/app-ui-preview";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,6 +35,16 @@ export async function POST(req: NextRequest) {
       { error: "Sign in to confirm this transaction.", requiresAuth: true },
       { status: 401 },
     );
+  }
+
+  if (isUiPreviewSession(session)) {
+    const mocked = mockPayConfirmResponse(token);
+    if (mocked) {
+      return NextResponse.json(mocked.data, {
+        status: mocked.status,
+        headers: { "cache-control": "no-store" },
+      });
+    }
   }
 
   const host = agentHost();

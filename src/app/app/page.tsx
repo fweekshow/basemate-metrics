@@ -11,5 +11,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function AppPage() {
-  return <AppClient />;
+  return (
+    <div className="min-h-[100dvh] bg-[#EAE8F5] bg-gradient-to-b from-[#EAE8F5] to-[#E0DFF0]">
+      <AppClient />
+    </div>
+  );
 }

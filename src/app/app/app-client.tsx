@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, createContext, useContext } from "react";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCurrentUser,
@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   Check,
   Copy,
+  ChevronDown,
   ExternalLink,
   Loader2,
   LogOut,
@@ -23,16 +24,25 @@ import {
   Send,
   Settings,
   Sparkles,
-  Trophy,
+  Users,
   Wallet,
   X,
 } from "lucide-react";
 
+import { SendSheet, type SendPrefill } from "@/app/app/send-sheet";
+import { BubbleMarkTile, MarkTile } from "@/app/app/app-brand-tiles";
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
 import { IMESSAGE_HREF } from "@/lib/site";
 
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
+
+const UI_PREVIEW_CLIENT = process.env.NEXT_PUBLIC_APP_UI_PREVIEW === "1";
+
+const AppPreviewContext = createContext(false);
+function useAppPreviewMode(): boolean {
+  return useContext(AppPreviewContext);
+}
 
 const cdpConfig = {
   projectId: PROJECT_ID,
@@ -42,10 +52,91 @@ const cdpConfig = {
 };
 
 export function AppClient() {
+  if (UI_PREVIEW_CLIENT) {
+    return <PreviewAuthGate />;
+  }
   return (
     <CDPReactProvider config={cdpConfig}>
       <AuthGate />
     </CDPReactProvider>
+  );
+}
+
+/** Local UI iteration — mock data, no CDP (avoids Safari "Load failed" on localhost). */
+function PreviewAuthGate() {
+  const [phase, setPhase] = useState<"checking" | "gate" | "ready">("checking");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/app/profile", { cache: "no-store" })
+      .then((res) => {
+        if (cancelled) return;
+        setPhase(res.ok ? "ready" : "gate");
+      })
+      .catch(() => {
+        if (!cancelled) setPhase("gate");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function enterPreview() {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/app/preview-login", { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error ?? "Preview login failed.");
+      setPhase("ready");
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Preview login failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (phase === "ready") {
+    return (
+      <AppPreviewContext.Provider value>
+        <Dashboard />
+      </AppPreviewContext.Provider>
+    );
+  }
+
+  return (
+    <div className="app-dashboard mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col items-center justify-center gap-6 bg-background px-5 py-10 text-center">
+      <MarkTile size={56} />
+      <div>
+        <h1 className="font-app-display text-2xl font-bold tracking-tight">Preview the new app</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Local UI only — sample balance, sends, contacts, and Interest. No iMessage account or agent
+          required.
+        </p>
+      </div>
+      {phase === "checking" ? (
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+      ) : (
+        <>
+          {message ? <p className="text-sm text-destructive">{message}</p> : null}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void enterPreview()}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Open UI preview
+          </button>
+          <p className="text-xs text-muted-foreground">
+            Turn off with{" "}
+            <span className="font-mono">NEXT_PUBLIC_APP_UI_PREVIEW=0</span> to use real sign-in.
+          </p>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -175,13 +266,8 @@ function AuthGate() {
   if (phase === "ready") return <Dashboard />;
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center gap-6 px-5 py-10 text-center">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/brand/logo/basemate-mark.png"
-        alt="Basemate"
-        className="h-14 w-14 rounded-2xl shadow-[var(--shadow-card)]"
-      />
+    <div className="app-dashboard mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center gap-6 bg-background px-5 py-10 text-center">
+      <MarkTile size={56} />
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">
           Manage your Basemate account
@@ -291,15 +377,14 @@ function AuthGate() {
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 
-type Tab = "home" | "activity" | "earn" | "sends" | "bets" | "settings";
+type Tab = "home" | "activity" | "interest" | "contacts" | "agent";
 
 const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
   { id: "home", label: "Home", icon: Wallet },
   { id: "activity", label: "Activity", icon: Activity },
-  { id: "earn", label: "Earn", icon: Sparkles },
-  { id: "sends", label: "Sends", icon: Send },
-  { id: "bets", label: "Bets", icon: Trophy },
-  { id: "settings", label: "You", icon: Settings },
+  { id: "interest", label: "Interest", icon: Sparkles },
+  { id: "contacts", label: "Contacts", icon: Users },
+  { id: "agent", label: "Agent", icon: Settings },
 ];
 
 const TAB_IDS = TABS.map((t) => t.id) as Tab[];
@@ -309,11 +394,16 @@ const TAB_IDS = TABS.map((t) => t.id) as Tab[];
 // (/app#activity, /app#sends, …) also work directly.
 const HASH_ALIASES: Record<string, Tab> = {
   balance: "home",
-  yield: "earn",
-  earning: "earn",
-  payment: "settings",
-  payments: "settings",
-  you: "settings",
+  yield: "interest",
+  earning: "interest",
+  earn: "interest",
+  interest: "interest",
+  sends: "activity",
+  send: "home",
+  payment: "agent",
+  payments: "agent",
+  you: "agent",
+  settings: "agent",
 };
 
 function tabFromHash(): Tab | null {
@@ -326,6 +416,8 @@ function tabFromHash(): Tab | null {
 
 function Dashboard() {
   const [tab, setTab] = useState<Tab>("home");
+  const [sendPrefill, setSendPrefill] = useState<SendPrefill | null>(null);
+  const [sendOpen, setSendOpen] = useState(false);
 
   // Sync the active tab with the URL hash so deep links (e.g. /app#activity)
   // open the right page — both on first load and when the hash changes while
@@ -352,31 +444,46 @@ function Dashboard() {
   const activeTitle =
     tab === "home"
       ? "Basemate"
-      : tab === "bets"
-        ? "World Cup"
-        : tab === "settings"
-          ? "Settings"
+      : tab === "agent"
+        ? "Agent Settings"
+        : tab === "interest"
+          ? "Interest"
           : (TABS.find((t) => t.id === tab)?.label ?? "Basemate");
 
+  const openSend = useCallback((prefill?: SendPrefill | null) => {
+    setSendPrefill(prefill ?? null);
+    setSendOpen(true);
+  }, []);
+
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col bg-background">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-2.5 border-b border-border/50 bg-background/80 px-4 backdrop-blur-md">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/logo/basemate-mark.png" alt="Basemate" className="h-7 w-7 rounded-full" />
-        <span className="font-display text-base font-semibold tracking-tight">{activeTitle}</span>
+    <div className="app-dashboard relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-background">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md">
+        <MarkTile size={36} />
+        <span className="font-app-display text-lg font-semibold tracking-tight">{activeTitle}</span>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
-        {tab === "home" && <HomeTab />}
-        {tab === "activity" && <ActivityTab />}
-        {tab === "earn" && <EarnTab />}
-        {tab === "sends" && <SendsTab />}
-        {tab === "bets" && <BetsTab />}
-        {tab === "settings" && <SettingsTab />}
+        {tab === "home" && <HomeTab onSend={() => openSend(null)} />}
+        {tab === "activity" && <ActivityTab onSendAgain={(p) => openSend(p)} />}
+        {tab === "interest" && <InterestTab />}
+        {tab === "contacts" && <ContactsTab onSendTo={(p) => openSend(p)} />}
+        {tab === "agent" && <AgentSettingsTab />}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/50 bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
-        <div className="flex items-stretch justify-around px-1.5 py-1.5">
+      <SendSheet
+        open={sendOpen}
+        onClose={() => setSendOpen(false)}
+        prefill={sendPrefill}
+        onSuccess={() => selectTab("activity")}
+        onNeedDeposit={(amount) => {
+          setSendOpen(false);
+          selectTab("home");
+          window.dispatchEvent(new CustomEvent("basemate:deposit-preset", { detail: { amount } }));
+        }}
+      />
+
+      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+        <div className="flex items-stretch justify-around px-1 py-1.5">
           {TABS.map(({ id, label, icon: Icon }) => {
             const active = tab === id;
             return (
@@ -385,7 +492,7 @@ function Dashboard() {
                 type="button"
                 onClick={() => selectTab(id)}
                 aria-current={active ? "page" : undefined}
-                className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5"
+                className="flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 min-h-[44px]"
               >
                 <span
                   className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
@@ -434,8 +541,8 @@ function SectionLabel({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-2 mt-6 flex items-center justify-between px-1 first:mt-0">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="mb-2.5 mt-7 flex items-center justify-between px-0.5 first:mt-0">
+      <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         {children}
       </h2>
       {action}
@@ -466,9 +573,30 @@ function Row({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-border/50 bg-card px-4 py-3 ${className}`}
-    >
+    <div className={`rounded-2xl border border-border bg-card px-4 py-3.5 ${className}`}>{children}</div>
+  );
+}
+
+/** Grouped list inside one card (avoids “empty wide bars”). */
+function Stack({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`app-stack overflow-hidden rounded-2xl border border-border bg-card ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function StackRow({
+  children,
+  className = "",
+  bordered,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  bordered?: boolean;
+}) {
+  return (
+    <div className={`flex items-center gap-3 px-4 py-3.5 ${bordered ? "border-t border-border" : ""} ${className}`}>
       {children}
     </div>
   );
@@ -560,7 +688,7 @@ function TokenIcon({
   );
 }
 
-function HomeTab() {
+function HomeTab({ onSend }: { onSend: () => void }) {
   const { data, loading } = useApi<PortfolioPayload>("/api/app/portfolio");
   const total = data?.totals?.totalUsd ?? 0;
   const stakingUsd = data?.totals?.stakingUsd ?? 0;
@@ -569,83 +697,71 @@ function HomeTab() {
 
   return (
     <>
-      {/* Hero — the number that matters, then the primary money action */}
-      <section className="rounded-[var(--radius-xl)] border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <section className="app-hero relative overflow-hidden rounded-3xl p-5">
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Total balance
         </p>
         {loading ? (
-          <Skeleton className="mt-2 h-11 w-44 rounded-xl" />
+          <Skeleton className="mt-3 h-12 w-40 rounded-xl" />
         ) : (
-          <p className="mt-1.5 font-display text-[2.6rem] font-bold leading-none tracking-tight tabular-nums">
+          <p className="mt-2 font-app-display text-5xl font-bold leading-none tracking-tight tabular-nums">
             {usd(total)}
           </p>
         )}
         {stakingUsd > 0 && (
-          <p className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-up">
-            <Sparkles className="h-3.5 w-3.5" /> {usd(stakingUsd)} earning yield
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-up/10 px-2.5 py-1 text-xs font-semibold text-up">
+            <Sparkles className="h-3.5 w-3.5" /> {usd(stakingUsd)} earning
           </p>
         )}
 
-        <div className="mt-5 space-y-2">
+        <div className="mt-6 grid grid-cols-2 gap-2.5">
           <AddFundsButton />
-          {/* <div className="grid grid-cols-2 gap-2">
-            <ReceiveButton />
-            <a
-              href="/pay/offramp"
-              className="flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition active:scale-[0.99]"
-            >
-              <ArrowUpRight className="h-4 w-4" /> Cash out
-            </a>
-          </div> */}
+          <button
+            type="button"
+            onClick={onSend}
+            className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--app-shadow-mark)] transition active:scale-[0.99]"
+          >
+            <Send className="h-4 w-4" /> Send
+          </button>
         </div>
       </section>
 
-      <SectionLabel>Tokens</SectionLabel>
+      <SectionLabel>Holdings</SectionLabel>
       {loading ? (
         <ListSkeleton rows={3} />
-      ) : coins.length === 0 ? (
-        <Empty text="No tokens yet — add funds to get started." mascot="mate-peace" />
+      ) : coins.length === 0 && staking.length === 0 ? (
+        <Empty text="No tokens yet — add funds to get started." />
       ) : (
-        <div className="space-y-2">
-          {coins.map((c) => (
-            <Row key={c.id} className="flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-3">
-                <TokenIcon symbol={c.symbol} tokenAddress={c.tokenAddress} imageUrl={c.imageUrl} />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{c.symbol}</p>
-                  <p className="truncate text-xs tabular-nums text-muted-foreground">
-                    {Number(c.amount).toLocaleString()} {c.symbol}
-                  </p>
-                </div>
+        <Stack>
+          {coins.map((c, i) => (
+            <StackRow key={c.id} bordered={i > 0}>
+              <TokenIcon symbol={c.symbol} tokenAddress={c.tokenAddress} imageUrl={c.imageUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">{c.symbol}</p>
+                <p className="text-xs tabular-nums text-muted-foreground">
+                  {Number(c.amount).toLocaleString()} {c.symbol}
+                </p>
               </div>
-              <p className="shrink-0 text-sm font-semibold tabular-nums">{usd(c.valueUsd)}</p>
-            </Row>
+              <p className="shrink-0 app-money text-sm font-semibold">{usd(c.valueUsd)}</p>
+            </StackRow>
           ))}
-        </div>
-      )}
-
-      {staking.length > 0 && (
-        <>
-          <SectionLabel>Earning</SectionLabel>
-          <div className="space-y-2">
-            {staking.map((s) => (
-              <Row key={s.id} className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold capitalize">
-                    {s.protocol} · {s.asset}
-                  </p>
-                  {s.apy != null && (
-                    <p className="text-xs font-semibold text-up">
-                      {(s.apy * 100).toFixed(2)}% APY
-                    </p>
-                  )}
-                </div>
-                <p className="shrink-0 text-sm font-semibold tabular-nums">{usd(s.valueUsd)}</p>
-              </Row>
-            ))}
-          </div>
-        </>
+          {staking.map((s, j) => (
+            <StackRow key={s.id} bordered={coins.length > 0 || j > 0}>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-up/15 text-up">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold capitalize">
+                  {s.asset} · Moonwell
+                </p>
+                {s.apy != null && (
+                  <p className="font-mono text-xs font-semibold text-up tabular-nums">{s.apy.toFixed(2)}% APY</p>
+                )}
+              </div>
+              <p className="shrink-0 app-money text-sm font-semibold">{usd(s.valueUsd)}</p>
+            </StackRow>
+          ))}
+        </Stack>
       )}
     </>
   );
@@ -658,10 +774,34 @@ type FundPayOption = {
 };
 
 function AddFundsButton() {
+  const preview = useAppPreviewMode();
+  if (preview) {
+    return <AddFundsButtonInner email="" />;
+  }
+  return <AddFundsButtonWithCdp />;
+}
+
+function AddFundsButtonWithCdp() {
   const { currentUser } = useCurrentUser();
   const email = currentUser?.authenticationMethods?.email?.email ?? "";
+  return <AddFundsButtonInner email={email} />;
+}
+
+function AddFundsButtonInner({ email }: { email: string }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
+
+  useEffect(() => {
+    function onPreset(e: Event) {
+      const detail = (e as CustomEvent<{ amount?: string }>).detail;
+      const next = detail?.amount?.trim();
+      if (!next) return;
+      setAmount(next);
+      setOpen(true);
+    }
+    window.addEventListener("basemate:deposit-preset", onPreset);
+    return () => window.removeEventListener("basemate:deposit-preset", onPreset);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [funded, setFunded] = useState(false);
@@ -756,9 +896,9 @@ function AddFundsButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition active:scale-[0.99]"
+        className="flex items-center justify-center gap-2 rounded-full border border-border bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition active:scale-[0.99]"
       >
-        <Plus className="h-4 w-4" /> Add funds
+        <Plus className="h-4 w-4" /> Deposit
       </button>
       {open && (
         <div
@@ -923,219 +1063,300 @@ function ReceiveButton() {
   );
 }
 
-function Empty({ text, mascot = "mate-peace" }: { text: string; mascot?: string }) {
+function Empty({
+  text,
+  action,
+}: {
+  text: string;
+  action?: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-[var(--radius-xl)] border border-dashed border-border/60 px-6 py-10 text-center">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/brand/mascot/${mascot}.png`}
-        alt=""
-        className="h-20 w-20 rounded-2xl bg-white object-contain p-1.5 shadow-[var(--shadow-card)]"
-      />
-      <p className="max-w-[16rem] text-sm text-muted-foreground">{text}</p>
+    <div className="flex flex-col items-center gap-4 rounded-[var(--radius-xl)] border border-dashed border-border/60 bg-card/40 px-6 py-10 text-center">
+      <BubbleMarkTile size={88} tilt animate />
+      <p className="max-w-[16rem] text-sm leading-relaxed text-muted-foreground">{text}</p>
+      {action}
     </div>
   );
 }
 
+type ClaimState = "unclaimed" | "claimed" | "returned" | "sent";
+
 interface ActivityItem {
   id: string;
+  kind: "send" | "activity";
+  activityType: string;
   label: string | null;
   amount: string | null;
   asset: string | null;
+  memo: string | null;
   status: string;
   explorerUrl: string | null;
+  recipientPhone: string | null;
+  recipientName: string | null;
+  claimState: ClaimState | null;
+  claimDetail: string | null;
+  claimExpiresAt: string | null;
   createdAt: string;
 }
 
-function ActivityTab() {
-  const { data, loading } = useApi<{ items: ActivityItem[] }>("/api/app/activity");
-  if (loading) return <ListSkeleton />;
-  const items = data?.items ?? [];
-  if (items.length === 0) {
-    return (
-      <Empty
-        text="No transactions yet — your sends, swaps, and top-ups will show up here."
-        mascot="mate-peace"
-      />
-    );
-  }
+function ClaimPill({ state }: { state: ClaimState }) {
+  const label =
+    state === "unclaimed"
+      ? "Unclaimed"
+      : state === "claimed"
+        ? "Claimed"
+        : state === "returned"
+          ? "Returned"
+          : "Sent";
+  const cls =
+    state === "unclaimed"
+      ? "bg-amber-500/15 text-amber-600"
+      : state === "claimed" || state === "sent"
+        ? "bg-up/15 text-up"
+        : "bg-destructive/15 text-destructive";
   return (
-    <div className="space-y-2">
-      {items.map((t) => (
-        <Row key={t.id}>
-          <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-semibold">{t.label ?? "Transaction"}</p>
-            {t.amount && (
-              <p className="shrink-0 text-sm font-semibold tabular-nums">
-                {t.amount} {t.asset}
-              </p>
-            )}
-          </div>
-          <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span className="tabular-nums">{fmtDateTime(t.createdAt)}</span>
-            <span className="flex items-center gap-2">
-              <StatusPill status={t.status} />
-              {t.explorerUrl && (
-                <a
-                  href={t.explorerUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-primary"
-                >
-                  Basescan <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </span>
-          </div>
-        </Row>
-      ))}
-    </div>
+    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${cls}`}>{label}</span>
   );
 }
 
 function StatusPill({ status }: { status: string }) {
   const ok = status === "confirmed";
   const bad = status === "failed" || status === "expired";
+  const label = ok ? "Confirmed" : bad ? status : status;
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ok ? "bg-up/15 text-up" : bad ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
+      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize ${ok ? "bg-up/15 text-up" : bad ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
         }`}
     >
-      {status}
-    </span>
-  );
-}
-
-function OutcomePill({ outcome }: { outcome: "win" | "loss" | "pending" | "refund" }) {
-  const label =
-    outcome === "win" ? "Won" : outcome === "loss" ? "Lost" : outcome === "refund" ? "Refunded" : "Pending";
-  const cls =
-    outcome === "win"
-      ? "bg-up/15 text-up"
-      : outcome === "loss"
-        ? "bg-destructive/15 text-destructive"
-        : "bg-muted text-muted-foreground";
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cls}`}>
       {label}
     </span>
   );
 }
 
-interface SendItem {
-  id: string;
-  recipientName: string | null;
-  recipientPhone: string | null;
-  amount: string | null;
-  asset: string | null;
-  memo: string | null;
-  status: string;
-  txHash: string | null;
-  explorerUrl: string | null;
-  createdAt: string;
+function activityHeadline(t: ActivityItem): string {
+  const isSend = t.kind === "send";
+  if (isSend) {
+    const who = t.recipientName ?? t.recipientPhone ?? "them";
+    if (t.claimState === "unclaimed") return `${who} hasn't claimed yet`;
+    if (t.claimState === "claimed") return `${who} claimed your send`;
+    if (t.claimState === "returned") return `Send to ${who} returned`;
+    return `Sent to ${who}`;
+  }
+  if (t.label) return t.label;
+  const type = t.activityType ?? "onchain";
+  if (type === "swap") return "Swap";
+  if (type === "yield") return "Yield deposit";
+  if (type === "fund") return "Added funds";
+  if (type === "trade") return "Trade";
+  return "Transaction";
 }
 
-function SendsTab() {
-  const { data, loading } = useApi<{ items: SendItem[] }>("/api/app/sends");
+function activityStatusChip(t: ActivityItem): React.ReactNode {
+  if (t.kind === "send" && t.claimState) return <ClaimPill state={t.claimState} />;
+  return <StatusPill status={t.status} />;
+}
+
+function ActivityRow({
+  t,
+  onSendAgain,
+}: {
+  t: ActivityItem;
+  onSendAgain: (prefill: SendPrefill) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const isSend = t.kind === "send";
+  const headline = activityHeadline(t);
+  const hasDetails =
+    Boolean(t.memo) ||
+    Boolean(t.claimDetail) ||
+    Boolean(t.explorerUrl) ||
+    (isSend && t.claimState === "unclaimed" && Boolean(t.claimExpiresAt)) ||
+    Boolean(t.activityType);
+
+  return (
+    <Row className="shadow-[var(--shadow-card)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold leading-snug">{headline}</p>
+          {t.amount && (
+            <p className="mt-1 app-money text-lg font-semibold text-foreground">
+              {t.amount} {t.asset}
+            </p>
+          )}
+          <p className="mt-1 text-xs tabular-nums text-muted-foreground">{fmtDateTime(t.createdAt)}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          {activityStatusChip(t)}
+          {hasDetails && (
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="inline-flex items-center gap-0.5 text-xs font-medium text-primary"
+              aria-expanded={open}
+            >
+              {open ? "Less" : "Details"}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {open && (
+        <div className="mt-3 space-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
+          {t.activityType && (
+            <p>
+              <span className="font-medium text-foreground">Type:</span>{" "}
+              {t.activityType.charAt(0).toUpperCase() + t.activityType.slice(1)}
+            </p>
+          )}
+          {t.claimDetail && <p className="leading-relaxed">{t.claimDetail}</p>}
+          {isSend && t.claimState === "unclaimed" && t.claimExpiresAt && (
+            <p>Claim by {fmtDateTime(t.claimExpiresAt)}</p>
+          )}
+          {t.memo && (
+            <p className="rounded-xl bg-secondary px-3 py-2 text-secondary-foreground">&ldquo;{t.memo}&rdquo;</p>
+          )}
+          {t.explorerUrl && (
+            <a
+              href={t.explorerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-primary"
+            >
+              Basescan <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {isSend && t.recipientPhone && (
+        <button
+          type="button"
+          onClick={() =>
+            onSendAgain({
+              name: t.recipientName ?? undefined,
+              phone: t.recipientPhone ?? undefined,
+              amount: t.amount ?? undefined,
+            })
+          }
+          className="mt-3 text-xs font-semibold text-primary/80 underline-offset-2 hover:text-primary hover:underline"
+        >
+          Send again
+        </button>
+      )}
+    </Row>
+  );
+}
+
+function ActivityTab({ onSendAgain }: { onSendAgain: (prefill: SendPrefill) => void }) {
+  const { data, loading } = useApi<{ items: ActivityItem[] }>("/api/app/activity");
   if (loading) return <ListSkeleton />;
   const items = data?.items ?? [];
   if (items.length === 0) {
     return (
       <Empty
-        text="No sends yet. To pay a friend, share their contact card with Basemate in chat, then say &ldquo;send $10 to [name]&rdquo;."
-        mascot="mate-support"
+        text="Nothing here yet. Send from Home and your transfers show up here."
+        action={
+          <p className="text-xs text-muted-foreground">Use the Send button on Home to get started.</p>
+        }
       />
     );
   }
   return (
-    <div className="space-y-2">
-      {items.map((s) => (
-        <Row key={s.id}>
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">
-                {s.recipientName ?? s.recipientPhone ?? "Recipient"}
-              </p>
-              {s.recipientPhone && (
-                <p className="truncate text-xs tabular-nums text-muted-foreground">
-                  {s.recipientPhone}
-                </p>
-              )}
-            </div>
-            <p className="shrink-0 text-sm font-semibold tabular-nums">
-              {s.amount} {s.asset}
-            </p>
-          </div>
-          <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span className="tabular-nums">{fmtDateTime(s.createdAt)}</span>
-            <span className="flex items-center gap-2">
-              <StatusPill status={s.status} />
-              {s.explorerUrl && (
-                <a
-                  href={s.explorerUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-primary"
-                >
-                  Basescan <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </span>
-          </div>
-          {s.memo && (
-            <p className="mt-2 rounded-xl bg-secondary px-3 py-2 text-xs text-secondary-foreground">
-              &ldquo;{s.memo}&rdquo;
-            </p>
-          )}
-        </Row>
+    <div className="space-y-2.5">
+      {items.map((t) => (
+        <ActivityRow key={t.id} t={t} onSendAgain={onSendAgain} />
       ))}
     </div>
   );
 }
 
-interface YieldRate {
-  protocol: string;
+interface InterestRate {
+  group?: "moonwell" | "corridor";
+  symbol: string;
   name: string;
+  peg: string;
+  issuer: string;
+  protocol: string | null;
   asset: string;
   apy: number | null;
   address: string;
+  depositable: boolean;
 }
 
-function EarnTab() {
-  const { data, loading, reload } = useApi<{ items: YieldRate[] }>("/api/app/yield/rates");
+function InterestTab() {
+  const { data, loading, reload } = useApi<{ items: InterestRate[] }>("/api/app/yield/rates");
   const items = data?.items ?? [];
+  const moonwellRows =
+    items.filter((v) => v.group === "moonwell").length > 0
+      ? items.filter((v) => v.group === "moonwell")
+      : items.filter((v) => v.protocol === "moonwell" || v.depositable);
+  const corridorRows = items.filter((v) => v.group === "corridor");
+
   return (
     <>
-      <div className="rounded-2xl border border-primary/15 bg-accent px-4 py-3 text-sm text-accent-foreground">
-        Earn interest on Base with <span className="font-semibold">Moonwell</span>. Tap{" "}
-        <span className="font-semibold">Deposit</span> — Basemate handles the rest, no gas.
+      <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-relaxed text-muted-foreground shadow-[var(--shadow-card)]">
+        Earn on <span className="font-semibold text-foreground">Moonwell</span> — USDC, ETH, and BTC. Tap{" "}
+        <span className="font-semibold text-primary">Deposit</span>; Basemate covers gas.
       </div>
 
-      <SectionLabel>Moonwell markets</SectionLabel>
+      <SectionLabel>Moonwell</SectionLabel>
       {loading ? (
         <ListSkeleton />
-      ) : items.length === 0 ? (
-        <Empty text="No Moonwell markets available right now — check back soon." mascot="mate-peace" />
+      ) : moonwellRows.length === 0 ? (
+        <Empty text="Deposit USDC on Home, then come back to earn." />
       ) : (
-        <div className="space-y-2">
-          {items.map((v) => (
-            <Row key={v.address} className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{v.asset}</p>
+        <Stack>
+          {moonwellRows.map((v, i) => (
+            <StackRow key={`mw-${v.asset}`} bordered={i > 0} className="justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">{v.symbol}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {v.apy != null ? `${v.apy.toFixed(2)}% APY` : "APY —"} · Moonwell
+                  {v.depositable && v.apy != null
+                    ? `${v.apy.toFixed(2)}% APY · Moonwell`
+                    : "APY unavailable · Moonwell"}
                 </p>
               </div>
-              <DepositButton rate={v} onDone={reload} />
-            </Row>
+              {v.depositable ? (
+                <DepositButton rate={v} onDone={reload} />
+              ) : (
+                <span className="shrink-0 rounded-full bg-muted px-3 py-1.5 text-[10px] font-semibold text-muted-foreground">
+                  —
+                </span>
+              )}
+            </StackRow>
           ))}
-        </div>
+        </Stack>
+      )}
+
+      {corridorRows.length > 0 && (
+        <>
+          <SectionLabel>More stablecoins</SectionLabel>
+          <div className="space-y-2">
+            {corridorRows.map((v) => (
+              <Row key={`cor-${v.symbol}`} className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">
+                    {v.symbol}{" "}
+                    <span className="font-normal text-muted-foreground">· {v.peg}</span>
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    Interest coming soon{v.issuer ? ` · ${v.issuer}` : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-muted px-3 py-1.5 text-[10px] font-semibold text-muted-foreground">
+                  Soon
+                </span>
+              </Row>
+            ))}
+          </div>
+        </>
       )}
     </>
   );
 }
 
-function DepositButton({ rate, onDone }: { rate: YieldRate; onDone: () => void }) {
+function DepositButton({ rate, onDone }: { rate: InterestRate; onDone: () => void }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
@@ -1193,7 +1414,7 @@ function DepositButton({ rate, onDone }: { rate: YieldRate; onDone: () => void }
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <p className="font-display text-lg font-bold">Deposit {rate.asset}</p>
+              <p className="font-app-display text-lg font-bold">Deposit {rate.asset}</p>
               <button
                 type="button"
                 onClick={close}
@@ -1206,8 +1427,7 @@ function DepositButton({ rate, onDone }: { rate: YieldRate; onDone: () => void }
 
             {txHash !== null ? (
               <div className="mt-5 flex flex-col items-center gap-3 text-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/mascot/mate-win.png" alt="" className="h-20 w-20 rounded-2xl bg-white p-1.5" />
+                <BubbleMarkTile size={88} animate />
                 <p className="text-sm font-semibold">
                   Deposited {amount} {rate.asset} to Moonwell
                 </p>
@@ -1270,60 +1490,144 @@ function DepositButton({ rate, onDone }: { rate: YieldRate; onDone: () => void }
   );
 }
 
-interface BetItem {
-  id: string;
-  match: string;
-  pick: string;
-  stakeBasemate: string;
-  payoutBasemate: string | null;
-  status: string;
-  outcome: "win" | "loss" | "pending" | "refund";
-  payoutUrl: string | null;
-  kickoffAt: string;
+interface ContactItem {
+  id?: string;
+  name: string;
+  phone: string | null;
 }
 
-function BetsTab() {
-  const { data, loading } = useApi<{ items: BetItem[] }>("/api/app/worldcup/bets");
-  if (loading) return <ListSkeleton />;
-  const items = data?.items ?? [];
-  if (items.length === 0) {
-    return (
-      <Empty
-        text="No bets yet — ask Basemate about World Cup matches to place one."
-        mascot="mate-win"
-      />
-    );
+function ContactsTab({ onSendTo }: { onSendTo: (prefill: SendPrefill) => void }) {
+  const { data, loading, reload } = useApi<{ items: ContactItem[] }>("/api/app/contacts");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const canImport =
+    typeof navigator !== "undefined" &&
+    "contacts" in navigator &&
+    typeof (navigator as { contacts?: { select?: unknown } }).contacts?.select === "function";
+
+  async function addContact() {
+    if (!name.trim() || !phone.trim() || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/app/contacts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), phone: phone.trim() }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error ?? "Could not save contact.");
+      setName("");
+      setPhone("");
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save contact.");
+    } finally {
+      setBusy(false);
+    }
   }
+
+  async function importFromPhone() {
+    if (!canImport || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      type ContactPicker = { name?: string[]; tel?: string[] };
+      const props: ("name" | "tel")[] = ["name", "tel"];
+      const picked = (await (
+        navigator as unknown as { contacts: { select: (p: typeof props, o: { multiple: boolean }) => Promise<ContactPicker[]> } }
+      ).contacts.select(props, { multiple: true })) as ContactPicker[];
+      const batch = picked
+        .map((c) => ({
+          name: c.name?.[0]?.trim() ?? "",
+          phone: c.tel?.[0]?.trim() ?? "",
+        }))
+        .filter((c) => c.name && c.phone);
+      if (!batch.length) return;
+      const res = await fetch("/api/app/contacts/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ contacts: batch }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error ?? "Import failed.");
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Import failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const items = data?.items ?? [];
+
   return (
-    <div className="space-y-2">
-      {items.map((b) => (
-        <Row key={b.id}>
-          <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-semibold">{b.match}</p>
-            <OutcomePill outcome={b.outcome} />
-          </div>
-          <p className="mt-1.5 text-xs capitalize text-muted-foreground">
-            Pick: <span className="font-semibold text-foreground">{b.pick}</span> ·{" "}
-            {Number(b.stakeBasemate).toLocaleString()} BASEMATE
-          </p>
-          {b.outcome === "win" && b.payoutBasemate && (
-            <p className="mt-1 text-xs font-semibold text-up">
-              Won {Number(b.payoutBasemate).toLocaleString()} BASEMATE
-            </p>
-          )}
-          {b.payoutUrl && (
-            <a
-              href={b.payoutUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary"
+    <>
+      {canImport && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void importFromPhone()}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold"
+        >
+          Import from phone
+        </button>
+      )}
+
+      <SectionLabel>Add contact</SectionLabel>
+      <Row>
+        <div className="space-y-2">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name"
+            className="w-full rounded-full border border-border bg-background px-4 py-2 text-sm outline-none"
+          />
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone (+1…)"
+            className="w-full rounded-full border border-border bg-background px-4 py-2 font-mono text-sm outline-none"
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <button
+            type="button"
+            disabled={busy || !name.trim() || !phone.trim()}
+            onClick={() => void addContact()}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            Save contact
+          </button>
+        </div>
+      </Row>
+
+      <SectionLabel>Saved</SectionLabel>
+      {loading ? (
+        <ListSkeleton />
+      ) : items.length === 0 ? (
+        <Empty text="No contacts yet. Add a name and phone, then send from Home." />
+      ) : (
+        <div className="space-y-2">
+          {items.map((c) => (
+            <button
+              key={c.id ?? c.phone}
+              type="button"
+              onClick={() => onSendTo({ name: c.name, phone: c.phone ?? undefined })}
+              className="w-full text-left"
+              disabled={!c.phone}
             >
-              View payout <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-        </Row>
-      ))}
-    </div>
+              <Row className="transition active:scale-[0.99]">
+                <p className="truncate text-sm font-semibold">{c.name}</p>
+                <p className="truncate font-mono text-xs text-muted-foreground">{c.phone}</p>
+              </Row>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -1332,8 +1636,20 @@ interface Prefs {
   autoSendLimitUsd: number;
 }
 
-function SettingsTab() {
+function AgentSettingsTab() {
+  const preview = useAppPreviewMode();
+  if (preview) {
+    return <AgentSettingsTabInner />;
+  }
+  return <AgentSettingsTabWithCdp />;
+}
+
+function AgentSettingsTabWithCdp() {
   const { signOut } = useSignOut();
+  return <AgentSettingsTabInner onSignOutCdp={() => signOut()} />;
+}
+
+function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<void> }) {
   const { data, loading, reload } = useApi<Prefs>("/api/app/preferences");
   const { data: profile } = useApi<{ displayName: string | null; basename: string | null; embeddedAddress: string | null; delegation: { active: boolean; expiresAt: string | null } | null }>("/api/app/profile");
   const [saving, setSaving] = useState(false);
@@ -1392,11 +1708,12 @@ function SettingsTab() {
         )}
       </Row>
 
-      <SectionLabel>Payments</SectionLabel>
+      <SectionLabel>Payments in chat</SectionLabel>
       <Row>
         <p className="text-sm font-semibold">Confirmation</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Choose whether every payment needs a tap, or sends automatically.
+          In chat: confirm every payment, or send automatically under your limit. Sends on this website always ask
+          you to confirm.
         </p>
         <div className="mt-3 flex rounded-full bg-secondary p-1">
           <button
@@ -1452,9 +1769,7 @@ function SettingsTab() {
         onClick={async () => {
           setSigningOut(true);
           try {
-            // Clear CDP's persisted session before removing the app cookie;
-            // otherwise AuthGate immediately links the same account again.
-            await signOut();
+            if (onSignOutCdp) await onSignOutCdp();
             await fetch("/api/app/session", { method: "DELETE" });
             window.location.reload();
           } finally {
