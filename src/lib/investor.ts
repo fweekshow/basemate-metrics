@@ -39,7 +39,7 @@ export const INVESTOR = {
     },
     {
       title: "A believer",
-      body: "Someone who has watched distribution moats get built. Eighteen months to go live inside iMessage is not something a new team reproduces next quarter.",
+      body: "Someone who has watched distribution moats get built. The connections and network we’re wiring — carriers, issuers, in-thread wallets — aren’t something a new team reproduces next quarter.",
     },
   ],
   team: [
