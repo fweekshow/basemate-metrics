@@ -61,7 +61,8 @@ const SITE_COPY_ROWS = [
     "Hero paragraph",
   ],
   ["target", "$1M", "Lights up the first five country nodes"],
-  ["committed", "$20K", "First close in progress"],
+  ["pending", "$20K", "Soft-circled — first close in progress"],
+  ["committed", "$0", "Wired / docs signed"],
   ["status", "Pre-seed, actively closing", "Raise strip"],
   ["round", "Seed", ""],
   ["year", "2026", ""],
@@ -165,7 +166,7 @@ const PAGE_BLOCKS = {
   ],
   Statements: [
     h2("Raise snapshot"),
-    p("Target $1M seed · $20K committed · Pre-seed, actively closing. Edit live numbers in Site copy & raise database."),
+    p("Target $1M seed · $20K pending · $0 committed · Pre-seed, actively closing. Edit live numbers in Site copy & raise database."),
   ],
 };
 

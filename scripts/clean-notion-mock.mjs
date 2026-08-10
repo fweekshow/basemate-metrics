@@ -250,7 +250,7 @@ async function refreshSalesStrategiesPage() {
           object: "block",
           type: "bulleted_list_item",
           bulleted_list_item: {
-            rich_text: rt("Fundraise status → Site copy & raise DB (target, committed, traction)"),
+            rich_text: rt("Fundraise status → Site copy & raise DB (target, pending, committed, traction)"),
           },
         },
       ],

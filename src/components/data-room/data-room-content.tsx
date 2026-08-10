@@ -161,13 +161,18 @@ export function DataRoomContent({
           )}
         </section>
 
-        {/* Raise strip */}
-        <section className="grid gap-3 sm:grid-cols-3">
+        {/* Raise strip — stages: target → pending → committed */}
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               label: "Target",
               value: investorView.target,
               note: investorView.targetNote,
+            },
+            {
+              label: "Pending",
+              value: investorView.pending,
+              note: investorView.pendingNote,
             },
             {
               label: "Committed",
@@ -477,8 +482,8 @@ export function DataRoomContent({
             Let&apos;s talk
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            First commitment received and in progress. Reach out if you want the
-            full picture or a warm intro path into the raise.
+            First cheque is pending close. Reach out if you want the full
+            picture or a warm intro path into the raise.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <a

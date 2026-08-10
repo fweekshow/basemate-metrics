@@ -6,13 +6,14 @@ The investor data room reads **Postgres cache tables** populated by Notion sync.
 
 | Notion | Site section |
 |--------|----------------|
-| **Site copy & raise (live on basemate.app)** database | Hero headline/subhead, target, committed, status notes, traction KPIs |
+| **Site copy & raise (live on basemate.app)** database | Hero headline/subhead, target, pending, committed, status notes, traction KPIs |
 | **VC pipeline (Who we're talking to)** database | “Who we’re talking to” cards |
 | Other template pages (Product, IP, …) | Not synced yet — internal only |
 
 ### Site copy database columns
 
-- **Field** (title) — fixed keys: `headline`, `subhead`, `target`, `committed`, `status`, `round`, `year`, `traction_users`, `traction_wau`, `traction_messages`, `traction_notional`
+- **Field** (title) — fixed keys: `headline`, `subhead`, `target`, `pending`, `committed`, `status`, `round`, `year`, `traction_users`, `traction_wau`, `traction_messages`, `traction_notional`
+  - Raise stages: `target` → `pending` (soft-circle) → `committed` (wired / docs signed)
 - **Value** — text shown on the site
 - **Note** — subtitle under raise stats / traction labels
 

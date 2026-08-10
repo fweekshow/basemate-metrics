@@ -7,6 +7,8 @@ export type DataRoomInvestorView = {
   status: string;
   target: string;
   targetNote: string;
+  pending: string;
+  pendingNote: string;
   committed: string;
   committedNote: string;
   headline: string;
@@ -21,6 +23,8 @@ function mapFromStatic(): DataRoomInvestorView {
     status: INVESTOR.status,
     target: INVESTOR.target,
     targetNote: INVESTOR.targetNote,
+    pending: INVESTOR.pending,
+    pendingNote: INVESTOR.pendingNote,
     committed: INVESTOR.committed,
     committedNote: INVESTOR.committedNote,
     headline: INVESTOR.headline,
@@ -75,8 +79,20 @@ export async function getDataRoomInvestorView(): Promise<DataRoomInvestorView> {
     status: pick(map, "status", base.status),
     target: pick(map, "target", base.target),
     targetNote: pickNote(map, "target", base.targetNote),
-    committed: pick(map, "committed", base.committed),
-    committedNote: pickNote(map, "committed", base.committedNote),
+    // Prefer explicit `pending`. If Notion only has legacy `committed` (no pending
+    // row yet), treat that amount as pending and keep committed at $0.
+    pending: map.has("pending")
+      ? pick(map, "pending", base.pending)
+      : pick(map, "committed", base.pending),
+    pendingNote: map.has("pending")
+      ? pickNote(map, "pending", base.pendingNote)
+      : pickNote(map, "committed", base.pendingNote),
+    committed: map.has("pending")
+      ? pick(map, "committed", base.committed)
+      : base.committed,
+    committedNote: map.has("pending")
+      ? pickNote(map, "committed", base.committedNote)
+      : base.committedNote,
     headline: pick(map, "headline", base.headline),
     subhead: pick(map, "subhead", base.subhead),
     traction: [
