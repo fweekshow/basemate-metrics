@@ -65,17 +65,27 @@ h1{font-size:44px;font-weight:700;letter-spacing:-.035em;line-height:1.05;margin
 .ctxt{font-size:13px;color:var(--text-2);line-height:1.55}
 .ctxt strong{color:var(--text);font-weight:600}
 
-/* region */
-.rg{display:flex;align-items:center;gap:10px;margin:28px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.rg-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:600}
-.rg-r{flex:1;height:1px;background:var(--border)}
-.rg-n{font-family:var(--mono);font-size:9px;color:var(--text-3)}
+/* region — single rule on baseline (matches .sec-hdr; no extra border-bottom) */
+.rg{display:flex;align-items:baseline;gap:12px;margin:28px 0 12px}
+.rg-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:600;flex-shrink:0;line-height:1.2}
+.rg-r{flex:1;min-width:2rem;border-bottom:1px solid var(--border);transform:translateY(-.35em)}
+.rg-n{font-family:var(--mono);font-size:9px;color:var(--text-3);flex-shrink:0;line-height:1.2;text-align:right;max-width:min(100%,540px)}
 
 /* table */
 .tw{background:var(--canvas);border:1px solid var(--border);border-radius:14px;overflow:hidden;overflow-x:auto;margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;table-layout:fixed}
 thead th{background:var(--surface);font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-3);font-weight:600;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-tbody td{padding:11px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+thead th:nth-child(1){width:44px}
+thead th:nth-child(2){width:11%}
+thead th:nth-child(3){width:7%}
+thead th:nth-child(4){width:15%}
+thead th:nth-child(5){width:14%}
+thead th:nth-child(6){width:10%}
+thead th:nth-child(7){width:12%}
+thead th:nth-child(8){width:13%}
+thead th:nth-child(9){width:10%}
+tbody td{padding:11px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
+tbody td:nth-child(4),tbody td:nth-child(5){white-space:normal;word-break:break-word}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:rgba(234,232,245,.45)}
 .flag{font-size:20px;line-height:1}
@@ -85,7 +95,9 @@ tbody tr:hover td{background:rgba(234,232,245,.45)}
 .iss{color:var(--text-2);font-size:12.5px}
 .ceo{color:var(--text);font-size:12.5px;font-weight:500}
 .tw-h{font-family:var(--mono);font-size:11px;color:var(--blue);display:block;margin-top:1px}
-.em{font-family:var(--mono);font-size:10.5px;color:var(--text-3);display:block;margin-top:1px}
+.em{font-family:var(--mono);font-size:10.5px;color:var(--text-3)}
+/* Contact URLs sit on <td class="em"> — must stay table-cell or row borders step */
+td.em{display:table-cell;margin:0;vertical-align:middle}
 
 /* status */
 .dot{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;white-space:nowrap}
