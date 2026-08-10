@@ -11,9 +11,9 @@ export const INVESTOR = {
   committedNote: "First close in progress",
   contactEmail: "mateo@basemate.app",
   metricsUrl: SITE.metricsUrl,
-  headline: "The messaging network for stablecoins.",
+  headline: "Access only counts if everyone can reach it.",
   subhead:
-    "Every country gets its own Mate number. Text it and a wallet is created — then send to any phone number on earth, inside iMessage, RCS, and WhatsApp.",
+    "Our mission: put Base on a local cell phone in every country. Stablecoins first — then the full Base stack. Send money to anyone, anywhere, with just a text. No app. No seed phrase.",
   milestone: {
     label: "Q3 2027",
     items: [

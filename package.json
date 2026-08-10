@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p ${PORT:-3001}",
     "lint": "eslint",
-    "test:bankr-dune": "node --env-file=.env.local scripts/test-bankr-dune.mjs"
+    "test:bankr-dune": "node --env-file=.env.local scripts/test-bankr-dune.mjs",
+    "notion:wire": "node --env-file=.env.local scripts/wire-notion-data-room.mjs",
+    "notion:populate": "node --env-file=.env.local scripts/populate-notion-data-room.mjs",
+    "notion:clean": "node --env-file=.env.local scripts/clean-notion-mock.mjs",
+    "notion:sync": "bun --env-file=.env.local scripts/sync-notion-data-room.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
