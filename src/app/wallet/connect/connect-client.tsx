@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCreateDelegation,
@@ -40,9 +41,10 @@ export function ConnectClient({ sessionToken }: { sessionToken: string }) {
   );
 }
 
-type Phase = "loading" | "email" | "otp" | "finishing" | "done" | "error";
+type Phase = "loading" | "email" | "otp" | "finishing" | "error";
 
 function ConnectInner({ sessionToken }: { sessionToken: string }) {
+  const router = useRouter();
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
   const { evmSmartAccounts } = useEvmSmartAccounts();
@@ -154,7 +156,7 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || "Could not finish setup.");
-      setPhase("done");
+      router.replace("/landing");
     } catch (err) {
       finishingRef.current = false; // allow retry
       setPhase("error");
@@ -221,12 +223,6 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
         <StatusBlock icon="spin" message="Loading…" />
       ) : phase === "error" ? (
         <StatusBlock icon="error" message={message} />
-      ) : phase === "done" ? (
-        <StatusBlock
-          icon="ok"
-          title="Basemate account ready"
-          message="You can close this page and head back to Basemate — you're all set to send instantly."
-        />
       ) : phase === "finishing" ? (
         <StatusBlock icon="spin" message="Setting up your account…" />
       ) : phase === "otp" ? (

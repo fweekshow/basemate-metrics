@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
 import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
 import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
+import { getCachedAnalytics } from "@/lib/analytics";
 
 export const metadata: Metadata = {
   title: `${SITE.name} — Money that lives in your texts`,
@@ -86,22 +86,6 @@ const roadmap = [
   },
 ] as const;
 
-async function getMetrics(): Promise<AnalyticsPayload | null> {
-  try {
-    const headersList = await headers();
-    const host = headersList.get("host");
-    if (!host) return null;
-
-    const protocol = host.includes("localhost") ? "http" : "https";
-    const res = await fetch(`${protocol}://${host}/api/metrics`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as AnalyticsPayload;
-  } catch {
-    return null;
-  }
-}
 
 function formatUsers(total: number): string {
   if (total >= 10_000) return `${(total / 1000).toFixed(1).replace(/\.0$/, "")}K`;
@@ -133,8 +117,10 @@ function buildStats(metrics: AnalyticsPayload | null) {
   ] as const;
 }
 
+export const revalidate = 60;
+
 export default async function LandingPage() {
-  const metrics = await getMetrics();
+  const metrics = await getCachedAnalytics();
   const stats = buildStats(metrics);
   const hasLiveStats = stats.some((stat) => stat.live);
 

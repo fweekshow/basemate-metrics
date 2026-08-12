@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCurrentUser,
@@ -60,7 +59,6 @@ export function PaySignClient({ token }: { token: string }) {
 }
 
 function PaySignInner({ token }: { token: string }) {
-  const router = useRouter();
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
   const { getAccessToken } = useGetAccessToken();
@@ -198,14 +196,13 @@ function PaySignInner({ token }: { token: string }) {
         throw new Error(body?.error || "Could not complete this transaction.");
       }
       setLoad({ status: "done" });
-      router.replace("/pay/success");
     } catch (err) {
       setLoad({
         status: "error",
         message: err instanceof Error ? err.message : "Could not complete this transaction.",
       });
     }
-  }, [isSignedIn, load, router, token]);
+  }, [isSignedIn, load, token]);
 
   const pending = load.status === "ready" || load.status === "signing" ? load.pending : null;
 
