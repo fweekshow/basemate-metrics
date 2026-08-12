@@ -130,11 +130,6 @@ function buildStats(metrics: AnalyticsPayload | null) {
       label: "MESSAGES",
       live: Boolean(metrics),
     },
-    {
-      value: trading ? formatVolumeKpi(trading.notionalLifetime) : "$262K+",
-      label: "NOTIONAL MOVED",
-      live: Boolean(metrics),
-    },
   ] as const;
 }
 

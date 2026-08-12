@@ -28,7 +28,6 @@ export const INVESTOR = {
     { value: "12,413", label: "total users" },
     { value: "445", label: "weekly active" },
     { value: "64,810", label: "messages handled" },
-    { value: "$139,925", label: "notional moved" },
   ],
   needs: [
     {
