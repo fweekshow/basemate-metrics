@@ -108,10 +108,6 @@ export async function getDataRoomInvestorView(): Promise<DataRoomInvestorView> {
         value: pick(map, "traction_messages", base.traction[2]?.value ?? ""),
         label: pickNote(map, "traction_messages", base.traction[2]?.label ?? "messages handled"),
       },
-      {
-        value: pick(map, "traction_notional", base.traction[3]?.value ?? ""),
-        label: pickNote(map, "traction_notional", base.traction[3]?.label ?? "notional moved"),
-      },
     ],
   };
 }
