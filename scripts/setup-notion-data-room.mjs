@@ -195,7 +195,6 @@ async function seedContentRows(databaseId) {
     ["traction_users", "12,413", "total users"],
     ["traction_wau", "445", "weekly active"],
     ["traction_messages", "64,810", "messages handled"],
-    ["traction_notional", "$139,925", "notional moved"],
   ];
 
   for (const [field, value, note] of rows) {
