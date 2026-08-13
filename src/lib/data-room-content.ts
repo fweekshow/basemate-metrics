@@ -14,6 +14,9 @@ export type DataRoomInvestorView = {
   headline: string;
   subhead: string;
   traction: { value: string; label: string }[];
+  loisSigned: number;
+  loisPending: number;
+  loisTarget: number;
 };
 
 function mapFromStatic(): DataRoomInvestorView {
@@ -30,6 +33,9 @@ function mapFromStatic(): DataRoomInvestorView {
     headline: INVESTOR.headline,
     subhead: INVESTOR.subhead,
     traction: INVESTOR.traction.map((t) => ({ value: t.value, label: t.label })),
+    loisSigned: 0,
+    loisPending: 0,
+    loisTarget: 10,
   };
 }
 
@@ -109,5 +115,8 @@ export async function getDataRoomInvestorView(): Promise<DataRoomInvestorView> {
         label: pickNote(map, "traction_messages", base.traction[2]?.label ?? "messages handled"),
       },
     ],
+    loisSigned: parseInt(pick(map, "lois_signed", "0"), 10) || 0,
+    loisPending: parseInt(pick(map, "lois_pending", "0"), 10) || 0,
+    loisTarget: parseInt(pick(map, "lois_target", "10"), 10) || 10,
   };
 }

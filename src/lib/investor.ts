@@ -15,7 +15,7 @@ export const INVESTOR = {
   metricsUrl: SITE.metricsUrl,
   headline: "Access only counts if everyone can reach it.",
   subhead:
-    "Our mission: put Base on a local cell phone in every country. Stablecoins first — then the full Base stack. Send money to anyone, anywhere, with just a text. No app. No seed phrase.",
+    "Our mission: put a Mate on a local cell phone in every country. Send money to anyone, anywhere, with just a text. No app. No seed phrase.",
   milestone: {
     label: "Q3 2027",
     items: [

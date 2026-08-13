@@ -320,9 +320,16 @@ export function DataRoomContent({
           {/* LOI stats */}
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { label: "LOIs Signed", value: "0 / 10", note: "Target: 10 this raise" },
-              { label: "Confirmed on Base", value: "20+", note: "Local-currency stablecoins live" },
-              { label: "Corridor Volume", value: "$800B", note: "Global remittance / yr" },
+              {
+                label: "LOIs Signed",
+                value: `${investorView.loisSigned} / ${investorView.loisTarget}`,
+                note: investorView.loisPending > 0
+                  ? `${investorView.loisPending} pending · Target: ${investorView.loisTarget} this raise`
+                  : `Target: ${investorView.loisTarget} this raise`,
+                highlight: investorView.loisPending > 0,
+              },
+              { label: "Confirmed on Base", value: "20+", note: "Local-currency stablecoins live", highlight: false },
+              { label: "Corridor Volume", value: "$800B", note: "Global remittance / yr", highlight: false },
             ].map((stat) => (
               <div key={stat.label} className="rounded-[20px] border border-border bg-white p-5 shadow-sm">
                 <Mono className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -331,7 +338,9 @@ export function DataRoomContent({
                 <p className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground">
                   {stat.value}
                 </p>
-                <p className="mt-1.5 text-sm text-muted-foreground">{stat.note}</p>
+                <p className={`mt-1.5 text-sm ${stat.highlight ? "font-medium text-amber-600" : "text-muted-foreground"}`}>
+                  {stat.note}
+                </p>
               </div>
             ))}
           </div>
