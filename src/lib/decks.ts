@@ -16,7 +16,7 @@ export const DECKS = {
   main: {
     id: "main",
     pdfUrl: "/deck.pdf",
-    downloadName: "Mate-seed-deck-Aug10.pdf",
+    downloadName: "Mate-seed-deck-v1.3.pdf",
     title: "Mate — Seed Deck",
     toolbarLabel: "Seed Deck",
     description:
@@ -26,7 +26,7 @@ export const DECKS = {
   onepager: {
     id: "onepager",
     pdfUrl: "/onepager.pdf",
-    downloadName: "Mate-Onepager-v1.0.pdf",
+    downloadName: "Mate-Onepager-v1.3.pdf",
     title: "Mate — One-Pager",
     toolbarLabel: "One-Pager",
     description:
@@ -36,7 +36,7 @@ export const DECKS = {
   update: {
     id: "update",
     pdfUrl: "/investor-update.pdf",
-    downloadName: "Mate-Investor-Update-v1.0.pdf",
+    downloadName: "Mate-Investor-Update-v1.3.pdf",
     title: "Mate — Investor Update",
     toolbarLabel: "Investor Update",
     description:
