@@ -16,7 +16,7 @@ export const DECKS = {
   main: {
     id: "main",
     pdfUrl: "/deck.pdf",
-    downloadName: "Mate-seed-deck-v1.3.pdf",
+    downloadName: "Mate-seed-deck-v1.4.pdf",
     title: "Mate — Seed Deck",
     toolbarLabel: "Seed Deck",
     description:
