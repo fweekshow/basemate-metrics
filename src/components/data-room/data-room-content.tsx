@@ -319,17 +319,26 @@ export function DataRoomContent({
 
           {/* LOI stats */}
           <div className="grid gap-3 sm:grid-cols-3">
+            {/* LOIs Signed — rendered separately so we can show a pending line in blue */}
+            <div className="rounded-[20px] border border-border bg-white p-5 shadow-sm">
+              <Mono className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                LOIs Signed
+              </Mono>
+              <p className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground">
+                {investorView.loisSigned} / {investorView.loisTarget}
+              </p>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Target: {investorView.loisTarget} this raise
+              </p>
+              {investorView.loisPending > 0 && (
+                <p className="mt-0.5 text-xs font-medium text-blue-500">
+                  {investorView.loisPending} pending
+                </p>
+              )}
+            </div>
             {[
-              {
-                label: "LOIs Signed",
-                value: `${investorView.loisSigned} / ${investorView.loisTarget}`,
-                note: investorView.loisPending > 0
-                  ? `${investorView.loisPending} pending · Target: ${investorView.loisTarget} this raise`
-                  : `Target: ${investorView.loisTarget} this raise`,
-                highlight: investorView.loisPending > 0,
-              },
-              { label: "Confirmed on Base", value: "20+", note: "Local-currency stablecoins live", highlight: false },
-              { label: "Corridor Volume", value: "$800B", note: "Global remittance / yr", highlight: false },
+              { label: "Confirmed on Base", value: "20+", note: "Local-currency stablecoins live" },
+              { label: "Corridor Volume", value: "$800B", note: "Global remittance / yr" },
             ].map((stat) => (
               <div key={stat.label} className="rounded-[20px] border border-border bg-white p-5 shadow-sm">
                 <Mono className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -338,7 +347,7 @@ export function DataRoomContent({
                 <p className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground">
                   {stat.value}
                 </p>
-                <p className={`mt-1.5 text-sm ${stat.highlight ? "font-medium text-amber-600" : "text-muted-foreground"}`}>
+                <p className="mt-1.5 text-sm text-muted-foreground">
                   {stat.note}
                 </p>
               </div>
@@ -366,7 +375,7 @@ export function DataRoomContent({
                     { flag: "🇳🇬", country: "Nigeria",       currency: "NGN", ticker: "CNGN",  issuer: "WrappedCBDC",   contact: "@WrappedCBDC",    status: "LAUNCHING",live: true  },
                     { flag: "🇸🇬", country: "Singapore",     currency: "SGD", ticker: "XSGD",  issuer: "StraitsX",       contact: "@StraitsX",       status: "BASE ✓",   live: true  },
                     { flag: "🇮🇩", country: "Indonesia",     currency: "IDR", ticker: "IDRX",  issuer: "IDRX",           contact: "@idrx_co",        status: "BASE ✓",   live: true  },
-                    { flag: "🇲🇾", country: "Malaysia",      currency: "MYR", ticker: "MYRC",  issuer: "BLOX",           contact: "@BLOX_digital",   status: "BASE ✓",   live: true  },
+                    { flag: "🇲🇾", country: "Malaysia",      currency: "MYR", ticker: "MYRC",  issuer: "BLOX Malaysia", contact: "@blox_malaysia",  status: "BASE ✓",   live: true  },
                     { flag: "🇦🇺", country: "Australia",     currency: "AUD", ticker: "AUDD",  issuer: "Novatti",        contact: "@NovattiBiz",     status: "BASE ✓",   live: true  },
                     { flag: "🇬🇧", country: "UK",            currency: "GBP", ticker: "TGBP",  issuer: "TBV (on Base)",  contact: "—",               status: "BASE ✓",   live: true  },
                     { flag: "🇨🇭", country: "Switzerland",   currency: "CHF", ticker: "VCHF",  issuer: "AllUnity",       contact: "@AllUnity_io",    status: "BASE ✓",   live: true  },
