@@ -12,6 +12,7 @@ async function fetchAnalytics(): Promise<AnalyticsPayload | null> {
     const res = await fetch(endpoint, {
       cache: "no-store",
       headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(3_000),
     });
     if (!res.ok) return null;
 
@@ -29,11 +30,12 @@ async function fetchAnalytics(): Promise<AnalyticsPayload | null> {
 }
 
 /**
- * Cached analytics fetch — revalidates every 60 s on the server.
+ * Cached analytics fetch — revalidates once every 24 h on the server.
  * Calling this from a page does NOT force dynamic rendering the way
  * `headers()` does, so the page can be ISR-cached between revalidations.
+ * Force a manual refresh by revalidating the "analytics" tag.
  */
 export const getCachedAnalytics = unstable_cache(fetchAnalytics, ["analytics"], {
-  revalidate: 60,
+  revalidate: 86_400, // 24 h
   tags: ["analytics"],
 });

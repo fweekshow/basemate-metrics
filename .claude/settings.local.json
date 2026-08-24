@@ -52,7 +52,16 @@
       "PowerShell(taskkill /PID 13764 /F)",
       "PowerShell(Get-ChildItem src\\\\app -Recurse -Directory | Where-Object { $_.FullName -match 'pay' } | Select-Object FullName)",
       "PowerShell(npx tsc --noEmit)",
-      "PowerShell(npx eslint src/app/pay/sign/pay-sign-client.tsx src/components/site/site-shell.tsx)"
+      "PowerShell(npx eslint src/app/pay/sign/pay-sign-client.tsx src/components/site/site-shell.tsx)",
+      "Bash(cp \"/Users/matthewmeakin/Documents/Basemate/Mate-deck-v1.3.pdf\" /Users/matthewmeakin/basemate-metrics/public/deck.pdf)",
+      "Bash(cp \"/Users/matthewmeakin/Documents/Basemate/mate-investor-update-v1.3.pdf\" /Users/matthewmeakin/basemate-metrics/public/investor-update.pdf)",
+      "Bash(cp \"/Users/matthewmeakin/Documents/Basemate/Mate-onepager.pdf\" /Users/matthewmeakin/basemate-metrics/public/onepager.pdf)",
+      "Bash(git -C /Users/matthewmeakin/basemate-metrics remote -v)",
+      "Read(//Users/matthewmeakin/breadboard/scripts/**)",
+      "Bash(git -C /Users/matthewmeakin/basemate-metrics push origin master)",
+      "Bash(cp \"/Users/matthewmeakin/Downloads/basemate-deck-v1.4.pdf\" /Users/matthewmeakin/basemate-metrics/public/deck.pdf && echo \"done\")",
+      "Bash(git -C /Users/matthewmeakin/basemate-metrics add public/deck.pdf src/lib/decks.ts)",
+      "Bash(git -C /Users/matthewmeakin/basemate-metrics commit -m ' *)"
     ]
   }
 }
