@@ -470,6 +470,7 @@ function tabFromHash(): Tab | null {
 
 function Dashboard() {
   const [tab, setTab] = useState<Tab>("home");
+  const [visited, setVisited] = useState<Set<Tab>>(() => new Set(["home"]));
   const [sendPrefill, setSendPrefill] = useState<SendPrefill | null>(null);
   const [sendOpen, setSendOpen] = useState(false);
 
@@ -480,7 +481,10 @@ function Dashboard() {
   useEffect(() => {
     const sync = () => {
       const next = tabFromHash();
-      if (next) setTab(next);
+      if (next) {
+        setTab(next);
+        setVisited((prev) => (prev.has(next) ? prev : new Set(prev).add(next)));
+      }
     };
     sync();
     window.addEventListener("hashchange", sync);
@@ -489,6 +493,7 @@ function Dashboard() {
 
   const selectTab = useCallback((id: Tab) => {
     setTab(id);
+    setVisited((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
     // Reflect the tab in the URL without pushing a new history entry.
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `#${id}`);
@@ -517,18 +522,42 @@ function Dashboard() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
-        {tab === "home" && <HomeTab onSend={() => openSend(null)} />}
-        {tab === "activity" && <ActivityTab onSendAgain={(p) => openSend(p)} />}
-        {tab === "interest" && <InterestTab />}
-        {tab === "contacts" && <ContactsTab onSendTo={(p) => openSend(p)} />}
-        {tab === "agent" && <AgentSettingsTab />}
+        {visited.has("home") && (
+          <div hidden={tab !== "home"}>
+            <HomeTab onSend={() => openSend(null)} />
+          </div>
+        )}
+        {visited.has("activity") && (
+          <div hidden={tab !== "activity"}>
+            <ActivityTab onSendAgain={(p) => openSend(p)} />
+          </div>
+        )}
+        {visited.has("interest") && (
+          <div hidden={tab !== "interest"}>
+            <InterestTab />
+          </div>
+        )}
+        {visited.has("contacts") && (
+          <div hidden={tab !== "contacts"}>
+            <ContactsTab onSendTo={(p) => openSend(p)} />
+          </div>
+        )}
+        {visited.has("agent") && (
+          <div hidden={tab !== "agent"}>
+            <AgentSettingsTab />
+          </div>
+        )}
       </main>
 
       <SendSheet
         open={sendOpen}
         onClose={() => setSendOpen(false)}
         prefill={sendPrefill}
-        onSuccess={() => selectTab("activity")}
+        onSuccess={() => {
+          invalidateApi("/api/app/portfolio");
+          invalidateApi("/api/app/activity");
+          selectTab("activity");
+        }}
         onNeedDeposit={(amount) => {
           setSendOpen(false);
           selectTab("home");
@@ -567,20 +596,31 @@ function Dashboard() {
   );
 }
 
+const apiCache = new Map<string, unknown>();
+
+function invalidateApi(path: string) {
+  apiCache.delete(path);
+}
+
 function useApi<T>(path: string): { data: T | null; loading: boolean; error: string | null; reload: () => void } {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = apiCache.get(path) as T | undefined;
+  const [data, setData] = useState<T | null>(cached ?? null);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
   const reload = useCallback(() => {
-    setLoading(true);
+    const hasCached = apiCache.has(path);
+    if (!hasCached) setLoading(true);
     fetch(path, { cache: "no-store" })
       .then(async (res) => {
         const body = await res.json();
         if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
+        apiCache.set(path, body);
         setData(body as T);
         setError(null);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
   }, [path]);
   useEffect(() => reload(), [reload]);
@@ -985,6 +1025,7 @@ function AddFundsButtonInner({ email }: { email: string }) {
                   expiresAt={session.expiresAt}
                   onSuccess={() => {
                     setFunded(true);
+                    invalidateApi("/api/app/portfolio");
                     void fetch("/api/app/record-funding", {
                       method: "POST",
                       headers: { "content-type": "application/json" },

@@ -63,7 +63,10 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
       init.headers = { ...init.headers, "content-type": "application/json" };
       init.body = JSON.stringify({ ...body, user: session.user, token: session.token });
     }
-    const res = await fetch(endpoint, init);
+    const res = await fetch(endpoint, {
+      ...init,
+      signal: AbortSignal.timeout(8_000),
+    });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status, headers: { "cache-control": "no-store" } });
   } catch (err) {
