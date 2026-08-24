@@ -61,7 +61,12 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
     if (k !== "user" && k !== "token") endpoint.searchParams.set(k, v);
   });
 
-  const cacheKey = method === "GET" ? `${session.user}:${corePath(segments)}:${endpoint.search}` : null;
+  // Portfolio balances already have a short-lived backend snapshot. Do not add
+  // another proxy cache that can leave the website one refresh behind chat.
+  const cacheKey =
+    method === "GET" && segments.join("/") !== "portfolio"
+      ? `${session.user}:${corePath(segments)}:${endpoint.search}`
+      : null;
   if (cacheKey) {
     const fresh = readGetCache(cacheKey);
     if (fresh && !fresh.stale) {
