@@ -86,7 +86,7 @@ function buildStats(metrics: AnalyticsPayload | null) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export const revalidate = 86_400; // 24 h — numbers stay fresh, page is instant
+export const revalidate = 3_600; // 1 h
 
 export default async function LandingPage() {
   const metrics = await getCachedAnalytics();

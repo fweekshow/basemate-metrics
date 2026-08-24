@@ -36,6 +36,6 @@ async function fetchAnalytics(): Promise<AnalyticsPayload | null> {
  * Force a manual refresh by revalidating the "analytics" tag.
  */
 export const getCachedAnalytics = unstable_cache(fetchAnalytics, ["analytics"], {
-  revalidate: 86_400, // 24 h
+  revalidate: 3_600, // 1 h
   tags: ["analytics"],
 });
