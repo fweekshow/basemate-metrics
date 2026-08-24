@@ -1,74 +1,57 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
 import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
-import { formatVolumeKpi, resolveChatTrading } from "@/lib/volume";
 import { getCachedAnalytics } from "@/lib/analytics";
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — Money that lives in your texts`,
+  title: "Stablemate: Money that lives in your texts",
   description:
-    "Send across borders. Earn. Trade. Save. Basemate is the onchain agent that lives in iMessage and Base App — no app to download, no wallet to set up.",
+    "Send money home in a text. Funds arrive in their bank account. No new app, no wallet, no crypto. Stablemate routes it through the local stablecoin rail, invisibly.",
 };
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+type NodeStatus = "LIVE" | "SECURED" | "IN TALKS" | "SEARCHING";
+const nodes: { country: string; coin: string; status: NodeStatus }[] = [
+  { country: "United States", coin: "USDC", status: "LIVE" },
+  { country: "Indonesia", coin: "IDRX", status: "SECURED" },
+  { country: "Singapore", coin: "XSGD", status: "IN TALKS" },
+  { country: "Malaysia", coin: "MYRC", status: "IN TALKS" },
+  { country: "Japan", coin: "JPYC", status: "SEARCHING" },
+];
+
+const gapStats = [
+  { value: "25+", label: "local stablecoins on Base" },
+  { value: "$857B", label: "sent cross-border yearly" },
+  { value: "6.36%", label: "avg fee today" },
+];
 
 const sets = [
   {
-    letter: "S",
     label: "SEND",
-    headline: "Send money home in a text",
-    body: "Money to anyone with a phone number, across any border. Text “send $200 to Mum” and it moves in seconds.",
-    color: "#0505FF",
+    headline: "You text it. It arrives in their bank.",
+    body: 'Text "send $200 to Mum" and it moves. The stablecoin rail is invisible. Receiver sees cash in their account.',
   },
   {
-    letter: "E",
     label: "EARN",
-    headline: "Idle USDC earns ~5% automatically",
-    body: "Tell Basemate to earn and it finds the best onchain rate on Base — Moonwell, Morpho, or Aave — in one message.",
-    color: "#19FB44",
+    headline: "Idle balance earns ~5% automatically",
+    body: "Tell Stablemate to earn and it finds the best onchain rate: Moonwell, Morpho, or Aave. One message.",
   },
   {
-    letter: "T",
     label: "TRADE",
-    headline: "Swap in a text. Trade in Base App",
-    body: "Spot swaps on Uniswap and Aerodrome from the chat. Perps and full trading live in Base App.",
-    color: "#0505FF",
+    headline: "Swap in a text. Trade in Base App.",
+    body: "Spot swaps on Uniswap and Aerodrome from the chat. Perps and full trading in Base App.",
   },
   {
-    letter: "S",
     label: "SAVE",
-    headline: "USDC as your base currency",
-    body: "Stable, dollar-denominated money that stays in your agent wallet — ready to send, earn, or trade.",
-    color: "#19FB44",
+    headline: "USDC as your base currency.",
+    body: "Stable, dollar-denominated money in your agent wallet, ready to send, earn, or trade any time.",
   },
-] as const;
-
-const gapStats = [
-  { value: "3.3B+", label: "iMessage + WhatsApp users" },
-  { value: "$800B+", label: "sent across borders yearly" },
-  { value: "~6%", label: "average remittance fee today" },
-] as const;
-
-const moat = [
-  {
-    n: "01",
-    title: "The sender side — iMessage",
-    body: "Where the money comes from. 1.3B users across the US, EU, and Gulf — the world's remittance senders.",
-  },
-  {
-    n: "02",
-    title: "The receiver side — WhatsApp",
-    body: "Where the money goes. Dominant in the Philippines, India, Mexico, Nigeria, and Brazil.",
-  },
-  {
-    n: "03",
-    title: "The unlock",
-    body: "Zero apps, zero accounts, zero crypto knowledge. A text arrives. The money's there.",
-  },
-] as const;
+];
 
 const roadmap = [
   { label: "Live on Base App + iMessage beta", done: true },
@@ -78,141 +61,154 @@ const roadmap = [
   { label: "Spot swaps in chat", done: true },
   { label: "10K+ users · $260K+ moved", done: true },
   { label: "WhatsApp receive-side", done: false, next: true },
-  { label: "Multi-corridor remittance rails", done: false, pending: true },
-  {
-    label: "Send money home — cash out to local currency",
-    done: false,
-    destination: true,
-  },
+  { label: "First corridor live: Singapore ⇄ Indonesia", done: false, pending: true },
+  { label: "Send money home, cash out to local currency", done: false, destination: true },
 ] as const;
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatUsers(total: number): string {
-  if (total >= 10_000) return `${(total / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-  if (total >= 1000) return `${Math.floor(total / 1000)}K+`;
-  return total.toLocaleString("en-US");
+function formatUsers(n: number) {
+  if (n >= 10_000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  if (n >= 1000) return `${Math.floor(n / 1000)}K+`;
+  return n.toLocaleString("en-US");
 }
-
-function formatMessages(total: number): string {
-  if (total >= 1000) return `${Math.floor(total / 1000)}K+`;
-  return total.toLocaleString("en-US");
+function formatMessages(n: number) {
+  if (n >= 1000) return `${Math.floor(n / 1000)}K+`;
+  return n.toLocaleString("en-US");
 }
-
 function buildStats(metrics: AnalyticsPayload | null) {
-  const trading = metrics ? resolveChatTrading(metrics) : null;
-
   return [
-    {
-      value: metrics ? formatUsers(metrics.users.total) : "10.7K",
-      label: "USERS",
-      live: Boolean(metrics),
-    },
-    {
-      value: metrics
-        ? formatMessages(metrics.users.messagesReceived)
-        : "49K+",
-      label: "MESSAGES",
-      live: Boolean(metrics),
-    },
+    { value: metrics ? formatUsers(metrics.users.total) : "10.7K", label: "USERS", live: Boolean(metrics) },
+    { value: metrics ? formatMessages(metrics.users.messagesReceived) : "49K+", label: "MESSAGES", live: Boolean(metrics) },
   ] as const;
 }
 
-export const revalidate = 60;
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export const revalidate = 86_400; // 24 h — numbers stay fresh, page is instant
 
 export default async function LandingPage() {
   const metrics = await getCachedAnalytics();
   const stats = buildStats(metrics);
-  const hasLiveStats = stats.some((stat) => stat.live);
+  const hasLiveStats = stats.some((s) => s.live);
 
   return (
     <SiteShell>
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section id="start" className="relative mx-auto max-w-5xl px-4 pb-10 pt-10 sm:px-6 sm:pt-14">
-        <div className="max-w-2xl space-y-5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            Live on iMessage · Base App
-          </div>
+      <section
+        id="start"
+        className="relative overflow-hidden border-b border-border/60"
+        style={{
+          background: "linear-gradient(135deg, #EBE9F7 0%, #F6F5FC 50%, #E9EDFB 100%)",
+        }}
+      >
+        {/* Subtle dot grid */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(rgba(5,5,255,0.07) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        {/* Blue glow blob */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full opacity-15 blur-[80px]"
+          style={{ background: "#0505FF" }}
+        />
 
-          <h1
-            className="font-display text-4xl font-semibold leading-[1.12] tracking-normal text-foreground sm:text-5xl"
-            style={{ textWrap: "balance" }}
-          >
-            Money that lives in your <span className="bm-emphasis">texts.</span>
-          </h1>
-
-          <p className="max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Send across borders. Earn. Trade. Save. All in the app you already have
-            open — no wallet to set up, no seed phrase, no new app to download.
-          </p>
-
-          <div className="space-y-3 pt-1">
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <a
-                href={IMESSAGE_HREF}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(5,5,255,0.25)] transition-all hover:shadow-[0_4px_32px_rgba(5,5,255,0.4)] hover:brightness-110 active:scale-[0.97]"
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="py-14 sm:py-20">
+            <div className="max-w-2xl space-y-6">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-xs font-semibold"
+                style={{ background: "rgba(5,5,255,0.09)", color: "#0505FF", border: "1px solid rgba(5,5,255,0.18)" }}
               >
-                Text
-                <span className="font-mono">{SITE.imessagePhoneDisplay}</span>
-              </a>
-              <a
-                href={SITE.baseAppStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-border bg-white px-6 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/50 active:scale-[0.97]"
+                <span className="size-1.5 rounded-full bg-[#0505FF] opacity-70 inline-block" />
+                Live · iMessage · Base
+              </div>
+
+              <h1
+                className="font-display text-5xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-6xl"
+                style={{ textWrap: "balance" } as React.CSSProperties}
               >
-                Try on Base App
-              </a>
+                Money that lives in your{" "}
+                <em
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontStyle: "italic",
+                    color: "#0505FF",
+                  }}
+                >
+                  texts.
+                </em>
+              </h1>
+
+              <p className="max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
+                No new app. No wallet. No crypto knowledge. Text Stablemate and
+                the money moves. Funds arrive in the receiver&apos;s bank account.
+                The stablecoin rail is invisible.
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a
+                  href={IMESSAGE_HREF}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start rounded-full px-7 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110 hover:shadow-xl active:scale-[0.97]"
+                  style={{ background: "#0505FF", boxShadow: "0 4px 24px rgba(5,5,255,0.30)" }}
+                >
+                  Text{" "}
+                  <span style={{ fontFamily: "var(--font-mono)" }}>
+                    {SITE.imessagePhoneDisplay}
+                  </span>
+                </a>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Opens iMessage. Android or SMS:{" "}
+                <a href={SMS_TOLL_FREE_HREF} className="font-medium text-primary underline-offset-4 hover:underline">
+                  {SITE.smsTollFreeDisplay}
+                </a>
+                {". "}
+                <Link href="/messaging" className="font-medium text-primary underline-offset-4 hover:underline">
+                  Messaging &amp; opt-in
+                </Link>
+                .
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Opens iMessage with a draft to our line. Android or SMS:{" "}
-              <a
-                href={SMS_TOLL_FREE_HREF}
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
-                text {SITE.smsTollFreeDisplay}
-              </a>
-              .{" "}
-              <Link
-                href="/messaging"
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
-                Messaging &amp; opt-in
-              </Link>
-              .
-            </p>
           </div>
         </div>
       </section>
 
-      {/* ── Stats strip ──────────────────────────────────────────── */}
-      <section className="border-y border-border bg-muted/40">
+      {/* ── Live stats strip ─────────────────────────────────────── */}
+      <section className="border-b border-border/60 bg-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          {hasLiveStats ? (
-            <div className="flex items-center justify-end gap-2 pt-4">
-              <span className="size-1.5 animate-pulse rounded-full bg-up" />
+          {hasLiveStats && (
+            <div className="flex items-center gap-2 pt-3">
+              <span className="size-1.5 animate-pulse rounded-full bg-primary opacity-70" />
               <span
-                className="text-[10px] font-medium tracking-[0.2em] text-up"
+                className="text-[10px] font-semibold tracking-[0.2em] text-primary"
                 style={{ fontFamily: "var(--font-mono)" }}
               >
                 LIVE
               </span>
             </div>
-          ) : null}
-          <div className="grid grid-cols-2 gap-px sm:grid-cols-3">
+          )}
+          <div className="grid grid-cols-2 divide-x divide-border/60">
             {stats.map(({ value, label }) => (
-              <div key={label} className="flex flex-col gap-1 px-4 py-5 sm:px-6">
-                <span
-                  className="text-2xl font-bold text-primary sm:text-3xl"
-                  style={{ fontFamily: "var(--font-mono)" }}
+              <div key={label} className="py-5 pr-8">
+                <p
+                  className="text-3xl font-bold tabular-nums sm:text-4xl"
+                  style={{ fontFamily: "var(--font-mono)", color: "#0505FF" }}
                 >
                   {value}
-                </span>
-                <span
-                  className="text-xs font-medium text-muted-foreground"
-                  style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+                </p>
+                <p
+                  className="mt-0.5 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground"
+                  style={{ fontFamily: "var(--font-mono)" }}
                 >
                   {label}
-                </span>
+                </p>
               </div>
             ))}
           </div>
@@ -220,34 +216,52 @@ export default async function LandingPage() {
       </section>
 
       {/* ── The gap ──────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
           <div>
-            <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
+            <p
+              className="mb-3 text-xs font-bold tracking-[0.18em] text-primary"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
               THE GAP
             </p>
-            <h2 className="font-display mb-3 text-2xl font-semibold tracking-normal sm:text-3xl">
+            <h2 className="font-display mb-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
               iMessage + WhatsApp are the world&apos;s largest{" "}
-              <span className="bm-emphasis">unbanked</span> network.
+              <em
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontStyle: "italic",
+                  color: "#0505FF",
+                }}
+              >
+                unbanked
+              </em>{" "}
+              network.
             </h2>
-            <p className="text-muted-foreground">
-              3.3 billion people message every day — with no way to send, earn, or
-              grow money without leaving the app.
+            <p className="text-muted-foreground leading-relaxed">
+              3.3 billion people message every day with no way to move money
+              without leaving the app. Every country is licensing its own
+              stablecoin. Each one is an island. We connect them.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
             {gapStats.map(({ value, label }) => (
               <div
                 key={label}
-                className="rounded-2xl border border-border bg-white p-5 shadow-sm"
+                className="rounded-2xl p-5"
+                style={{
+                  background: "white",
+                  border: "1px solid rgba(5,5,255,0.10)",
+                  boxShadow: "0 2px 12px rgba(5,5,255,0.05)",
+                }}
               >
-                <span
-                  className="block text-2xl font-bold text-primary"
-                  style={{ fontFamily: "var(--font-mono)" }}
+                <p
+                  className="text-2xl font-bold tabular-nums"
+                  style={{ fontFamily: "var(--font-mono)", color: "#0505FF" }}
                 >
                   {value}
-                </span>
-                <span className="mt-1 block text-xs text-muted-foreground">{label}</span>
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{label}</p>
               </div>
             ))}
           </div>
@@ -255,19 +269,40 @@ export default async function LandingPage() {
       </section>
 
       {/* ── The problem ──────────────────────────────────────────── */}
-      <section className="border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-          <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
+      <section
+        className="border-y border-border/60"
+        style={{ background: "#F5F4FC" }}
+      >
+        <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
+          <p
+            className="mb-3 text-xs font-bold tracking-[0.18em] text-primary"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
             THE PROBLEM
           </p>
-          <h2 className="font-display mb-5 text-2xl font-semibold tracking-normal sm:text-3xl">
-            Sending money home is still <span className="bm-emphasis">broken.</span>
+          <h2 className="font-display mb-8 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            Sending money home is still{" "}
+            <em
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontStyle: "italic",
+                color: "#FF4D67",
+              }}
+            >
+              broken.
+            </em>
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-down/20 bg-white p-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div
+              className="rounded-2xl p-6"
+              style={{
+                background: "white",
+                border: "1px solid rgba(255,77,103,0.15)",
+              }}
+            >
               <p
-                className="mb-3 text-xs font-bold tracking-widest text-down"
-                style={{ fontFamily: "var(--font-mono)" }}
+                className="mb-3 text-xs font-bold tracking-widest"
+                style={{ fontFamily: "var(--font-mono)", color: "#FF4D67" }}
               >
                 TODAY
               </p>
@@ -278,14 +313,20 @@ export default async function LandingPage() {
                 up to 6% fees · 1–3 days · download an app · create an account
               </p>
             </div>
-            <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-6">
+            <div
+              className="rounded-2xl p-6"
+              style={{
+                background: "white",
+                border: "1px solid rgba(5,5,255,0.15)",
+              }}
+            >
               <p
                 className="mb-3 text-xs font-bold tracking-widest text-primary"
                 style={{ fontFamily: "var(--font-mono)" }}
               >
                 SHOULD BE
               </p>
-              <p className="font-display text-2xl font-semibold tracking-normal text-foreground">
+              <p className="font-display text-3xl font-semibold tracking-tight text-foreground">
                 a text.
               </p>
             </div>
@@ -294,71 +335,152 @@ export default async function LandingPage() {
       </section>
 
       {/* ── SETS ─────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-        <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
+      <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
+        <p
+          className="mb-3 text-xs font-bold tracking-[0.18em] text-primary"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
           HOW IT WORKS
         </p>
-        <h2 className="font-display mb-2 text-2xl font-semibold tracking-normal sm:text-3xl">
-          One agent. Four <span className="bm-emphasis">jobs.</span>
+        <h2 className="font-display mb-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          One agent.{" "}
+          <em
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: "italic",
+              color: "#0505FF",
+            }}
+          >
+            Four jobs.
+          </em>
         </h2>
-        <p className="mb-6 max-w-2xl text-muted-foreground">
-          Send · Earn · Trade · Save. Cross-border send is the front door — once your
-          money&apos;s in, Basemate does the other three.
+        <p className="mb-8 max-w-xl text-muted-foreground">
+          Send · Earn · Trade · Save. Cross-border send is the front door.
+          Once your money&apos;s in, Stablemate does the rest.
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {sets.map(({ letter, label, headline, body, color }) => (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {sets.map(({ label, headline, body }) => (
             <div
               key={label}
-              className="group rounded-2xl border border-border bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-2xl p-6"
+              style={{
+                background: "white",
+                border: "1px solid rgba(5,5,255,0.10)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+              }}
             >
-              <div className="mb-2 flex items-center gap-3">
-                <span
-                  className="flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
-                  style={{ background: color, fontFamily: "var(--font-display)" }}
-                >
-                  {letter}
-                </span>
-                <span
-                  className="font-mono text-xs font-bold tracking-[0.14em]"
-                  style={{ color }}
+              <div className="mb-3">
+                <div
+                  className="inline-flex rounded-lg px-2 py-0.5 text-[10px] font-bold tracking-widest"
+                  style={{
+                    background: "rgba(5,5,255,0.08)",
+                    color: "#0505FF",
+                    fontFamily: "var(--font-mono)",
+                  }}
                 >
                   {label}
-                </span>
+                </div>
               </div>
-              <h3 className="mb-1.5 text-base font-semibold text-foreground">{headline}</h3>
+              <h3 className="font-display mb-2 text-lg font-semibold leading-snug tracking-tight text-foreground">
+                {headline}
+              </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Moat ─────────────────────────────────────────────────── */}
-      <section className="border-t border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-          <p className="mb-2 font-mono text-xs font-bold tracking-[0.14em] text-primary">
-            THE MOAT
-          </p>
-          <h2 className="font-display mb-2 text-2xl font-semibold tracking-normal sm:text-3xl">
-            Built on the rails remittances <span className="bm-emphasis">actually</span>{" "}
-            run on.
-          </h2>
-          <p className="mb-6 max-w-2xl text-muted-foreground">
-            Every incumbent makes the recipient do the work. We flipped it. The sender
-            uses iMessage. The receiver uses WhatsApp. Nobody installs anything.
-          </p>
-          <div className="grid gap-3 md:grid-cols-3">
-            {moat.map(({ n, title, body }) => (
-              <div
-                key={n}
-                className="rounded-2xl border border-border bg-white p-5 shadow-sm"
+      {/* ── Network ──────────────────────────────────────────────── */}
+      <section
+        className="border-y border-border/60"
+        style={{ background: "#F5F4FC" }}
+      >
+        <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
+          <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+            <div>
+              <p
+                className="mb-3 text-xs font-bold tracking-[0.18em] text-primary"
+                style={{ fontFamily: "var(--font-mono)" }}
               >
-                <span className="mb-3 block font-mono text-xs font-bold text-primary">
-                  {n}
+                THE NETWORK
+              </p>
+              <h2 className="font-display mb-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                One number per country.{" "}
+                <em
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontStyle: "italic",
+                    color: "#0505FF",
+                  }}
+                >
+                  One local partner.
+                </em>
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Each node is a local stablecoin issuer. They own the licence,
+                the banking, and the mint. We own the messaging and the routing.
+                One network. The sender texts. The partner converts. The
+                receiver&apos;s bank account gets the money.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                First corridor:{" "}
+                <span className="font-semibold text-foreground">
+                  Singapore ⇄ Indonesia
                 </span>
-                <h3 className="mb-1.5 text-base font-semibold text-foreground">{title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
-              </div>
-            ))}
+                . In Singapore now with the Base APAC Circuit Accelerator.
+              </p>
+            </div>
+
+            <div
+              className="overflow-hidden rounded-2xl"
+              style={{
+                background: "white",
+                border: "1px solid rgba(5,5,255,0.10)",
+              }}
+            >
+              {nodes.map(({ country, coin, status }, i) => {
+                const isLive = status === "LIVE";
+                const isSecured = status === "SECURED";
+                return (
+                  <div
+                    key={country}
+                    className="flex items-center gap-4 px-5 py-4"
+                    style={{
+                      borderBottom: i < nodes.length - 1 ? "1px solid rgba(5,5,255,0.07)" : "none",
+                    }}
+                  >
+                    <span
+                      className="w-6 shrink-0 text-xs tabular-nums text-muted-foreground/40"
+                      style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="flex-1 text-sm font-semibold text-foreground">
+                      {country}
+                    </span>
+                    <span
+                      className="text-xs tabular-nums text-muted-foreground/60"
+                      style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                      {coin}
+                    </span>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.06em]"
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        ...(isLive
+                          ? { background: "rgba(5,5,255,0.10)", color: "#0505FF" }
+                          : isSecured
+                          ? { background: "rgba(5,5,255,0.06)", color: "#4444CC" }
+                          : { background: "rgba(0,0,0,0.04)", color: "#88889A" }),
+                      }}
+                    >
+                      {status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -366,69 +488,62 @@ export default async function LandingPage() {
       <HomeRoadmap items={roadmap} />
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+      <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
         <div
-          className="relative overflow-hidden rounded-3xl px-8 py-10 sm:px-12 sm:py-12"
-          style={{ background: "#0000FF" }}
+          className="relative overflow-hidden rounded-3xl px-8 py-12 sm:px-14 sm:py-14"
+          style={{
+            background: "linear-gradient(135deg, #0505FF 0%, #2828FF 100%)",
+            boxShadow: "0 24px 80px rgba(5,5,255,0.22)",
+          }}
         >
+          {/* Dot grid texture */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-20"
+            className="pointer-events-none absolute inset-0 opacity-10"
             style={{
-              backgroundImage:
-                "radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
+              backgroundImage: "radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
             }}
           />
+          {/* Soft top-right glow */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full blur-3xl opacity-20"
+            style={{ background: "white" }}
           />
 
-          <div className="relative flex flex-col gap-8 sm:flex-row sm:items-center">
-            <div className="flex-1">
-              <p
-                className="mb-2 text-xs font-bold tracking-widest text-white/60"
-                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.14em" }}
+          <div className="relative">
+            <p
+              className="mb-3 text-xs font-bold tracking-[0.18em] text-white/40"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              ONE ACTION · ONE WIN
+            </p>
+            <h2 className="font-display mb-4 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+              The bank that lives in your texts.
+            </h2>
+            <p className="mb-8 max-w-lg text-white/65 leading-relaxed">
+              Text a number. Money moves. Arrives as cash in their bank account.
+              No app, no wallet, no seed phrase.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href={IMESSAGE_HREF}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start rounded-full bg-white px-7 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
               >
-                ONE ACTION · ONE WIN
-              </p>
-              <h2 className="font-display mb-3 text-3xl font-semibold tracking-normal text-white sm:text-4xl">
-                Come build the bank that lives in your texts.
-              </h2>
-              <p className="mb-5 max-w-md text-white/75">
-                Fund with Apple Pay, send USDC in a text, earn yield automatically —
-                all on Base.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href={IMESSAGE_HREF}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-white px-6 text-sm font-semibold text-primary shadow-lg transition-all hover:brightness-95 active:scale-[0.97]"
-                >
-                  Text
-                  <span className="font-mono">{SITE.imessagePhoneDisplay}</span>
-                </a>
-                <a
-                  href={SITE.metricsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start whitespace-nowrap rounded-full border border-white/30 px-6 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
-                >
-                  See live metrics
-                </a>
-              </div>
-            </div>
-
-            <div className="hidden shrink-0 sm:flex sm:items-center sm:justify-center">
-              {/* Full-blue eyes mark — same blue as the CTA so only the eyes read */}
-              <Image
-                src="/brand/mascot/mate-eyes-blue.png"
-                alt=""
-                width={140}
-                height={140}
-                className="select-none rounded-2xl"
-                draggable={false}
-              />
+                Text{" "}
+                <span style={{ fontFamily: "var(--font-mono)" }}>
+                  {SITE.imessagePhoneDisplay}
+                </span>
+              </a>
+              <a
+                href={SITE.metricsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2.5 self-start rounded-full border border-white/20 px-7 text-sm font-semibold text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+              >
+                See live metrics
+              </a>
             </div>
           </div>
         </div>

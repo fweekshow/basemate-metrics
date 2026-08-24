@@ -51,13 +51,13 @@ const cdpConfig = {
   ethereum: { createOnLogin: "smart" as const },
 };
 
-export function AppClient() {
+export function AppClient({ initialHasSession = false }: { initialHasSession?: boolean }) {
   if (UI_PREVIEW_CLIENT) {
     return <PreviewAuthGate />;
   }
   return (
     <CDPReactProvider config={cdpConfig}>
-      <AuthGate />
+      <AuthGate initialHasSession={initialHasSession} />
     </CDPReactProvider>
   );
 }
@@ -142,7 +142,7 @@ function PreviewAuthGate() {
 
 type AuthPhase = "checking" | "email" | "otp" | "linking" | "ready" | "error";
 
-function AuthGate() {
+function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }) {
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
   const { signInWithEmail } = useSignInWithEmail();
@@ -150,28 +150,38 @@ function AuthGate() {
   const { getAccessToken } = useGetAccessToken();
   const { signOut } = useSignOut();
 
-  const [phase, setPhase] = useState<AuthPhase>("checking");
+  // If the server already confirmed a session cookie, optimistically show the
+  // dashboard skeleton right away instead of starting in "checking". The
+  // profile fetch below will flip to "email" if the cookie turns out to be stale.
+  const [phase, setPhase] = useState<AuthPhase>(initialHasSession ? "ready" : "checking");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [flowId, setFlowId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // If a dashboard session cookie already exists, skip sign-in.
+  // Verify the session is still valid (cookie could be expired/revoked).
+  // Skip the network round-trip entirely when the server said there is no session.
   useEffect(() => {
+    if (!initialHasSession) {
+      // Server confirmed no session — go straight to sign-in without a fetch.
+      setPhase((p) => (p === "checking" ? (isSignedIn ? "linking" : "email") : p));
+      return;
+    }
     let cancelled = false;
     fetch("/api/app/profile", { cache: "no-store" })
       .then((res) => {
         if (cancelled) return;
         if (res.ok) setPhase("ready");
-        else setPhase((p) => (p === "checking" ? (isSignedIn ? "linking" : "email") : p));
+        else setPhase((p) => (p === "ready" || p === "checking" ? (isSignedIn ? "linking" : "email") : p));
       })
       .catch(() => {
-        if (!cancelled) setPhase((p) => (p === "checking" ? "email" : p));
+        if (!cancelled) setPhase((p) => (p === "ready" || p === "checking" ? "email" : p));
       });
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn]);
 
   const linkSession = useCallback(async () => {
@@ -264,6 +274,10 @@ function AuthGate() {
   }
 
   if (phase === "ready") return <Dashboard />;
+
+  // While we confirm a server-detected session cookie is still valid, show a
+  // skeleton that matches the Dashboard shell so the layout doesn't jump.
+  if (phase === "checking" && initialHasSession) return <DashboardSkeleton />;
 
   return (
     <div className="app-dashboard mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center gap-6 bg-background px-5 py-10 text-center">
@@ -371,6 +385,46 @@ function AuthGate() {
       >
         New here? Text Basemate to get started
       </a>
+    </div>
+  );
+}
+
+// ── Dashboard Skeleton ────────────────────────────────────────────────────────
+
+function Shimmer({ className }: { className?: string }) {
+  return (
+    <div className={`animate-pulse rounded-xl bg-muted/60 ${className ?? ""}`} />
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="app-dashboard relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-background">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md">
+        <MarkTile size={36} />
+        <Shimmer className="h-5 w-24" />
+      </header>
+      <main className="flex-1 px-4 pb-28 pt-4 space-y-4">
+        <Shimmer className="h-32 w-full" />
+        <div className="flex gap-3">
+          <Shimmer className="h-12 flex-1" />
+          <Shimmer className="h-12 flex-1" />
+        </div>
+        <Shimmer className="h-5 w-20 mt-6" />
+        <Shimmer className="h-16 w-full" />
+        <Shimmer className="h-16 w-full" />
+        <Shimmer className="h-16 w-full" />
+      </main>
+      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+        <div className="flex items-stretch justify-around px-1 py-1.5">
+          {["Home", "Activity", "Interest", "Contacts", "Agent"].map((label) => (
+            <div key={label} className="flex flex-1 flex-col items-center justify-center gap-1 py-2">
+              <Shimmer className="h-8 w-12 rounded-full" />
+              <Shimmer className="h-2.5 w-8 rounded" />
+            </div>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

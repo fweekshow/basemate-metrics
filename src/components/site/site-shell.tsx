@@ -7,8 +7,7 @@ import { SITE } from "@/lib/site";
 // Pay + wallet flows are link-only (they need a session token), so they aren't
 // nav items. The logo links home, so Home isn't a nav item either.
 const nav = [
-  { href: "/relay", label: "Relay", external: false },
-  { href: "/landing", label: "Home", external: false },
+  { href: "/data-room", label: "Data Room", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
 ] as const;
 
@@ -85,11 +84,8 @@ export function SiteShell({
             >
               Download Base App
             </a>
-            <Link href="/brand" className="py-2 hover:text-foreground transition-colors">
-              Brand
-            </Link>
-            <Link href="/relay" className="py-2 hover:text-foreground transition-colors">
-              Relay
+            <Link href="/data-room" className="py-2 hover:text-foreground transition-colors">
+              Data Room
             </Link>
             <Link href="/messaging" className="py-2 hover:text-foreground transition-colors">
               Messaging
