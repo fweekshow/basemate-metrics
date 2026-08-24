@@ -597,24 +597,49 @@ function Dashboard() {
 }
 
 const apiCache = new Map<string, unknown>();
+const API_STORAGE_PREFIX = "bm-api:";
+
+function readPersisted<T>(path: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(API_STORAGE_PREFIX + path);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePersisted(path: string, data: unknown) {
+  try {
+    sessionStorage.setItem(API_STORAGE_PREFIX + path, JSON.stringify(data));
+  } catch {
+    // ignore quota / private mode
+  }
+}
 
 function invalidateApi(path: string) {
   apiCache.delete(path);
+  try {
+    sessionStorage.removeItem(API_STORAGE_PREFIX + path);
+  } catch {
+    // ignore
+  }
 }
 
 function useApi<T>(path: string): { data: T | null; loading: boolean; error: string | null; reload: () => void } {
-  const cached = apiCache.get(path) as T | undefined;
+  const cached = (apiCache.get(path) as T | undefined) ?? readPersisted<T>(path) ?? undefined;
   const [data, setData] = useState<T | null>(cached ?? null);
   const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
   const reload = useCallback(() => {
-    const hasCached = apiCache.has(path);
+    const hasCached = apiCache.has(path) || Boolean(readPersisted(path));
     if (!hasCached) setLoading(true);
     fetch(path, { cache: "no-store" })
       .then(async (res) => {
         const body = await res.json();
         if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
         apiCache.set(path, body);
+        writePersisted(path, body);
         setData(body as T);
         setError(null);
       })
@@ -783,11 +808,13 @@ function TokenIcon({
 }
 
 function HomeTab({ onSend }: { onSend: () => void }) {
-  const { data, loading } = useApi<PortfolioPayload>("/api/app/portfolio");
+  const { data, loading, error, reload } = useApi<PortfolioPayload>("/api/app/portfolio");
   const total = data?.totals?.totalUsd ?? 0;
   const stakingUsd = data?.totals?.stakingUsd ?? 0;
   const coins = data?.coins ?? [];
   const staking = data?.staking ?? [];
+  const waiting = loading && !data;
+  const empty = !waiting && !error && coins.length === 0 && staking.length === 0;
 
   return (
     <>
@@ -795,11 +822,11 @@ function HomeTab({ onSend }: { onSend: () => void }) {
         <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Total balance
         </p>
-        {loading ? (
+        {waiting ? (
           <Skeleton className="mt-3 h-12 w-40 rounded-xl" />
         ) : (
           <p className="mt-2 font-app-display text-5xl font-bold leading-none tracking-tight tabular-nums">
-            {usd(total)}
+            {usd(data ? total : 0)}
           </p>
         )}
         {stakingUsd > 0 && (
@@ -821,10 +848,23 @@ function HomeTab({ onSend }: { onSend: () => void }) {
       </section>
 
       <SectionLabel>Holdings</SectionLabel>
-      {loading ? (
+      {waiting ? (
         <ListSkeleton rows={3} />
-      ) : coins.length === 0 && staking.length === 0 ? (
-        <Empty text="No tokens yet — add funds to get started." />
+      ) : error && !data ? (
+        <Empty
+          text="Couldn't load your wallet just now. Your funds are still there."
+          action={
+            <button
+              type="button"
+              onClick={reload}
+              className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Try again
+            </button>
+          }
+        />
+      ) : empty ? (
+        <Empty text="No tokens yet. Add funds to get started." />
       ) : (
         <Stack>
           {coins.map((c, i) => (

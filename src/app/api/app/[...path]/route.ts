@@ -8,6 +8,16 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
 
+const GET_CACHE_TTL_MS = 60_000;
+const getCache = new Map<string, { expires: number; status: number; data: unknown }>();
+
+function readGetCache(key: string) {
+  const hit = getCache.get(key);
+  if (!hit) return null;
+  if (hit.expires <= Date.now()) return { ...hit, stale: true as const };
+  return { ...hit, stale: false as const };
+}
+
 /**
  * Authenticated proxy for the dashboard. Reads the httpOnly session cookie and
  * forwards to the agent with user+token injected, so the token never reaches
@@ -51,6 +61,17 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
     if (k !== "user" && k !== "token") endpoint.searchParams.set(k, v);
   });
 
+  const cacheKey = method === "GET" ? `${session.user}:${corePath(segments)}:${endpoint.search}` : null;
+  if (cacheKey) {
+    const fresh = readGetCache(cacheKey);
+    if (fresh && !fresh.stale) {
+      return NextResponse.json(fresh.data, {
+        status: fresh.status,
+        headers: { "cache-control": "no-store" },
+      });
+    }
+  }
+
   try {
     const endUserIp = clientIpFromRequest(req);
     const init: RequestInit = {
@@ -63,13 +84,22 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
       init.headers = { ...init.headers, "content-type": "application/json" };
       init.body = JSON.stringify({ ...body, user: session.user, token: session.token });
     }
-    const res = await fetch(endpoint, {
-      ...init,
-      signal: AbortSignal.timeout(8_000),
-    });
+    const res = await fetch(endpoint, init);
     const data = await res.json().catch(() => ({}));
+    if (cacheKey && res.ok) {
+      getCache.set(cacheKey, { expires: Date.now() + GET_CACHE_TTL_MS, status: res.status, data });
+    }
     return NextResponse.json(data, { status: res.status, headers: { "cache-control": "no-store" } });
   } catch (err) {
+    if (cacheKey) {
+      const stale = readGetCache(cacheKey);
+      if (stale) {
+        return NextResponse.json(stale.data, {
+          status: stale.status,
+          headers: { "cache-control": "no-store" },
+        });
+      }
+    }
     return NextResponse.json(
       { error: "Couldn't reach the dashboard API.", detail: err instanceof Error ? err.message : String(err) },
       { status: 503 },
