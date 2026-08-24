@@ -160,29 +160,42 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
   const [flowId, setFlowId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Verify the session is still valid (cookie could be expired/revoked).
-  // Skip the network round-trip entirely when the server said there is no session.
+  const [cdpHydrated, setCdpHydrated] = useState(false);
   useEffect(() => {
-    if (!initialHasSession) {
-      // Server confirmed no session — go straight to sign-in without a fetch.
-      setPhase((p) => (p === "checking" ? (isSignedIn ? "linking" : "email") : p));
-      return;
-    }
+    const t = window.setTimeout(() => setCdpHydrated(true), 500);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  // Verify the session is still valid (cookie could be expired/revoked). Always
+  // hit profile — the cookie may exist even when SSR didn't see it. Wait for CDP
+  // to hydrate before showing the email form so an existing CDP session can relink.
+  useEffect(() => {
     let cancelled = false;
     fetch("/api/app/profile", { cache: "no-store" })
       .then((res) => {
         if (cancelled) return;
-        if (res.ok) setPhase("ready");
-        else setPhase((p) => (p === "ready" || p === "checking" ? (isSignedIn ? "linking" : "email") : p));
+        if (res.ok) {
+          setPhase("ready");
+          return;
+        }
+        if (isSignedIn) {
+          setPhase((p) => (p === "checking" || p === "ready" ? "linking" : p));
+        } else if (cdpHydrated) {
+          setPhase((p) => (p === "checking" || p === "ready" ? "email" : p));
+        }
       })
       .catch(() => {
-        if (!cancelled) setPhase((p) => (p === "ready" || p === "checking" ? "email" : p));
+        if (cancelled) return;
+        if (isSignedIn) {
+          setPhase((p) => (p === "checking" || p === "ready" ? "linking" : p));
+        } else if (cdpHydrated) {
+          setPhase((p) => (p === "checking" || p === "ready" ? "email" : p));
+        }
       });
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn]);
+  }, [isSignedIn, cdpHydrated]);
 
   const linkSession = useCallback(async () => {
     if (!currentUser) return;

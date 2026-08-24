@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { agentHost, setAppSession, clearAppSession } from "@/lib/app-session";
+import {
+  agentHost,
+  applyAppSessionCookie,
+  clearAppSessionCookie,
+} from "@/lib/app-session";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,8 +37,10 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       return NextResponse.json({ error: data?.error ?? "Sign-in failed." }, { status: res.status });
     }
-    await setAppSession({ user: data.user, token: data.token, address: data.address });
-    return NextResponse.json({ ok: true, address: data.address });
+    const session = { user: data.user, token: data.token, address: data.address };
+    const res = NextResponse.json({ ok: true, address: data.address });
+    applyAppSessionCookie(res, session);
+    return res;
   } catch (err) {
     return NextResponse.json(
       { error: "Couldn't reach the sign-in service.", detail: err instanceof Error ? err.message : String(err) },
@@ -44,6 +50,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
-  await clearAppSession();
-  return NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true });
+  clearAppSessionCookie(res);
+  return res;
 }
