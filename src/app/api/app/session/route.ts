@@ -27,15 +27,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(new URL("/api/agent/app/session", host.replace(/\/$/, "")), {
+    const agentRes = await fetch(new URL("/api/agent/app/session", host.replace(/\/$/, "")), {
       method: "POST",
       cache: "no-store",
       headers: { "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify({ accessToken }),
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json({ error: data?.error ?? "Sign-in failed." }, { status: res.status });
+    const data = await agentRes.json().catch(() => ({}));
+    if (!agentRes.ok) {
+      return NextResponse.json({ error: data?.error ?? "Sign-in failed." }, { status: agentRes.status });
     }
     const session = { user: data.user, token: data.token, address: data.address };
     const res = NextResponse.json({ ok: true, address: data.address });
