@@ -16,28 +16,28 @@ export const DECKS = {
   main: {
     id: "main",
     pdfUrl: "/deck.pdf",
-    downloadName: "Mate-seed-deck-v1.4.pdf",
-    title: "Mate — Seed Deck",
-    toolbarLabel: "Seed Deck",
+    downloadName: "Stablemate-Pre-Seed-Deck.pdf",
+    title: "Stablemate — Pre-Seed Deck",
+    toolbarLabel: "Pre-Seed Deck",
     description:
-      "Money that lives in your texts. $1M seed to light up the first five country nodes on the messaging network for stablecoins.",
+      "Money that lives in your texts. $500k pre-seed to bring the first node online — Singapore ⇄ Indonesia, on the messaging network for stablecoins.",
     path: "/deck",
   },
   onepager: {
     id: "onepager",
     pdfUrl: "/onepager.pdf",
-    downloadName: "Mate-Onepager-v1.3.pdf",
-    title: "Mate — One-Pager",
+    downloadName: "Stablemate-Onepager-v1.2.pdf",
+    title: "Stablemate — One-Pager",
     toolbarLabel: "One-Pager",
     description:
-      "One-page overview of Mate — the messaging network for stablecoins. Seed · 2026.",
+      "One-page overview of Stablemate — the messaging network for stablecoins. Pre-seed · 2026.",
     path: "/deck/onepager",
   },
   update: {
     id: "update",
     pdfUrl: "/investor-update.pdf",
-    downloadName: "Mate-Investor-Update-v1.3.pdf",
-    title: "Mate — Investor Update",
+    downloadName: "Stablemate-Investor-Update-Aug-2026.pdf",
+    title: "Stablemate — Investor Update",
     toolbarLabel: "Investor Update",
     description:
       "August 2026 investor update — traction, the decision, the raise, and what we need.",

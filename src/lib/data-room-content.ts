@@ -35,7 +35,7 @@ function mapFromStatic(): DataRoomInvestorView {
     traction: INVESTOR.traction.map((t) => ({ value: t.value, label: t.label })),
     loisSigned: 0,
     loisPending: 0,
-    loisTarget: 10,
+    loisTarget: 5,
   };
 }
 
@@ -117,6 +117,6 @@ export async function getDataRoomInvestorView(): Promise<DataRoomInvestorView> {
     ],
     loisSigned: parseInt(pick(map, "lois_signed", "0"), 10) || 0,
     loisPending: parseInt(pick(map, "lois_pending", "0"), 10) || 0,
-    loisTarget: parseInt(pick(map, "lois_target", "10"), 10) || 10,
+    loisTarget: parseInt(pick(map, "lois_target", "5"), 10) || 5,
   };
 }
