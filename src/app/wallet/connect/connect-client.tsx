@@ -41,7 +41,7 @@ export function ConnectClient({ sessionToken }: { sessionToken: string }) {
   );
 }
 
-type Phase = "loading" | "email" | "otp" | "finishing" | "error";
+type Phase = "loading" | "email" | "otp" | "finishing" | "done" | "error";
 
 function ConnectInner({ sessionToken }: { sessionToken: string }) {
   const router = useRouter();
@@ -156,7 +156,7 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || "Could not finish setup.");
-      router.replace("/landing");
+      setPhase("done");
     } catch (err) {
       finishingRef.current = false; // allow retry
       setPhase("error");
@@ -185,6 +185,19 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
         setMessage("Your wallet is taking longer than expected to set up. Tap the link again to retry.");
       }
     }, 45_000);
+    return () => clearTimeout(t);
+  }, [phase]);
+
+  // Guard: if the CDP SDK never fires (blocked by ad blocker or network),
+  // the page stays on "loading" forever. Time out and show a helpful message.
+  useEffect(() => {
+    if (phase !== "loading") return;
+    const t = setTimeout(() => {
+      setPhase("error");
+      setMessage(
+        "Couldn't reach Coinbase's sign-in service. If you have an ad blocker or privacy extension, try pausing it for this page and tap the link again.",
+      );
+    }, 12_000);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -219,10 +232,21 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
 
   return (
     <Shell>
-      {phase === "loading" ? (
+      {phase === "done" ? (
+        <StatusBlock
+          icon="ok"
+          title="You're connected!"
+          message="Head back to iMessage — Basemate just sent you a confirmation. You're ready to send."
+        />
+      ) : phase === "loading" ? (
         <StatusBlock icon="spin" message="Loading…" />
       ) : phase === "error" ? (
-        <StatusBlock icon="error" message={message} />
+        <StatusBlock
+          icon="error"
+          title="Something went wrong"
+          message={message}
+          hint="Try pausing any ad blockers or privacy extensions and reopen the link from iMessage. If it still doesn't work, reply to Basemate and we'll help."
+        />
       ) : phase === "finishing" ? (
         <StatusBlock icon="spin" message="Setting up your account…" />
       ) : phase === "otp" ? (
@@ -290,10 +314,12 @@ function StatusBlock({
   icon,
   title,
   message,
+  hint,
 }: {
   icon: "spin" | "ok" | "error";
   title?: string;
   message: string;
+  hint?: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-3">
@@ -306,6 +332,7 @@ function StatusBlock({
       )}
       {title ? <p className="font-semibold">{title}</p> : null}
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
+      {hint ? <p className="max-w-sm text-xs text-muted-foreground/70 mt-1">{hint}</p> : null}
     </div>
   );
 }

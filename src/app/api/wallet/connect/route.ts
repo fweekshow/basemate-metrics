@@ -169,6 +169,17 @@ export async function POST(req: NextRequest) {
       );
       await client.query(`UPDATE base_account_setup_sessions SET completed_at = NOW() WHERE token = $1`, [token]);
       await client.query("COMMIT");
+
+      // Fire-and-forget: notify the user in iMessage that they're connected.
+      const agentHost = process.env.AGENT_API_HOST?.trim().replace(/\/$/, "");
+      if (agentHost) {
+        fetch(new URL("/api/agent/wallet/connected-notify", agentHost).toString(), {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token }),
+        }).catch(() => undefined);
+      }
+
       return NextResponse.json({ ok: true, address });
     } catch (err) {
       await client.query("ROLLBACK").catch(() => undefined);
