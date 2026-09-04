@@ -1782,7 +1782,11 @@ function ContactsTab({ onSendTo }: { onSendTo: (prefill: SendPrefill) => void })
 interface Prefs {
   payMode: "manual" | "quick";
   autoSendLimitUsd: number;
+  swearJarOptIn?: boolean;
 }
+
+const ALEXANDER_IMAGE_URL =
+  "https://res.cloudinary.com/ixvgxhls/image/upload/v1788503460/images-2.jpg";
 
 function AgentSettingsTab() {
   const preview = useAppPreviewMode();
@@ -1803,6 +1807,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
   const [saving, setSaving] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [limit, setLimit] = useState<string>("");
+  const [jarError, setJarError] = useState<string | null>(null);
 
   useEffect(() => {
     if (data) setLimit(String(data.autoSendLimitUsd));
@@ -1810,12 +1815,19 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
 
   async function save(next: Partial<Prefs>) {
     setSaving(true);
+    setJarError(null);
     try {
-      await fetch("/api/app/preferences", {
+      const res = await fetch("/api/app/preferences", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(next),
       });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        if (next.swearJarOptIn === true) {
+          setJarError(body?.error ?? "reconnect first");
+        }
+      }
       reload();
     } finally {
       setSaving(false);
@@ -1824,6 +1836,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
 
   if (loading) return <ListSkeleton rows={3} />;
   const mode = data?.payMode ?? "manual";
+  const jarOn = data?.swearJarOptIn === true;
 
   return (
     <>
@@ -1908,6 +1921,45 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
               </button>
             </div>
           </div>
+        )}
+      </Row>
+
+      <Row>
+        <div className="flex items-center gap-3">
+          <img
+            src={ALEXANDER_IMAGE_URL}
+            alt="Alexander"
+            className="h-12 w-12 rounded-full object-cover"
+          />
+          <div>
+            <p className="text-sm font-semibold">Alexander</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">swear jar</p>
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          when a family group summons Alexander, he takes $1 USDC when you swear. needs auto-send
+          authorization active.
+        </p>
+        <div className="mt-3 flex rounded-full bg-secondary p-1">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => save({ swearJarOptIn: false })}
+            className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold transition ${!jarOn ? "bg-card text-foreground shadow-[var(--shadow-card)]" : "text-muted-foreground"}`}
+          >
+            Off
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => save({ swearJarOptIn: true })}
+            className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold transition ${jarOn ? "bg-card text-foreground shadow-[var(--shadow-card)]" : "text-muted-foreground"}`}
+          >
+            On
+          </button>
+        </div>
+        {jarError && (
+          <p className="mt-2 text-xs font-semibold text-destructive">{jarError}</p>
         )}
       </Row>
 
