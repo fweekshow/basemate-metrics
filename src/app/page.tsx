@@ -5,9 +5,9 @@ import { ImessageGate } from "@/components/site/imessage-gate";
 import { getAppSession } from "@/lib/app-session";
 
 export const metadata: Metadata = {
-  title: "Basemate",
+  title: "Stablemate",
   description:
-    "Basemate on iMessage. Send Money in your Texts. Text +1 (628) 316-5638 to start.",
+    "Stablemate on iMessage. Send Money in your Texts. Text +1 (628) 316-5638 to start.",
 };
 
 export const dynamic = "force-dynamic";

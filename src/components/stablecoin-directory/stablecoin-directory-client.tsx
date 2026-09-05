@@ -99,7 +99,7 @@ export function StablecoinDirectoryClient({
       <div className="hdr">
         <div className="eye">
           <div className="eye-dot" />
-          Basemate Partnerships · Global Stablecoin Directory · Notion-synced
+          Stablemate Partnerships · Global Stablecoin Directory · Notion-synced
         </div>
         <h1>
           Every Country.
@@ -109,7 +109,7 @@ export function StablecoinDirectoryClient({
           On Base.
         </h1>
         <p className="sub">
-          The Basemate model: each country gets a phone number. That phone number runs on the
+          The Stablemate model: each country gets a phone number. That phone number runs on the
           local-currency stablecoin deployed on Base. Edit issuer pipeline stages in Notion → sync →
           this directory updates.
         </p>
@@ -196,7 +196,7 @@ export function StablecoinDirectoryClient({
 
       <div className="ftr">
         <div>
-          <div className="fb">Basemate</div>
+          <div className="fb">Stablemate</div>
           <div className="fs">mateo@basemate.app · Base Batches 002 · money in chat</div>
         </div>
         <div className="fsrc">

@@ -4,8 +4,8 @@ import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
 import { SITE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Terms of Service · Basemate",
-  description: "Terms for using Basemate websites and messaging services.",
+  title: "Terms of Service · Stablemate",
+  description: "Terms for using Stablemate websites and messaging services.",
 };
 
 export default function TermsPage() {
@@ -14,11 +14,11 @@ export default function TermsPage() {
   return (
     <LegalDoc
       title="Terms of Service"
-      description={`Effective ${effective}. By using ${SITE.baseUrl} or messaging Basemate, you agree to these terms.`}
+      description={`Effective ${effective}. By using ${SITE.baseUrl} or messaging Stablemate, you agree to these terms.`}
     >
       <LegalSection heading="The service">
         <p>
-          Basemate helps you send, receive, earn, trade, and save using conversational
+          Stablemate helps you send, receive, earn, trade, and save using conversational
           interfaces and blockchain settlement on Base. Features vary by region,
           carrier, and product stage. We may change or discontinue features with
           notice where reasonable.
@@ -43,7 +43,7 @@ export default function TermsPage() {
 
       <LegalSection heading="Acceptable use">
         <p>
-          Do not use Basemate for fraud, money laundering, sanctions evasion, spam,
+          Do not use Stablemate for fraud, money laundering, sanctions evasion, spam,
           or harassment. We may suspend access that risks users, partners, or
           compliance.
         </p>
@@ -51,7 +51,7 @@ export default function TermsPage() {
 
       <LegalSection heading="Messaging (SMS, iMessage, WhatsApp)">
         <p>
-          Basemate is a chat-first service. You opt in by messaging us from your
+          Stablemate is a chat-first service. You opt in by messaging us from your
           phone number, as described on our{" "}
           <a href={`${SITE_URL}/messaging`}>Messaging program</a> page. We may send
           automated service messages from {SITE.smsTollFreeDisplay} (SMS) or our
@@ -80,7 +80,7 @@ export default function TermsPage() {
 
       <LegalSection heading="Disclaimers">
         <p>
-          Basemate is provided &quot;as is&quot; without warranties of uninterrupted
+          Stablemate is provided &quot;as is&quot; without warranties of uninterrupted
           or error-free operation. We are not responsible for carrier or third-party
           failures outside our reasonable control.
         </p>
@@ -88,7 +88,7 @@ export default function TermsPage() {
 
       <LegalSection heading="Limitation of liability">
         <p>
-          To the maximum extent permitted by law, Basemate and its affiliates are not
+          To the maximum extent permitted by law, Stablemate and its affiliates are not
           liable for indirect, incidental, or consequential damages. Our total
           liability for any claim relating to the service is limited to the greater
           of amounts you paid us for the service in the twelve months before the

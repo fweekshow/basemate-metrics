@@ -33,7 +33,7 @@ const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
 const cdpConfig = {
   projectId: PROJECT_ID,
-  appName: "Basemate",
+  appName: "Stablemate",
   appLogoUrl: LOGO_URL,
   ethereum: { createOnLogin: "smart" as const },
 };
@@ -117,7 +117,7 @@ function PaySignInner({ token }: { token: string }) {
       const raw = (await getAccessToken()) as unknown;
       const accessToken =
         typeof raw === "string" ? raw : (raw as { accessToken?: string })?.accessToken;
-      if (!accessToken) throw new Error("Could not read your Basemate session.");
+      if (!accessToken) throw new Error("Could not read your Stablemate session.");
       const res = await fetch("/api/app/session", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -222,7 +222,7 @@ function PaySignInner({ token }: { token: string }) {
           <div className="mt-5 w-full">
             <h1 className="font-display text-xl font-bold tracking-tight">Verify it is you</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sign in with the email connected to your Basemate Account.
+              Sign in with the email connected to your Stablemate Account.
             </p>
             {authPhase === "linking" ? (
               <div className="mt-5 flex flex-col items-center gap-3">
@@ -296,7 +296,7 @@ function PaySignInner({ token }: { token: string }) {
           <div className="mt-5 flex flex-col items-center gap-3">
             <CheckCircle2 className="h-9 w-9 text-up" />
             <p className="font-semibold">Payment sent</p>
-            <p className="text-sm text-muted-foreground">You can close this page and head back to Basemate.</p>
+            <p className="text-sm text-muted-foreground">You can close this page and head back to Stablemate.</p>
           </div>
         ) : (
           <div className="w-full">
@@ -326,7 +326,7 @@ function PaySignInner({ token }: { token: string }) {
             </button>
 
             <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Review the details above, then tap Confirm. Basemate signs from your embedded wallet and covers the gas — no wallet popups.
+              Review the details above, then tap Confirm. Stablemate signs from your embedded wallet and covers the gas — no wallet popups.
             </p>
           </div>
         )}

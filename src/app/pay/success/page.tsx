@@ -5,11 +5,11 @@ import { SITE } from "@/lib/site";
 import { PaySuccessClient } from "@/app/pay/success/pay-success-client";
 
 export const metadata: Metadata = {
-  title: "Payment Complete · Basemate",
-  description: "Your Basemate Account funding payment was submitted successfully.",
+  title: "Payment Complete · Stablemate",
+  description: "Your Stablemate Account funding payment was submitted successfully.",
   openGraph: {
-    title: "Payment Complete · Basemate",
-    description: "Your Basemate Account funding payment was submitted successfully.",
+    title: "Payment Complete · Stablemate",
+    description: "Your Stablemate Account funding payment was submitted successfully.",
     type: "website",
     images: [SITE.pfp],
   },

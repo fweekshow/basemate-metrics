@@ -5,9 +5,9 @@ import { appUiPreviewServerEnabled } from "@/lib/app-ui-preview";
 import { AppClient } from "./app-client";
 
 export const metadata: Metadata = {
-  title: "Basemate",
+  title: "Stablemate",
   description:
-    "Manage your Basemate account — balances, activity, earn, sends, and settings. Sign in after you've set up in iMessage.",
+    "Manage your Stablemate account — balances, activity, earn, sends, and settings. Sign in after you've set up in iMessage.",
 };
 
 export const dynamic = "force-dynamic";

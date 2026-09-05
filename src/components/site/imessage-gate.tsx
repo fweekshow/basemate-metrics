@@ -4,7 +4,7 @@ import Link from "next/link";
 import { IMESSAGE_HREF, SITE } from "@/lib/site";
 
 /**
- * Companion gate for anonymous visitors at /. Basemate lives in iMessage —
+ * Companion gate for anonymous visitors at /. Stablemate lives in iMessage —
  * web is the account manager for people who already set up.
  */
 export function ImessageGate() {
@@ -35,7 +35,7 @@ export function ImessageGate() {
           />
           <div className="space-y-2">
             <h1 className="font-display text-3xl font-semibold tracking-normal text-foreground sm:text-4xl">
-              Basemate on iMessage
+              Stablemate on iMessage
             </h1>
             <p className="mx-auto max-w-sm text-base leading-relaxed text-muted-foreground sm:text-lg">
               Send Money in your Texts
@@ -66,7 +66,7 @@ export function ImessageGate() {
             href="/landing"
             className="text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            What is Basemate?
+            What is Stablemate?
           </Link>
         </div>
       </div>

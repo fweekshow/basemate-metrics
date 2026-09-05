@@ -28,7 +28,7 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
   "onramp_api.polling_start": { tone: "pending", message: "Confirming your purchase..." },
   "onramp_api.polling_success": {
     tone: "success",
-    message: "Done. Your USDC is on its way to your Basemate Account.",
+    message: "Done. Your USDC is on its way to your Stablemate Account.",
   },
   "onramp_api.cancel": { tone: "error", message: "Payment cancelled." },
 };

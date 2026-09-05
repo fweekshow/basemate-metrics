@@ -39,12 +39,12 @@ export function PaySuccessClient({ sessionToken }: { sessionToken?: string }) {
         You&apos;re funded
       </h1>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-        Your USDC purchase went through. Close this page and head back to your Basemate chat — your
+        Your USDC purchase went through. Close this page and head back to your Stablemate chat — your
         balance updates in a moment.
       </p>
       <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
         <Button render={<Link href="/landing" />} nativeButton={false} size="lg" className="rounded-full">
-          Back to Basemate
+          Back to Stablemate
         </Button>
         <Button
           render={<a href={SITE.appUrl} target="_blank" rel="noopener noreferrer" />}

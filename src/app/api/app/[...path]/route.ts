@@ -22,7 +22,7 @@ function readGetCache(key: string) {
  * Authenticated proxy for the dashboard. Reads the httpOnly session cookie and
  * forwards to the agent with user+token injected, so the token never reaches
  * client JS. Everything maps to /api/app/<path> — including `portfolio`, which
- * uses the dashboard-scoped endpoint (Basemate embedded wallet only), distinct
+ * uses the dashboard-scoped endpoint (Stablemate embedded wallet only), distinct
  * from the /api/agent/portfolio magic link that shows all linked wallets.
  */
 function corePath(segments: string[]): string {

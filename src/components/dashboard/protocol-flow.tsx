@@ -2,7 +2,7 @@ import { ArrowDownUp, Landmark, Layers, Rocket, TrendingUp } from "lucide-react"
 import type { AnalyticsPayload, ProtocolFlowMetric } from "@/lib/types";
 import { compact, full, usdc } from "@/lib/format";
 import { Panel } from "./primitives";
-import { BasemateWalletsPanel } from "./basemate-wallets";
+import { StablemateWalletsPanel } from "./basemate-wallets";
 import { WorldCupBettingPanel } from "./world-cup-betting";
 
 function MiniStat({
@@ -181,10 +181,10 @@ export function ProtocolFlowBand({ data }: { data: AnalyticsPayload }) {
           </div>
         </Panel>
         <Panel
-          title="Basemate Wallets"
+          title="Stablemate Wallets"
           subtitle="server automations · not in user Avantis above"
         >
-          <BasemateWalletsPanel data={data} />
+          <StablemateWalletsPanel data={data} />
         </Panel>
       </div>
     </div>
@@ -206,7 +206,7 @@ export function ProtocolFlowPlaceholder() {
           <Rocket className="size-4" />
         </div>
         <p className="font-mono text-[12px] text-muted-foreground">
-          Moonwell · Morpho · Aave · Avantis · Swaps · World Cup · Bankr · Basemate Wallets
+          Moonwell · Morpho · Aave · Avantis · Swaps · World Cup · Bankr · Stablemate Wallets
           metrics appear after the agent API ships protocolFlow in
           /api/agent/analytics
         </p>

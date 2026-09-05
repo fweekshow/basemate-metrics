@@ -97,10 +97,10 @@ export async function GET(req: NextRequest) {
     );
     const session = result.rows[0];
     if (!session || new Date(session.expires_at) < new Date()) {
-      return NextResponse.json({ error: "This link has expired. Ask Basemate for a new one." }, { status: 404 });
+      return NextResponse.json({ error: "This link has expired. Ask Stablemate for a new one." }, { status: 404 });
     }
     if (session.completed_at) {
-      return NextResponse.json({ error: "This link was already used. Ask Basemate for a new one." }, { status: 409 });
+      return NextResponse.json({ error: "This link was already used. Ask Stablemate for a new one." }, { status: 409 });
     }
     return NextResponse.json({ ok: true }, { headers: { "cache-control": "no-store" } });
   } catch (err) {
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/wallet/connect — persist the embedded wallet + delegation for the
- * session's sender and set their signing preference to the Basemate account.
+ * session's sender and set their signing preference to the Stablemate account.
  * Body: { token, userId, address, delegationId, expiresAt }.
  */
 export async function POST(req: NextRequest) {
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
       const session = result.rows[0];
       if (!session || new Date(session.expires_at) < new Date()) {
         await client.query("ROLLBACK");
-        return NextResponse.json({ error: "This link has expired. Ask Basemate for a new one." }, { status: 404 });
+        return NextResponse.json({ error: "This link has expired. Ask Stablemate for a new one." }, { status: 404 });
       }
       if (session.completed_at) {
         await client.query("ROLLBACK");
@@ -189,6 +189,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[wallet/connect] failed to persist connection:", err);
-    return NextResponse.json({ error: "Could not connect your Basemate account." }, { status: 503 });
+    return NextResponse.json({ error: "Could not connect your Stablemate account." }, { status: 503 });
   }
 }

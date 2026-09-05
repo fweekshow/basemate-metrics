@@ -131,7 +131,7 @@ export function OfframpFlow({
       const approvalUrl = payload.approvalUrl ?? payload.session?.approvalUrl;
       const next = payload.session ?? (payload as OfframpSession);
       if (approvalUrl) {
-        throw new Error("This cash-out does not use a Basemate embedded wallet.");
+        throw new Error("This cash-out does not use a Stablemate embedded wallet.");
       }
       if (next?.status && next.status !== "transaction_ready") {
         setSession(next);
@@ -173,7 +173,7 @@ export function OfframpFlow({
         title={session.status === "expired" ? "Cash out expired" : "Cash out needs attention"}
         body={
           session.status === "manual_review"
-            ? "The transfer status is uncertain. Basemate will not retry it automatically."
+            ? "The transfer status is uncertain. Stablemate will not retry it automatically."
             : "No additional transfer will be submitted. Start a new cash-out from your chat."
         }
         tone="error"
@@ -186,7 +186,7 @@ export function OfframpFlow({
     return (
       <ActionCard
         title={`Cash out ${session.requestedAmount} USDC`}
-        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Basemate Account."
+        body="Coinbase will show available bank, PayPal, or Coinbase cash-out methods. After confirming there, you'll approve one USDC transfer from your Stablemate Account."
         button="Continue to Coinbase"
         pending={action === "launch"}
         onClick={launch}
@@ -222,7 +222,7 @@ export function OfframpFlow({
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
             {action === "approval" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Confirm with Basemate
+            Confirm with Stablemate
           </button>
           {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
         </div>

@@ -36,7 +36,7 @@ export const BASEMATE_SPLASH_IMAGE = basemateSplashImage(SITE.baseUrl);
 export const BASEMATE_ICON_IMAGE = basemateIconImage(SITE.baseUrl);
 
 const SPLASH_BG = "#0A0A0A";
-/** Manifest / hosted mini app splash background (Basemate blue). */
+/** Manifest / hosted mini app splash background (Stablemate blue). */
 const MANIFEST_SPLASH_BG = "#0505FF";
 
 /** Signed for basemate.app (root). */
@@ -117,7 +117,7 @@ export function basemateEmbedMetadata(opts: {
   const origin = opts.origin ?? opts.url.replace(/\/$/, "");
   const image = opts.imageUrl ?? basemateOgImage(origin);
   const splashFallback = basemateSplashImage(origin);
-  const buttonTitle = opts.buttonTitle ?? "Open Basemate";
+  const buttonTitle = opts.buttonTitle ?? "Open Stablemate";
   const imageWidth = opts.imageWidth ?? 1200;
   const imageHeight = opts.imageHeight ?? 800;
   const fcOpts: FcEmbedOpts = {
@@ -177,13 +177,13 @@ export function basemateFarcasterManifest(origin: string = SITE.appUrl) {
       iconUrl: basemateIconImage(origin),
       homeUrl: origin,
       imageUrl: assetUrl(origin, "/image.png"),
-      buttonTitle: "Open Basemate",
+      buttonTitle: "Open Stablemate",
       splashImageUrl: assetUrl(origin, "/splash.png"),
       splashBackgroundColor: MANIFEST_SPLASH_BG,
       primaryCategory: "finance",
       tags: ["base", "trading", "agent", "perps"],
       subtitle: "Trade, Earn and Learn",
-      description: "Basemate",
+      description: "Stablemate",
       tagline: SITE.manifestTagline,
       ogTitle: SITE.name,
       ogDescription: SITE.manifestOgDescription,
