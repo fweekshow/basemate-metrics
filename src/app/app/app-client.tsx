@@ -1808,35 +1808,49 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
   const [signingOut, setSigningOut] = useState(false);
   const [limit, setLimit] = useState<string>("");
   const [jarError, setJarError] = useState<string | null>(null);
+  const [jarOptimistic, setJarOptimistic] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (data) setLimit(String(data.autoSendLimitUsd));
   }, [data]);
 
+  useEffect(() => {
+    // Clear optimistic override once server data catches up.
+    if (jarOptimistic == null || !data) return;
+    if (data.swearJarOptIn === jarOptimistic) setJarOptimistic(null);
+  }, [data, jarOptimistic]);
+
   async function save(next: Partial<Prefs>) {
     setSaving(true);
     setJarError(null);
+    if (typeof next.swearJarOptIn === "boolean") {
+      setJarOptimistic(next.swearJarOptIn);
+    }
     try {
       const res = await fetch("/api/app/preferences", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(next),
       });
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        if (next.swearJarOptIn === true) {
-          setJarError(body?.error ?? "reconnect first");
-        }
+        if (typeof next.swearJarOptIn === "boolean") setJarOptimistic(null);
+        setJarError(body?.error ?? `Couldn't save (${res.status})`);
+        return;
       }
+      invalidateApi("/api/app/preferences");
       reload();
+    } catch (err) {
+      if (typeof next.swearJarOptIn === "boolean") setJarOptimistic(null);
+      setJarError(err instanceof Error ? err.message : "Couldn't save");
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <ListSkeleton rows={3} />;
+  if (loading && !data) return <ListSkeleton rows={3} />;
   const mode = data?.payMode ?? "manual";
-  const jarOn = data?.swearJarOptIn === true;
+  const jarOn = jarOptimistic ?? data?.swearJarOptIn === true;
 
   return (
     <>
@@ -1969,8 +1983,16 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
         onClick={async () => {
           setSigningOut(true);
           try {
-            if (onSignOutCdp) await onSignOutCdp();
-            await fetch("/api/app/session", { method: "DELETE" });
+            // CDP client session is often already dead (401 refresh). Never
+            // let that block clearing the Basemate app session.
+            if (onSignOutCdp) {
+              try {
+                await onSignOutCdp();
+              } catch {
+                // ignore — app cookie logout below is what matters
+              }
+            }
+            await fetch("/api/app/session", { method: "DELETE" }).catch(() => {});
             window.location.reload();
           } finally {
             setSigningOut(false);
