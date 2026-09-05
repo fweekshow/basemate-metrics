@@ -63,8 +63,11 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
 
   // Portfolio balances already have a short-lived backend snapshot. Do not add
   // another proxy cache that can leave the website one refresh behind chat.
+  // Preferences must stay live too — caching them makes Agent Settings toggles
+  // (e.g. Alexander On/Off) appear stuck after POST + reload.
+  const pathKey = segments.join("/");
   const cacheKey =
-    method === "GET" && segments.join("/") !== "portfolio"
+    method === "GET" && pathKey !== "portfolio" && pathKey !== "preferences"
       ? `${session.user}:${corePath(segments)}:${endpoint.search}`
       : null;
   if (cacheKey) {
@@ -91,6 +94,12 @@ async function forward(req: NextRequest, segments: string[], method: "GET" | "PO
     }
     const res = await fetch(endpoint, init);
     const data = await res.json().catch(() => ({}));
+    if (method === "POST" && pathKey === "preferences") {
+      // Drop any stale prefs entries if an older build cached them.
+      for (const key of [...getCache.keys()]) {
+        if (key.startsWith(`${session.user}:/api/app/preferences`)) getCache.delete(key);
+      }
+    }
     if (cacheKey && res.ok) {
       getCache.set(cacheKey, { expires: Date.now() + GET_CACHE_TTL_MS, status: res.status, data });
     }
