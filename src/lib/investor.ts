@@ -111,7 +111,7 @@ export const INVESTOR = {
       flag: "🇲🇾",
       country: "Malaysia",
       ticker: "MYRC",
-      status: "IN TALKS",
+      status: "CLOSING",
       note: "Ringgit stablecoin from BLOX, plugged into the same network.",
     },
     {

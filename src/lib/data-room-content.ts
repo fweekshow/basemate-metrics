@@ -33,7 +33,7 @@ function mapFromStatic(): DataRoomInvestorView {
     headline: INVESTOR.headline,
     subhead: INVESTOR.subhead,
     traction: INVESTOR.traction.map((t) => ({ value: t.value, label: t.label })),
-    loisSigned: 0,
+    loisSigned: 2,
     loisPending: 0,
     loisTarget: 5,
   };
