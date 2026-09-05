@@ -256,7 +256,7 @@ export function HomeRoadmap({ items }: { items: readonly RoadmapItem[] }) {
                     <div className="rounded-xl border border-lilac/40 bg-white p-2 shadow-sm">
                       <Image
                         src="/brand/logo/basemate-logo-flat.png"
-                        alt="Basemate"
+                        alt="Stablemate"
                         width={36}
                         height={36}
                         className="rounded-lg"

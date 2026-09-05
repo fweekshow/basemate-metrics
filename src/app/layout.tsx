@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "",
     url: origin,
     origin,
-    buttonTitle: "Launch Basemate",
+    buttonTitle: "Launch Stablemate",
   });
 
   return {

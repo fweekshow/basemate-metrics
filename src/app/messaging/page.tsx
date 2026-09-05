@@ -5,16 +5,16 @@ import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
 import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Messaging program · Basemate",
+  title: "Messaging program · Stablemate",
   description:
-    "How Basemate uses SMS and chat for service messages — opt-in, transfers, and opt-out.",
+    "How Stablemate uses SMS and chat for service messages — opt-in, transfers, and opt-out.",
 };
 
 export default function MessagingProgramPage() {
   return (
     <LegalDoc
       title="Messaging program"
-      description="Basemate is live in chat. We only message you from numbers you already use with us, or when someone you know sends you money."
+      description="Stablemate is live in chat. We only message you from numbers you already use with us, or when someone you know sends you money."
     >
       <LegalSection heading="How you opt in">
         <p id="messaging-opt-in">
@@ -26,10 +26,10 @@ export default function MessagingProgramPage() {
             <strong>iMessage / SMS (US):</strong>{" "}
             <a href={IMESSAGE_HREF}>Message {SITE.imessagePhoneDisplay}</a> or text{" "}
             <a href={SMS_TOLL_FREE_HREF}>{SITE.smsTollFreeDisplay}</a> (e.g. &quot;gm&quot;)
-            to open a thread with Basemate.
+            to open a thread with Stablemate.
           </li>
           <li>
-            <strong>WhatsApp:</strong> Message Basemate on WhatsApp from the number
+            <strong>WhatsApp:</strong> Message Stablemate on WhatsApp from the number
             you use day to day. Same agent — send, receive, and claim transfers in
             the thread you opened.
           </li>
@@ -44,12 +44,12 @@ export default function MessagingProgramPage() {
 
       <LegalSection heading="When we message you first">
         <p>
-          The only time Basemate may text you without a prior message in that session
+          The only time Stablemate may text you without a prior message in that session
           is a <strong>transactional transfer notice</strong>:
         </p>
         <ul>
           <li>
-            Someone on Basemate sends money to a phone number in their{" "}
+            Someone on Stablemate sends money to a phone number in their{" "}
             <strong>saved contacts</strong>.
           </li>
           <li>
@@ -59,7 +59,7 @@ export default function MessagingProgramPage() {
           </li>
         </ul>
         <p>
-          Example: &quot;Hey! Alex sent you 50 USDC with Basemate. Reply here and
+          Example: &quot;Hey! Alex sent you 50 USDC with Stablemate. Reply here and
           I&apos;ll help you receive it.&quot; This is not marketing; it completes a
           payment the sender initiated to your number.
         </p>
@@ -68,10 +68,10 @@ export default function MessagingProgramPage() {
       <LegalSection heading="What we do not do">
         <ul>
           <li>No purchased phone lists.</li>
-          <li>No promotional blast SMS unrelated to your Basemate activity.</li>
+          <li>No promotional blast SMS unrelated to your Stablemate activity.</li>
           <li>
             No waitlist or invite spam —{" "}
-            <Link href="/landing">Basemate is live</Link>; start in chat.
+            <Link href="/landing">Stablemate is live</Link>; start in chat.
           </li>
         </ul>
       </LegalSection>

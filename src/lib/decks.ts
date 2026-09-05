@@ -54,7 +54,7 @@ export function deckMetadata(deck: DeckConfig): Metadata {
       title: deck.title,
       description: deck.description,
       url: `${BASE_URL}${deck.path}`,
-      siteName: "Basemate",
+      siteName: "Stablemate",
       images: [{ url: `${BASE_URL}/basemate-og.png`, width: 1200, height: 630 }],
       type: "website",
     },

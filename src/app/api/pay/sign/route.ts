@@ -115,11 +115,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "This payment link is invalid or has expired." }, { status: 404 });
     }
     if (new Date(row.expires_at) < new Date() && row.status === "pending") {
-      return NextResponse.json({ error: "This payment link has expired. Ask Basemate for a new one." }, { status: 404 });
+      return NextResponse.json({ error: "This payment link has expired. Ask Stablemate for a new one." }, { status: 404 });
     }
     if (row.wallet_kind !== "embedded") {
       return NextResponse.json(
-        { error: "This payment link does not use a Basemate embedded wallet." },
+        { error: "This payment link does not use a Stablemate embedded wallet." },
         { status: 409, headers: { "cache-control": "no-store" } },
       );
     }

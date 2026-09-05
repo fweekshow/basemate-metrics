@@ -54,7 +54,7 @@ export function Header({
           >
             <Image
               src="/brand/logo/basemate-logo-flat.png"
-              alt="Basemate"
+              alt="Stablemate"
               width={36}
               height={36}
               className="rounded-lg transition-opacity group-hover:opacity-80"

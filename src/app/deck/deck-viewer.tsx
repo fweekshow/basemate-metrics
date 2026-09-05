@@ -26,7 +26,7 @@ function DeckToolbar({ deck }: { deck: DeckConfig }) {
       <Link href="/landing" className="flex min-w-0 items-center gap-2.5">
         <Image
           src="/brand/logo/basemate-logo-flat.png"
-          alt="Basemate"
+          alt="Stablemate"
           width={28}
           height={28}
           className="rounded-lg"
@@ -73,7 +73,7 @@ function MobileDeckPrompt({ deck }: { deck: DeckConfig }) {
         >
           <Image
             src="/brand/logo/basemate-mark-transparent.png"
-            alt="Basemate"
+            alt="Stablemate"
             width={56}
             height={56}
             className="rounded-2xl"

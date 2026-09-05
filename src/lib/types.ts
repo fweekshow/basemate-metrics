@@ -70,7 +70,7 @@ export interface PerpStrategies {
 }
 
 /** Server/CDP wallets powering iMessage + Base app automations. */
-export interface BasemateWalletsMetric {
+export interface StablemateWalletsMetric {
   activeWallets: number;
   cdpWallets: number;
   publishedStrategies: number;
@@ -175,7 +175,7 @@ export interface AnalyticsPayload {
   };
   tradingVolume?: TradingVolume;
   worldCupBetting?: WorldCupBetting;
-  basemateWallets?: BasemateWalletsMetric;
+  basemateWallets?: StablemateWalletsMetric;
   perpStrategies?: PerpStrategies;
   featureEngagement?: FeatureEngagement;
 }

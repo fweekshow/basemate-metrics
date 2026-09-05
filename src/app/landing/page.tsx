@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { HomeRoadmap } from "@/components/site/home-roadmap";
 import { SiteShell } from "@/components/site/site-shell";
-import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
+import { IMESSAGE_HREF, SITE } from "@/lib/site";
 import type { AnalyticsPayload } from "@/lib/types";
 import { getCachedAnalytics } from "@/lib/analytics";
 
@@ -67,19 +67,13 @@ const roadmap = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatUsers(n: number) {
-  if (n >= 10_000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-  if (n >= 1000) return `${Math.floor(n / 1000)}K+`;
-  return n.toLocaleString("en-US");
-}
 function formatMessages(n: number) {
   if (n >= 1000) return `${Math.floor(n / 1000)}K+`;
   return n.toLocaleString("en-US");
 }
 function buildStats(metrics: AnalyticsPayload | null) {
   return [
-    { value: metrics ? formatUsers(metrics.users.total) : "10.7K", label: "USERS", live: Boolean(metrics) },
-    { value: metrics ? formatMessages(metrics.users.messagesReceived) : "49K+", label: "MESSAGES", live: Boolean(metrics) },
+    { value: metrics ? formatMessages(metrics.users.messagesReceived) : "75,000+", label: "MESSAGES RECEIVED", live: Boolean(metrics) },
   ] as const;
 }
 
@@ -165,11 +159,7 @@ export default async function LandingPage() {
                 </a>
               </div>
               <p className="text-xs text-muted-foreground">
-                Opens iMessage. Android or SMS:{" "}
-                <a href={SMS_TOLL_FREE_HREF} className="font-medium text-primary underline-offset-4 hover:underline">
-                  {SITE.smsTollFreeDisplay}
-                </a>
-                {". "}
+                Opens iMessage.{" "}
                 <Link href="/messaging" className="font-medium text-primary underline-offset-4 hover:underline">
                   Messaging &amp; opt-in
                 </Link>
@@ -194,7 +184,7 @@ export default async function LandingPage() {
               </span>
             </div>
           )}
-          <div className="grid grid-cols-2 divide-x divide-border/60">
+          <div className="flex">
             {stats.map(({ value, label }) => (
               <div key={label} className="py-5 pr-8">
                 <p

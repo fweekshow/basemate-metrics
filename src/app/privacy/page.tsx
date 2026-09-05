@@ -4,8 +4,8 @@ import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
 import { SITE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · Basemate",
-  description: "How Basemate collects, uses, and protects your information.",
+  title: "Privacy Policy · Stablemate",
+  description: "How Stablemate collects, uses, and protects your information.",
 };
 
 export default function PrivacyPage() {
@@ -14,11 +14,11 @@ export default function PrivacyPage() {
   return (
     <LegalDoc
       title="Privacy Policy"
-      description={`Effective ${effective}. This policy describes how ${SITE.name} ("Basemate," "we," "us") handles information when you use our websites and messaging services.`}
+      description={`Effective ${effective}. This policy describes how ${SITE.name} ("Stablemate," "we," "us") handles information when you use our websites and messaging services.`}
     >
       <LegalSection heading="Overview">
         <p>
-          Basemate provides money-in-chat services on Base. We collect only what we
+          Stablemate provides money-in-chat services on Base. We collect only what we
           need to run the product, comply with law, and communicate with you about
           your account and access.
         </p>
@@ -28,10 +28,10 @@ export default function PrivacyPage() {
         <ul>
           <li>
             <strong>Contact information</strong> — name, email, phone number, and
-            country when you message or use Basemate from your phone number.
+            country when you message or use Stablemate from your phone number.
           </li>
           <li>
-            <strong>Messages and transactions</strong> — content you send to Basemate
+            <strong>Messages and transactions</strong> — content you send to Stablemate
             and records of transfers, funding, and related activity needed to
             operate the service.
           </li>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="How we use information">
         <ul>
-          <li>Provide, secure, and improve Basemate.</li>
+          <li>Provide, secure, and improve Stablemate.</li>
           <li>Process payments and transfers you request.</li>
           <li>Send service-related email and SMS (see Text messages below).</li>
           <li>Comply with legal and regulatory obligations.</li>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             thread (iMessage, SMS, or WhatsApp depending on channel).
           </li>
           <li>
-            Someone sends you money via Basemate to a number in their{" "}
+            Someone sends you money via Stablemate to a number in their{" "}
             <strong>contacts</strong> — we send a transactional notice so you can
             claim funds.
           </li>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
         <p>
           We share information with infrastructure and financial partners when
           required to move money, verify identity, or send messages. We may disclose
-          information if required by law or to protect users and Basemate.
+          information if required by law or to protect users and Stablemate.
         </p>
       </LegalSection>
 
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="Children">
-        <p>Basemate is not directed to children under 18. We do not knowingly collect their data.</p>
+        <p>Stablemate is not directed to children under 18. We do not knowingly collect their data.</p>
       </LegalSection>
 
       <LegalSection heading="Changes">

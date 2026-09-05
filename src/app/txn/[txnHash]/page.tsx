@@ -18,14 +18,14 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { txnHash } = await params;
   if (!isValidTxHash(txnHash)) {
-    return { title: "Transaction · Basemate" };
+    return { title: "Transaction · Stablemate" };
   }
 
   const origin = await getRequestOrigin();
   const url = basemateTxnUrl(txnHash, origin);
   return basemateEmbedMetadata({
-    title: "Trade confirmed · Basemate",
-    description: "Trade executed on Base via Basemate.",
+    title: "Trade confirmed · Stablemate",
+    description: "Trade executed on Base via Stablemate.",
     url,
     origin,
     imageUrl: basemateTxnOgImage(origin),

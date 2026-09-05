@@ -5,11 +5,11 @@ import { SiteShell } from "@/components/site/site-shell";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Set up your Basemate account",
-  description: "Sign in with email to set up your Basemate account — no wallet apps, no seed phrases.",
+  title: "Set up your Stablemate account",
+  description: "Sign in with email to set up your Stablemate account — no wallet apps, no seed phrases.",
   openGraph: {
-    title: "Set up your Basemate account",
-    description: "Sign in with email to set up your Basemate account — no wallet apps, no seed phrases.",
+    title: "Set up your Stablemate account",
+    description: "Sign in with email to set up your Stablemate account — no wallet apps, no seed phrases.",
     type: "website",
     images: [SITE.pfp],
   },

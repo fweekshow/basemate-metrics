@@ -52,7 +52,7 @@ const EVENT_COPY: Record<string, { tone: "pending" | "success" | "error"; messag
   },
   "onramp_api.polling_success": {
     tone: "success",
-    message: "Done. Your USDC is on its way to your Basemate Account.",
+    message: "Done. Your USDC is on its way to your Stablemate Account.",
   },
   "onramp_api.cancel": {
     tone: "error",
@@ -114,7 +114,7 @@ export function OnrampPaymentFrame({
           tone: "error",
           message:
             friendlyOnrampError(message.data?.errorCode, message.data?.errorMessage) ||
-            "Coinbase could not start this payment. Ask Basemate for a new fund link.",
+            "Coinbase could not start this payment. Ask Stablemate for a new fund link.",
         });
         setIsFrameLoading(false);
         setHasFrameLoadDelayed(false);
@@ -447,7 +447,7 @@ function friendlyOnrampError(code?: string, message?: string): string | undefine
     case "ERROR_CODE_GUEST_REGION_NOT_SUPPORTED":
       return "This payment method is not available in your region.";
     case "ERROR_CODE_GUEST_LIMIT_EXCEEDED":
-      return "This amount exceeds your guest limit. Ask Basemate for a new link or use the card option on Coinbase.";
+      return "This amount exceeds your guest limit. Ask Stablemate for a new link or use the card option on Coinbase.";
     default:
       return message;
   }

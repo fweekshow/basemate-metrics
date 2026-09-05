@@ -203,7 +203,7 @@ export default function RelayPage() {
                 href="/landing"
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-white px-7 text-sm font-semibold text-foreground transition hover:bg-muted/50"
               >
-                Back to Basemate
+                Back to Stablemate
               </Link>
             </div>
           </section>

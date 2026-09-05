@@ -5,11 +5,11 @@ import { SiteShell } from "@/components/site/site-shell";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Confirm your payment · Basemate",
-  description: "Review and confirm your Basemate payment on Base.",
+  title: "Confirm your payment · Stablemate",
+  description: "Review and confirm your Stablemate payment on Base.",
   openGraph: {
-    title: "Confirm your payment · Basemate",
-    description: "Review and confirm your Basemate payment on Base.",
+    title: "Confirm your payment · Stablemate",
+    description: "Review and confirm your Stablemate payment on Base.",
     type: "website",
     images: [SITE.pfp],
   },

@@ -18,7 +18,7 @@ function agentHost(): string | undefined {
 /**
  * Record an onramp deposit after Coinbase reports success on basemate.app/pay.
  * The pay page has no dashboard auth cookie, so we identify the user from the
- * short-lived fund session token Basemate sent in chat.
+ * short-lived fund session token Stablemate sent in chat.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);

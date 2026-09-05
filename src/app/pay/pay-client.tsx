@@ -45,7 +45,7 @@ const EVENT_COPY: Record<string, string> = {
   "onramp_api.commit_success": "Payment started. Keep this page open while Coinbase confirms settlement.",
   "onramp_api.cancel": "Payment cancelled. You can try again with the same link before it expires.",
   "onramp_api.polling_start": "Payment submitted. Waiting for funds to settle on Base...",
-  "onramp_api.polling_success": "Success. Your USDC has been sent to your Basemate Account.",
+  "onramp_api.polling_success": "Success. Your USDC has been sent to your Stablemate Account.",
 };
 
 const PROVIDER_COPY = {
@@ -58,7 +58,7 @@ const PROVIDER_COPY = {
   },
   crossmint: {
     description:
-      "Use card, Apple Pay, or Google Pay to buy USDC on Base. Continue to Crossmint to complete checkout, KYC, and delivery to your Basemate Account.",
+      "Use card, Apple Pay, or Google Pay to buy USDC on Base. Continue to Crossmint to complete checkout, KYC, and delivery to your Stablemate Account.",
     loading: "Loading Crossmint checkout...",
     ready: "Continue to Crossmint to complete checkout.",
     title: "Crossmint Onramp",
@@ -97,7 +97,7 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
   const [loadState, setLoadState] = useState<LoadState>(() =>
     sessionToken
       ? { status: "loading" }
-      : { status: "error", message: "Missing payment session. Open the latest link from Basemate." },
+      : { status: "error", message: "Missing payment session. Open the latest link from Stablemate." },
   );
   const [onrampStatus, setOnrampStatus] = useState("Loading payment session...");
   const [lastError, setLastError] = useState<string | null>(null);
@@ -179,7 +179,7 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
           <Wallet className="h-7 w-7" />
         </div>
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Fund your Basemate Account</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Fund your Stablemate Account</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           {copy.description}
         </p>
@@ -253,7 +253,7 @@ export function PayClient({ sessionToken }: { sessionToken: string }) {
         <div className="space-y-1">
           <p className="font-medium">{lastError ?? onrampStatus}</p>
           {expiresAt ? <p className="text-muted-foreground">This payment link expires around {expiresAt}.</p> : null}
-          {sessionToken ? null : <p className="text-muted-foreground">Ask Basemate for a fresh Apple Pay link.</p>}
+          {sessionToken ? null : <p className="text-muted-foreground">Ask Stablemate for a fresh Apple Pay link.</p>}
         </div>
       </div>
     </section>

@@ -8,11 +8,11 @@ import type { StablecoinDirectoryRow } from "@/lib/stablecoin-directory-shared";
 import { getStablecoinDirectoryView } from "@/lib/stablecoin-directory";
 
 export const metadata: Metadata = {
-  title: "Base Stablecoin World Directory — Basemate Partnerships",
+  title: "Base Stablecoin World Directory — Stablemate Partnerships",
   description:
     "Country-by-country stablecoin issuers on Base — synced from Notion issuer & corridor pipeline.",
   openGraph: {
-    title: "Basemate Stablecoin Directory",
+    title: "Stablemate Stablecoin Directory",
     url: "https://basemate.app/stablecoin-directory",
   },
 };

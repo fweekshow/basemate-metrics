@@ -4,8 +4,8 @@ import Image from "next/image";
 import { SiteShell } from "@/components/site/site-shell";
 
 export const metadata: Metadata = {
-  title: "Brand · Basemate",
-  description: "Basemate brand guidelines — colors, typography, logo, components, and voice.",
+  title: "Brand · Stablemate",
+  description: "Stablemate brand guidelines — colors, typography, logo, components, and voice.",
 };
 
 export default function BrandPage() {
@@ -283,7 +283,7 @@ export default function BrandPage() {
                     <Image src="/brand/logo/basemate-mark-transparent.png" alt="mark" width={28} height={28} className="rounded-lg" />
                   </div>
                   <div>
-                    <div className="font-display text-sm font-bold text-foreground">Basemate</div>
+                    <div className="font-display text-sm font-bold text-foreground">Stablemate</div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="size-1.5 rounded-full bg-up animate-pulse" />
                       <Mono className="text-[10px] text-muted-foreground">ONLINE</Mono>

@@ -3,7 +3,7 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate.app";
 
 export const SITE = {
-  name: "Basemate",
+  name: "Stablemate",
   tagline: "Send, Earn, Trade, Save",
   description:
     "Money that lives in your texts. Send across borders, earn yield, trade, and save — all in iMessage and Base App on Base.",
@@ -23,7 +23,7 @@ export const SITE = {
     "https://apps.apple.com/us/app/base-built-to-trade-earn/id1278383455",
   metricsUrl: "https://basemate.app/metrics",
   twitter: "@basemateagent",
-  /** Basemate's iMessage line — E.164 for links, display form for labels. */
+  /** Stablemate's iMessage line — E.164 for links, display form for labels. */
   imessagePhone: "+16283165638",
   imessagePhoneDisplay: "+1 (628) 316-5638",
   /** Toll-free SMS (inbound chat + transactional transfer notices). */
@@ -36,7 +36,7 @@ export const SITE = {
 } as const;
 
 /**
- * Opens Messages with a draft to the Basemate line. `sms:` is what Apple
+ * Opens Messages with a draft to the Stablemate line. `sms:` is what Apple
  * registers for iMessage; the `?&body=` form is the shape both iOS and
  * Android parse correctly.
  */

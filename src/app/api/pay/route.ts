@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
 
     const session = result.rows[0];
     if (!session || new Date(session.expires_at) < new Date()) {
-      return NextResponse.json({ error: "This payment link has expired. Ask Basemate for a new one." }, { status: 404 });
+      return NextResponse.json({ error: "This payment link has expired. Ask Stablemate for a new one." }, { status: 404 });
     }
 
     if (!session.consumed_at) {

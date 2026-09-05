@@ -46,7 +46,7 @@ function useAppPreviewMode(): boolean {
 
 const cdpConfig = {
   projectId: PROJECT_ID,
-  appName: "Basemate",
+  appName: "Stablemate",
   appLogoUrl: "https://res.cloudinary.com/dg5qvbxjp/image/upload/v1770196704/IMG_9007_iv7vkm.png",
   ethereum: { createOnLogin: "smart" as const },
 };
@@ -206,7 +206,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
       const raw = (await getAccessToken()) as unknown;
       const accessToken =
         typeof raw === "string" ? raw : (raw as { accessToken?: string })?.accessToken;
-      if (!accessToken) throw new Error("Couldn't read your Basemate session.");
+      if (!accessToken) throw new Error("Couldn't read your Stablemate session.");
 
       const res = await fetch("/api/app/session", {
         method: "POST",
@@ -222,7 +222,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
       // Agent returns this when CDP email has no imessage_wallets row yet.
       if (/no basemate account is linked|not linked|connect it from basemate/i.test(raw)) {
         setMessage(
-          "No Basemate account is linked to this email yet. Text Basemate in iMessage to set up first, then come back here.",
+          "No Stablemate account is linked to this email yet. Text Stablemate in iMessage to set up first, then come back here.",
         );
       } else {
         setMessage(raw);
@@ -297,10 +297,10 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
       <MarkTile size={56} />
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">
-          Manage your Basemate account
+          Manage your Stablemate account
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Sign in with the email you used when you set up Basemate in iMessage.
+          Sign in with the email you used when you set up Stablemate in iMessage.
         </p>
       </div>
 
@@ -308,7 +308,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
         <p>
           <span className="font-semibold">Returning users only.</span> New here?{" "}
           <a href="/" className="font-semibold text-primary underline-offset-2 hover:underline">
-            Text Basemate in iMessage
+            Text Stablemate in iMessage
           </a>{" "}
           to create your account first.
         </p>
@@ -396,7 +396,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
         href="/"
         className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
       >
-        New here? Text Basemate to get started
+        New here? Text Stablemate to get started
       </a>
     </div>
   );
@@ -456,7 +456,7 @@ const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
 
 const TAB_IDS = TABS.map((t) => t.id) as Tab[];
 
-// Friendly hash aliases so deep links land on the right tab. Basemate sends
+// Friendly hash aliases so deep links land on the right tab. Stablemate sends
 // these in chat (e.g. /app#balance, /app#payments); the canonical tab ids
 // (/app#activity, /app#sends, …) also work directly.
 const HASH_ALIASES: Record<string, Tab> = {
@@ -515,12 +515,12 @@ function Dashboard() {
 
   const activeTitle =
     tab === "home"
-      ? "Basemate"
+      ? "Stablemate"
       : tab === "agent"
         ? "Agent Settings"
         : tab === "interest"
           ? "Interest"
-          : (TABS.find((t) => t.id === tab)?.label ?? "Basemate");
+          : (TABS.find((t) => t.id === tab)?.label ?? "Stablemate");
 
   const openSend = useCallback((prefill?: SendPrefill | null) => {
     setSendPrefill(prefill ?? null);
@@ -1445,7 +1445,7 @@ function InterestTab() {
     <>
       <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-relaxed text-muted-foreground shadow-[var(--shadow-card)]">
         Earn on <span className="font-semibold text-foreground">Moonwell</span> — USDC, ETH, and BTC. Tap{" "}
-        <span className="font-semibold text-primary">Deposit</span>; Basemate covers gas.
+        <span className="font-semibold text-primary">Deposit</span>; Stablemate covers gas.
       </div>
 
       <SectionLabel>Moonwell</SectionLabel>
@@ -1857,7 +1857,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
       <SectionLabel>Account</SectionLabel>
       <Row>
         <p className="text-sm font-semibold">
-          {profile?.displayName ?? profile?.basename ?? "Basemate account"}
+          {profile?.displayName ?? profile?.basename ?? "Stablemate account"}
         </p>
         {profile?.embeddedAddress && (
           <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
@@ -1984,7 +1984,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
           setSigningOut(true);
           try {
             // CDP client session is often already dead (401 refresh). Never
-            // let that block clearing the Basemate app session.
+            // let that block clearing the Stablemate app session.
             if (onSignOutCdp) {
               try {
                 await onSignOutCdp();
