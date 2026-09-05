@@ -197,7 +197,7 @@ export function mockAppApiResponse(
   }
 
   if (path === "preferences" && method === "GET") {
-    return { status: 200, data: { payMode: "manual", autoSendLimitUsd: 25 } };
+    return { status: 200, data: { payMode: "manual", autoSendLimitUsd: 25, swearJarOptIn: false } };
   }
 
   if (path === "preferences" && method === "POST") {
