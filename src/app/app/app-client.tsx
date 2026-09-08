@@ -218,7 +218,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
       const raw = (await getAccessToken()) as unknown;
       const accessToken =
         typeof raw === "string" ? raw : (raw as { accessToken?: string })?.accessToken;
-      if (!accessToken) throw new Error("Couldn't read your Stablemate session.");
+      if (!accessToken) throw new Error("Couldn't read your Basemate session.");
 
       const res = await fetch("/api/app/session", {
         method: "POST",
@@ -234,7 +234,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
       // Agent returns this when CDP email has no imessage_wallets row yet.
       if (/no basemate account is linked|not linked|connect it from basemate/i.test(raw)) {
         setMessage(
-          "No Stablemate account is linked to this email yet. Text Stablemate in iMessage to set up first, then come back here.",
+          "No Basemate account is linked to this email yet. Text Basemate in iMessage to set up first, then come back here.",
         );
       } else {
         setMessage(raw);
@@ -305,48 +305,64 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
   if (phase === "checking" && initialHasSession) return <DashboardSkeleton />;
 
   return (
-    <div className="app-dashboard mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center gap-6 bg-background px-5 py-10 text-center">
+    <div className="app-dashboard mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-md flex-col items-center justify-center gap-5 bg-background px-5 py-10 text-center">
       <MarkTile size={56} />
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Manage your Stablemate account
+        <h1 className="font-display text-[28px] font-bold tracking-tight">
+          Manage your Basemate account
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Sign in with the email you used when you set up Stablemate in iMessage.
+        <p className="mt-2 text-base leading-relaxed text-muted-foreground">
+          Sign in with the email you used when you set up Basemate in iMessage.
         </p>
       </div>
 
       <div className="w-full space-y-2 rounded-2xl border border-primary/20 bg-accent px-5 py-4 text-left text-sm leading-relaxed text-accent-foreground">
         <p>
           <span className="font-semibold">Returning users only.</span> New here?{" "}
-          <a href="/" className="font-semibold text-primary underline-offset-2 hover:underline">
-            Text Stablemate in iMessage
+          <a
+            href={IMESSAGE_HREF}
+            className="font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            Text Basemate in iMessage
           </a>{" "}
           to create your account first.
         </p>
       </div>
 
-      {phase === "checking" || phase === "linking" ? (
+      {phase === "linking" ? (
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-7 w-7 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
-            {phase === "linking" ? "Linking your account…" : "Loading…"}
-          </p>
+          <p className="text-sm text-muted-foreground">Linking your account…</p>
+        </div>
+      ) : phase === "checking" ? (
+        <div className="w-full space-y-3">
+          <div className="flex flex-col items-center gap-3 py-2">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Checking your session…</p>
+          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setPhase("email");
+            }}
+            placeholder="you@email.com"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-base"
+          />
         </div>
       ) : phase === "error" ? (
         <div className="w-full space-y-3">
           <p className="text-sm text-destructive">{message}</p>
           <a
             href={IMESSAGE_HREF}
-            className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
           >
             Open in Messages
           </a>
           <button
             type="button"
             onClick={async () => {
-              // Sign out of CDP so we don't immediately re-link the same session
-              // (and so the user can switch email accounts).
               try {
                 await signOut();
               } catch {
@@ -359,7 +375,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
               setFlowId(null);
               setPhase("email");
             }}
-            className="w-full rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground"
+            className="min-h-11 w-full rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground"
           >
             Try a different email
           </button>
@@ -378,7 +394,7 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
             type="button"
             onClick={submitOtp}
             disabled={busy || otp.length < 6}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Verify
           </button>
@@ -390,26 +406,19 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@email.com"
-            className="w-full rounded-xl border border-border bg-card px-4 py-3"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-base"
           />
           {message ? <p className="mt-2 text-sm text-destructive">{message}</p> : null}
           <button
             type="button"
             onClick={submitEmail}
             disabled={busy || !email}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Send code
           </button>
         </div>
       )}
-
-      <a
-        href="/"
-        className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-      >
-        New here? Text Stablemate to get started
-      </a>
     </div>
   );
 }
@@ -469,7 +478,7 @@ const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
 /** Tabs reachable via URL hash — includes Interest (no nav slot; Home + #earn). */
 const ROUTABLE_TABS: Tab[] = [...TABS.map((t) => t.id), "interest"];
 
-// Friendly hash aliases so deep links land on the right tab. Stablemate sends
+// Friendly hash aliases so deep links land on the right tab. Basemate sends
 // these in chat (e.g. /app#balance, /app#payments); the canonical tab ids
 // (/app#activity, /app#sends, …) also work directly.
 const HASH_ALIASES: Record<string, Tab> = {
@@ -532,14 +541,14 @@ function Dashboard() {
 
   const activeTitle =
     tab === "home"
-      ? "Stablemate"
+      ? "Basemate"
       : tab === "agent"
         ? "Agent Settings"
         : tab === "interest"
           ? "Interest"
           : tab === "stonks"
             ? "Stonks"
-            : (TABS.find((t) => t.id === tab)?.label ?? "Stablemate");
+            : (TABS.find((t) => t.id === tab)?.label ?? "Basemate");
 
   const openSend = useCallback((prefill?: SendPrefill | null) => {
     setSendPrefill(prefill ?? null);
@@ -955,7 +964,7 @@ function HomeTab({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Earn interest · Moonwell</p>
-          <p className="text-xs text-muted-foreground">USDC, ETH, and BTC — Stablemate covers gas</p>
+          <p className="text-xs text-muted-foreground">USDC, ETH, and BTC — Basemate covers gas</p>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </button>
@@ -1701,7 +1710,7 @@ function InterestTab() {
     <>
       <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-relaxed text-muted-foreground shadow-[var(--shadow-card)]">
         Earn on <span className="font-semibold text-foreground">Moonwell</span> — USDC, ETH, and BTC. Tap{" "}
-        <span className="font-semibold text-primary">Deposit</span>; Stablemate covers gas.
+        <span className="font-semibold text-primary">Deposit</span>; Basemate covers gas.
       </div>
 
       <SectionLabel>Moonwell</SectionLabel>
@@ -2113,7 +2122,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
       <SectionLabel>Account</SectionLabel>
       <Row>
         <p className="text-sm font-semibold">
-          {profile?.displayName ?? profile?.basename ?? "Stablemate account"}
+          {profile?.displayName ?? profile?.basename ?? "Basemate account"}
         </p>
         {profile?.embeddedAddress && (
           <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
@@ -2240,7 +2249,7 @@ function AgentSettingsTabInner({ onSignOutCdp }: { onSignOutCdp?: () => Promise<
           setSigningOut(true);
           try {
             // CDP client session is often already dead (401 refresh). Never
-            // let that block clearing the Stablemate app session.
+            // let that block clearing the Basemate app session.
             if (onSignOutCdp) {
               try {
                 await onSignOutCdp();

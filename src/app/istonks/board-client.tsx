@@ -2,15 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Coins, ListChecks, Loader2, Rocket, Search } from "lucide-react";
+import { Loader2, Rocket, Search } from "lucide-react";
 
-import { Panel, SectionLabel, StatCard } from "@/components/dashboard/primitives";
+import { Panel, SectionLabel } from "@/components/dashboard/primitives";
 import {
   Cell,
   EmptyState,
   ErrorBand,
   LoadingRows,
   Row,
+  SignInGate,
   StatusBadge,
   Table,
   useIstonks,
@@ -102,21 +103,21 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
   }
 
   return (
-    <div className="animate-ticker-in space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="animate-ticker-in space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <SectionLabel>available stonks</SectionLabel>
-          <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
             What you can pair against
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+          </h1>
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Coinbase tokenized stocks on Base. Launchable ones are live for iStonks Doppler
-            pairs from iMessage. Flip happens in the agent catalog — not here.
+            pairs from iMessage.
           </p>
         </div>
         <Link
           href="/istonks/launch"
-          className="rounded-full bg-primary px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+          className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           Launch one
         </Link>
@@ -124,47 +125,55 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
 
       {stocksFetch.error ? <ErrorBand message={stocksFetch.error} /> : null}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <StatCard
-          label="Launchable"
-          value={stocksFetch.loading ? "—" : String(launchable)}
-          accent="up"
-          icon={CheckCircle2}
-          sub="open for new pairs"
-        />
-        <StatCard
-          label="Listed"
-          value={stocksFetch.loading ? "—" : String(listed)}
-          accent="primary"
-          icon={ListChecks}
-          sub="on base.org/stocks"
-        />
-        <StatCard
-          label="In catalog"
-          value={stocksFetch.loading ? "—" : String(stocks.length)}
-          accent="cyan"
-          icon={Coins}
-          sub="all B20 offers"
-        />
+      <div className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border/60 pb-5 text-[15px]">
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Launchable
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-up">
+            {stocksFetch.loading ? "—" : launchable}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Listed
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-primary">
+            {stocksFetch.loading ? "—" : listed}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            In catalog
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-foreground">
+            {stocksFetch.loading ? "—" : stocks.length}
+          </p>
+        </div>
       </div>
 
-      <Panel
-        title="stock pairs"
-        subtitle="ticker · company · price · status"
-        right={
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-display text-xl font-semibold tracking-tight">Stock pairs</h2>
+            <p className="mt-1 text-[14px] text-muted-foreground">
+              Ticker · company · price · status
+            </p>
+          </div>
           <Link
             href="/istonks/stocks"
-            className="shrink-0 font-mono text-[11px] text-muted-foreground transition-colors hover:text-primary"
+            className="inline-flex min-h-11 items-center font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
-            full registry →
+            Full registry →
           </Link>
-        }
-        bodyClassName="p-4 pt-3"
-      >
+        </div>
+
         {stocksFetch.loading ? (
-          <Table head={["Ticker", "Company", "Price", "Status"]}>
-            <LoadingRows rows={6} cols={4} />
-          </Table>
+          <div className="hidden md:block">
+            <Table head={["Ticker", "Company", "Price", "Status"]}>
+              <LoadingRows rows={6} cols={4} />
+            </Table>
+          </div>
         ) : stocks.length === 0 ? (
           <EmptyState
             title={stocksFetch.unavailable ? "Catalog isn't live yet" : "No stocks configured"}
@@ -176,22 +185,49 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
             mascot="mate-support.png"
           />
         ) : (
-          <Table head={["Ticker", "Company", "Price", "Status"]}>
-            {stocks.map((stock) => (
-              <Row key={stock.symbol ?? stock.address ?? Math.random()}>
-                <Cell mono className="font-medium">
-                  ${stock.symbol ?? "—"}
-                </Cell>
-                <Cell>{stock.name ?? "—"}</Cell>
-                <Cell mono>{formatUsd(stock.priceUsd)}</Cell>
-                <Cell>
-                  <StatusBadge status={stockStatus(stock)} />
-                </Cell>
-              </Row>
-            ))}
-          </Table>
+          <>
+            <div className="hidden md:block">
+              <Table head={["Ticker", "Company", "Price", "Status"]}>
+                {stocks.map((stock) => (
+                  <Row key={stock.symbol ?? stock.address ?? Math.random()}>
+                    <Cell mono className="font-medium">
+                      ${stock.symbol ?? "—"}
+                    </Cell>
+                    <Cell>{stock.name ?? "—"}</Cell>
+                    <Cell mono>{formatUsd(stock.priceUsd)}</Cell>
+                    <Cell>
+                      <StatusBadge status={stockStatus(stock)} />
+                    </Cell>
+                  </Row>
+                ))}
+              </Table>
+            </div>
+            <ul className="divide-y divide-border/70 md:hidden">
+              {stocks.map((stock) => (
+                <li
+                  key={stock.symbol ?? stock.address ?? Math.random()}
+                  className="flex items-start justify-between gap-3 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[15px] font-medium">
+                        ${stock.symbol ?? "—"}
+                      </span>
+                      <StatusBadge status={stockStatus(stock)} />
+                    </div>
+                    <p className="mt-1 truncate text-[14px] text-muted-foreground">
+                      {stock.name ?? "—"}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-mono text-[15px] tabular-nums">
+                    {formatUsd(stock.priceUsd)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
-      </Panel>
+      </section>
 
       {signedIn ? (
         <section className="space-y-3">
@@ -201,7 +237,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
               <h2 className="mt-1 font-display text-xl font-semibold tracking-tight">
                 Manage & claim
               </h2>
-              <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mt-1 max-w-2xl text-base leading-relaxed text-muted-foreground">
                 Search your Doppler stock pairs and claim launcher fees from the same place.
               </p>
             </div>
@@ -212,7 +248,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search ticker, pair, address…"
-                className="w-full rounded-full border border-border bg-card py-2 pr-4 pl-9 font-mono text-[12px] text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                className="min-h-11 w-full rounded-full border border-border bg-card py-2 pr-4 pl-9 font-mono text-[14px] text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
               />
             </label>
           </div>
@@ -226,7 +262,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
             right={
               <Link
                 href="/istonks/fees"
-                className="shrink-0 font-mono text-[11px] text-muted-foreground transition-colors hover:text-primary"
+                className="inline-flex min-h-11 shrink-0 items-center font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary"
               >
                 all fees →
               </Link>
@@ -269,7 +305,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
                             <span className="font-mono text-[13px] font-medium text-foreground transition-colors group-hover:text-primary">
                               ${launch.symbol ?? "—"}
                             </span>
-                            <span className="truncate text-[11px] text-muted-foreground">
+                            <span className="truncate text-[12px] text-muted-foreground">
                               {launch.name ?? "unnamed"}
                             </span>
                           </Link>
@@ -289,7 +325,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
                           type="button"
                           disabled={claiming === key || done || !launch.poolId}
                           onClick={() => void claimLaunch(launch)}
-                          className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground disabled:opacity-40"
+                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-4 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-primary-foreground disabled:opacity-40"
                         >
                           {claiming === key ? (
                             <Loader2 className="size-3 animate-spin" />
@@ -307,21 +343,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
           </Panel>
         </section>
       ) : (
-        <Panel title="your launches" subtitle="sign in to manage" bodyClassName="p-6">
-          <EmptyState
-            title="Sign in to see your launches"
-            body="Browse the stock pairs above for free. Sign in at /app with the email you used in iMessage to search your launches and claim fees."
-            mascot="mate-peace.png"
-          />
-          <div className="mt-4 flex justify-center">
-            <Link
-              href="/app"
-              className="rounded-full bg-primary px-5 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground"
-            >
-              Sign in
-            </Link>
-          </div>
-        </Panel>
+        <SignInGate what="Seeing your launches" />
       )}
     </div>
   );

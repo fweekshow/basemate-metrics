@@ -14,7 +14,7 @@ export default function PrivacyPage() {
   return (
     <LegalDoc
       title="Privacy Policy"
-      description={`Effective ${effective}. This policy describes how ${SITE.name} ("Stablemate," "we," "us") handles information when you use our websites and messaging services.`}
+      description={`Effective ${effective}. This policy describes how Stablemate ("Stablemate," "we," "us") handles information when you use our websites and messaging services.`}
     >
       <LegalSection heading="Overview">
         <p>
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="Contact">
         <p>
-          {SITE.name} —{" "}
+          Stablemate —{" "}
           <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>
           <br />
           Website: <a href={SITE.baseUrl}>{SITE.baseUrl}</a>

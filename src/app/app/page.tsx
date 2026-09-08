@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
+import { AppShell } from "@/components/istonks/shell";
 import { getAppSession } from "@/lib/app-session";
 import { appUiPreviewServerEnabled } from "@/lib/app-ui-preview";
 import { AppClient } from "./app-client";
 
 export const metadata: Metadata = {
-  title: "Stablemate",
+  title: "Basemate",
   description:
-    "Manage your Stablemate account — balances, activity, earn, sends, and settings. Sign in after you've set up in iMessage.",
+    "Manage your Basemate account — balances, activity, earn, sends, and settings. Sign in after you've set up in iMessage.",
 };
 
 export const dynamic = "force-dynamic";
@@ -22,8 +23,8 @@ export default async function AppPage() {
   const initialHasSession = Boolean(session) || isPreview;
 
   return (
-    <div className="min-h-[100dvh] bg-[#EAE8F5] bg-gradient-to-b from-[#EAE8F5] to-[#E0DFF0]">
+    <AppShell>
       <AppClient initialHasSession={initialHasSession} />
-    </div>
+    </AppShell>
   );
 }

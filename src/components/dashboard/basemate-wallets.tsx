@@ -1,4 +1,4 @@
-import type { AnalyticsPayload, StablemateWalletsMetric } from "@/lib/types";
+import type { AnalyticsPayload, BasemateWalletsMetric } from "@/lib/types";
 import { full, usdc } from "@/lib/format";
 
 function MiniStat({
@@ -22,7 +22,7 @@ function MiniStat({
   );
 }
 
-function resolveStablemateWallets(data: AnalyticsPayload): StablemateWalletsMetric {
+function resolveBasemateWallets(data: AnalyticsPayload): BasemateWalletsMetric {
   if (data.basemateWallets) return data.basemateWallets;
 
   const flow = data.protocolFlow?.avantis;
@@ -52,8 +52,8 @@ function resolveStablemateWallets(data: AnalyticsPayload): StablemateWalletsMetr
   };
 }
 
-export function StablemateWalletsPanel({ data }: { data: AnalyticsPayload }) {
-  const wallets = resolveStablemateWallets(data);
+export function BasemateWalletsPanel({ data }: { data: AnalyticsPayload }) {
+  const wallets = resolveBasemateWallets(data);
   const hasWalletCounts = Boolean(data.basemateWallets);
 
   return (

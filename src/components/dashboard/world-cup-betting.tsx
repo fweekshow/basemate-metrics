@@ -42,7 +42,7 @@ export function WorldCupBettingPanel({ data }: { data: AnalyticsPayload }) {
           />
           <MiniStat label="Bets 24h" value={full(wc.betsPlaced24h)} />
           <MiniStat
-            label="Stablemate wagered"
+            label="Basemate wagered"
             value={usdc(wc.basemateWageredLifetime)}
             accent="text-primary"
           />

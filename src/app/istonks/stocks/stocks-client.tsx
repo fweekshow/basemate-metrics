@@ -1,8 +1,6 @@
 "use client";
 
-import { CheckCircle2, ListChecks, Rocket } from "lucide-react";
-
-import { Panel, SectionLabel, StatCard } from "@/components/dashboard/primitives";
+import { SectionLabel } from "@/components/dashboard/primitives";
 import {
   Cell,
   EmptyState,
@@ -37,8 +35,10 @@ export function StocksClient() {
     <div className="animate-ticker-in space-y-3">
       <div>
         <SectionLabel>quote registry</SectionLabel>
-        <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">Stock pairs</h2>
-        <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+        <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
+          Stock pairs
+        </h1>
+        <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
           These are the Coinbase tokenized stocks an iStonks token can be priced against. The
           stock is the numeraire — the quote asset on the other side of the pool.
         </p>
@@ -46,39 +46,47 @@ export function StocksClient() {
 
       {error ? <ErrorBand message={error} /> : null}
 
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard
-          label="Listed"
-          value={loading ? "—" : String(listed)}
-          accent="primary"
-          icon={ListChecks}
-          sub="on base.org/stocks"
-        />
-        <StatCard
-          label="Launchable"
-          value={loading ? "—" : String(tradeable)}
-          accent="up"
-          icon={CheckCircle2}
-          sub="open for new iStonks pairs"
-        />
-        <StatCard
-          label="Launched"
-          value={loading ? "—" : String(launched)}
-          accent="violet"
-          icon={Rocket}
-          sub="tokens paired to a stock"
-        />
+      <div className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border/60 pb-5">
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Listed
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-primary">
+            {loading ? "—" : listed}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Launchable
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-up">
+            {loading ? "—" : tradeable}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Launched
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-foreground">
+            {loading ? "—" : launched}
+          </p>
+        </div>
       </div>
 
-      <Panel
-        title="registry"
-        subtitle="ticker · company · price · status"
-        bodyClassName="p-4 pt-3"
-      >
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-display text-xl font-semibold tracking-tight">Registry</h2>
+          <p className="mt-1 text-[14px] text-muted-foreground">
+            Ticker · company · price · status
+          </p>
+        </div>
+
         {loading ? (
-          <Table head={["Ticker", "Company", "Price", "Status"]}>
-            <LoadingRows rows={6} cols={4} />
-          </Table>
+          <div className="hidden md:block">
+            <Table head={["Ticker", "Company", "Price", "Status"]}>
+              <LoadingRows rows={6} cols={4} />
+            </Table>
+          </div>
         ) : stocks.length === 0 ? (
           <EmptyState
             title={unavailable ? "Registry isn't live yet" : "No stock pairs configured"}
@@ -90,35 +98,64 @@ export function StocksClient() {
             mascot="mate-support.png"
           />
         ) : (
-          <Table head={["Ticker", "Company", "Price", "Status"]}>
-            {stocks.map((stock, i) => (
-              <Row key={stock.address ?? `${stock.symbol}-${i}`}>
-                <Cell>
-                  <span className="font-mono text-[13px] font-medium">{stock.symbol ?? "—"}</span>
-                </Cell>
-                <Cell className="text-muted-foreground">{stock.name ?? "—"}</Cell>
-                <Cell mono>
-                  {formatUsd(stock.priceUsd)}
-                  {stock.paused ? (
-                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.14em] text-amber">
-                      feed paused
-                    </span>
-                  ) : !stock.inMarketHours && stock.priceUsd != null ? (
-                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                      after hours
-                    </span>
-                  ) : null}
-                </Cell>
-                <Cell>
-                  <StatusBadge status={stockStatus(stock)} />
-                </Cell>
-              </Row>
-            ))}
-          </Table>
+          <>
+            <div className="hidden md:block">
+              <Table head={["Ticker", "Company", "Price", "Status"]}>
+                {stocks.map((stock, i) => (
+                  <Row key={stock.address ?? `${stock.symbol}-${i}`}>
+                    <Cell>
+                      <span className="font-mono text-[13px] font-medium">
+                        {stock.symbol ?? "—"}
+                      </span>
+                    </Cell>
+                    <Cell className="text-muted-foreground">{stock.name ?? "—"}</Cell>
+                    <Cell mono>
+                      {formatUsd(stock.priceUsd)}
+                      {stock.paused ? (
+                        <span className="ml-2 font-mono text-[12px] uppercase tracking-[0.14em] text-amber">
+                          feed paused
+                        </span>
+                      ) : !stock.inMarketHours && stock.priceUsd != null ? (
+                        <span className="ml-2 font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+                          after hours
+                        </span>
+                      ) : null}
+                    </Cell>
+                    <Cell>
+                      <StatusBadge status={stockStatus(stock)} />
+                    </Cell>
+                  </Row>
+                ))}
+              </Table>
+            </div>
+            <ul className="divide-y divide-border/70 md:hidden">
+              {stocks.map((stock, i) => (
+                <li
+                  key={stock.address ?? `${stock.symbol}-${i}`}
+                  className="flex items-start justify-between gap-3 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[15px] font-medium">
+                        {stock.symbol ?? "—"}
+                      </span>
+                      <StatusBadge status={stockStatus(stock)} />
+                    </div>
+                    <p className="mt-1 truncate text-[14px] text-muted-foreground">
+                      {stock.name ?? "—"}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-mono text-[15px] tabular-nums">
+                    {formatUsd(stock.priceUsd)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
-      </Panel>
+      </section>
 
-      <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
+      <p className="text-[12px] leading-relaxed text-muted-foreground">
         launchable = you can pair a new iStonks launch against it · listed = on Coinbase&apos;s
         official Base product list · registered = in the catalog, not launchable yet
       </p>

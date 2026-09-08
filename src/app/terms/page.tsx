@@ -106,7 +106,7 @@ export default function TermsPage() {
 
       <LegalSection heading="Contact">
         <p>
-          {SITE.name} —{" "}
+          Stablemate —{" "}
           <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>
         </p>
       </LegalSection>

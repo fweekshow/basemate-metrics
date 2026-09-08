@@ -5,23 +5,23 @@ import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "basemate · portfolio",
-  description: "Your iMessage Stablemate portfolio.",
+  description: "Your iMessage Basemate portfolio.",
   openGraph: {
     title: "View more details",
-    description: "Your full Stablemate portfolio — holdings, perps, and yield.",
+    description: "Your full Basemate portfolio — holdings, perps, and yield.",
     images: [
       {
         url: "/basemate-og.png",
         width: 1536,
         height: 1024,
-        alt: "Stablemate",
+        alt: "Basemate",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "View more details",
-    description: "Your full Stablemate portfolio — holdings, perps, and yield.",
+    description: "Your full Basemate portfolio — holdings, perps, and yield.",
     images: ["/basemate-og.png"],
   },
   other: {
@@ -29,10 +29,10 @@ export const metadata: Metadata = {
       version: "next",
       imageUrl: "/basemate-og.png",
       button: {
-        title: `Launch Stablemate`,
+        title: `Launch Basemate`,
         action: {
           type: "launch_frame",
-          name: "Stablemate",
+          name: "Basemate",
           url: SITE_URL + "/portfolio",
           splashImageUrl: "/basemate-og.png",
           splashBackgroundColor: "#000000",

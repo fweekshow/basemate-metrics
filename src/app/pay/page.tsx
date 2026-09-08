@@ -14,11 +14,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Pay · Stablemate",
-  description: "Move money in and out of your Stablemate wallet.",
+  title: "Pay · Basemate",
+  description: "Move money in and out of your Basemate wallet.",
   openGraph: {
-    title: "Pay · Stablemate",
-    description: "Move money in and out of your Stablemate wallet.",
+    title: "Pay · Basemate",
+    description: "Move money in and out of your Basemate wallet.",
     type: "website",
     images: [SITE.pfp],
   },
@@ -87,7 +87,7 @@ export default async function PayPage({
         ) : (
           <>
             <PayFundHeader flow="onramp" />
-            <PayErrorCard message={session?.error ?? "Open the fund link Stablemate sent you to continue."} />
+            <PayErrorCard message={session?.error ?? "Open the fund link Basemate sent you to continue."} />
           </>
         )}
       </section>
@@ -115,10 +115,10 @@ function PayFundHeader({
 
   const title =
     flow === "offramp"
-      ? "Cash out from Stablemate"
+      ? "Cash out from Basemate"
       : formattedAmount
         ? `Add ${formattedAmount} to your account`
-        : "Fund your Stablemate Account";
+        : "Fund your Basemate Account";
 
   const subtitle =
     flow === "offramp"
@@ -194,7 +194,7 @@ function OfframpHeader() {
       </div>
       <div className="space-y-2">
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Cash out from Stablemate
+          Cash out from Basemate
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground">
           Configure your sale with Coinbase, then approve the exact USDC transfer from your Base

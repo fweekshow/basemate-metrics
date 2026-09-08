@@ -54,7 +54,7 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
 
   const [phase, setPhase] = useState<Phase>(sessionToken ? "loading" : "error");
   const [message, setMessage] = useState(
-    sessionToken ? "" : "Missing setup link. Open the latest link from Stablemate.",
+    sessionToken ? "" : "Missing setup link. Open the latest link from Basemate.",
   );
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -236,7 +236,7 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
         <StatusBlock
           icon="ok"
           title="You're connected!"
-          message="Head back to iMessage — Stablemate just sent you a confirmation. You're ready to send."
+          message="Head back to iMessage — Basemate just sent you a confirmation. You're ready to send."
         />
       ) : phase === "loading" ? (
         <StatusBlock icon="spin" message="Loading…" />
@@ -245,7 +245,7 @@ function ConnectInner({ sessionToken }: { sessionToken: string }) {
           icon="error"
           title="Something went wrong"
           message={message}
-          hint="Try pausing any ad blockers or privacy extensions and reopen the link from iMessage. If it still doesn't work, reply to Stablemate and we'll help."
+          hint="Try pausing any ad blockers or privacy extensions and reopen the link from iMessage. If it still doesn't work, reply to Basemate and we'll help."
         />
       ) : phase === "finishing" ? (
         <StatusBlock icon="spin" message="Setting up your account…" />
@@ -304,7 +304,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
         <Wallet className="h-7 w-7" />
       </div>
-      <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Set up your Stablemate account</h1>
+      <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Set up your Basemate account</h1>
       {children}
     </section>
   );

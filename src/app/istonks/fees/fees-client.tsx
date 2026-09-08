@@ -72,10 +72,10 @@ export function FeesClient() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <SectionLabel>fees</SectionLabel>
-          <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
             Launcher fees
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+          </h1>
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
             You keep {launcherShare}% of trading fees on every pool you launched. The split is
             locked into the pool at launch — see{" "}
             <Link href="/istonks/stocks" className="text-primary hover:underline">

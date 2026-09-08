@@ -77,11 +77,15 @@ export function TokenClient({ address, valid }: { address: string; valid: boolea
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <SectionLabel>token</SectionLabel>
-          <h2 className="mt-1 font-display text-3xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-3xl">
             {token?.symbol ? `$${token.symbol}` : shortAddress(address, 8, 6)}
-          </h2>
-          <p className="mt-1 text-[13px] text-muted-foreground">
+          </h1>
+          <p className="mt-2 text-base text-muted-foreground">
             {token?.name ?? "Paired against a Coinbase tokenized stock on Base."}
+          </p>
+          <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
+            Fixed supply via Doppler. Contract owner is the Doppler Airlock protocol — not the
+            launcher — so mint rate and ownership stay with the launchpad, not your wallet.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

@@ -20,7 +20,7 @@ export default async function IstonksFundPage() {
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (
-    <IstonksShell>
+    <IstonksShell signedIn={signedIn}>
       {signedIn ? <FundClient /> : <SignInGate what="Funding your launch wallet" />}
     </IstonksShell>
   );

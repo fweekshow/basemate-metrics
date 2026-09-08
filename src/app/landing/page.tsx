@@ -8,9 +8,9 @@ import type { AnalyticsPayload } from "@/lib/types";
 import { getCachedAnalytics } from "@/lib/analytics";
 
 export const metadata: Metadata = {
-  title: "Stablemate: Money that lives in your texts",
+  title: "Basemate: Money that lives in your texts",
   description:
-    "Send money home in a text. Funds arrive in their bank account. No new app, no wallet, no crypto. Stablemate routes it through the local stablecoin rail, invisibly.",
+    "Send money home in a text. Funds arrive in their bank account. No new app, no wallet, no crypto. Basemate routes it through the local stablecoin rail, invisibly.",
 };
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ const sets = [
   {
     label: "EARN",
     headline: "Idle balance earns ~5% automatically",
-    body: "Tell Stablemate to earn and it finds the best onchain rate: Moonwell, Morpho, or Aave. One message.",
+    body: "Tell Basemate to earn and it finds the best onchain rate: Moonwell, Morpho, or Aave. One message.",
   },
   {
     label: "TRADE",
@@ -141,7 +141,7 @@ export default async function LandingPage() {
               </h1>
 
               <p className="max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-                No new app. No wallet. No crypto knowledge. Text Stablemate and
+                No new app. No wallet. No crypto knowledge. Text Basemate and
                 the money moves. Funds arrive in the receiver&apos;s bank account.
                 The stablecoin rail is invisible.
               </p>
@@ -346,7 +346,7 @@ export default async function LandingPage() {
         </h2>
         <p className="mb-8 max-w-xl text-muted-foreground">
           Send · Earn · Trade · Save. Cross-border send is the front door.
-          Once your money&apos;s in, Stablemate does the rest.
+          Once your money&apos;s in, Basemate does the rest.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {sets.map(({ label, headline, body }) => (

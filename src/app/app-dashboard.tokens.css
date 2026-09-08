@@ -1,4 +1,4 @@
-/* Stablemate /app — scoped tokens (lavender wallet shell) */
+/* Basemate /app — scoped tokens (lavender wallet shell) */
 
 .app-dashboard {
   /* Same display face as marketing site (Clash Display in globals.css) */
@@ -11,9 +11,9 @@
   --app-dur-base: 200ms;
 
   --app-mark-blue: #0505ff;
-  --app-canvas: #eae8f5;
+  --app-canvas: #f5f5f7;
   --app-surface: #ffffff;
-  --app-shadow-card: 0 1px 2px rgba(10, 10, 26, 0.05), 0 10px 30px rgba(40, 30, 90, 0.07);
+  --app-shadow-card: 0 1px 2px rgba(10, 10, 26, 0.04), 0 8px 24px rgba(10, 10, 26, 0.05);
   --app-shadow-mark: 0 4px 14px rgba(5, 5, 255, 0.25);
 }
 

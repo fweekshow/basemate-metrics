@@ -19,7 +19,7 @@ export default async function IstonksBoardPage() {
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (
-    <IstonksShell>
+    <IstonksShell signedIn={signedIn}>
       <BoardClient signedIn={signedIn} />
     </IstonksShell>
   );

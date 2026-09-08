@@ -85,11 +85,12 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-/* Light-first — Stablemate Design System v2 */
+/* Light-first — Basemate Design System v2 */
 :root {
   --radius: 0.875rem;
 
-  --background: #EAE8F5;
+  /* Neutral near-white canvas; violet reserved for accents */
+  --background: #F5F5F7;
   --foreground: #0A0A1A;
 
   --card: #FFFFFF;
@@ -100,13 +101,13 @@
   --primary: #0505FF;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F1F0FA;
+  --secondary: #EEEEF2;
   --secondary-foreground: #0A0A1A;
 
-  --muted: #F1F0FA;
+  --muted: #EEEEF2;
   --muted-foreground: #44446A;
 
-  --accent: #E8E7F5;
+  --accent: #E8E8FF;
   --accent-foreground: #0505FF;
 
   --destructive: #FF4D67;
@@ -114,12 +115,12 @@
   --input: rgba(10, 10, 26, 0.06);
   --ring: rgba(5, 5, 255, 0.3);
 
-  --up: #16A34A;
+  --up: #0F9B36;
   --down: #FF4D67;
-  --cyan: #0284C7;
+  --cyan: #0505FF;
   --violet: #7C5CFF;
   --lilac: #BFB4FE;
-  --bone: #F1F0FA;
+  --bone: #EEEEF2;
   --amber: #D97706;
 
   /* DS v2 surface + foreground aliases */
@@ -127,27 +128,27 @@
   --fg-2: #44446A;
   --fg-3: rgba(10, 10, 26, 0.45);
   --fg-4: rgba(10, 10, 26, 0.30);
-  --bg: #EAE8F5;
+  --bg: #F5F5F7;
   --surface-1: #FFFFFF;
-  --surface-2: #F1F0FA;
+  --surface-2: #EEEEF2;
   --surface-3: #FFFFFF;
-  --surface-4: #DEDCEE;
+  --surface-4: #E4E4EA;
   --border-1: rgba(10, 10, 26, 0.10);
   --border-2: rgba(10, 10, 26, 0.16);
 
-  --shadow-card: 0 1px 2px rgba(10, 10, 26, 0.05), 0 10px 30px rgba(40, 30, 90, 0.07);
-  --shadow-modal: 0 24px 64px rgba(40, 30, 90, 0.18);
+  --shadow-card: 0 1px 2px rgba(10, 10, 26, 0.04), 0 8px 24px rgba(10, 10, 26, 0.05);
+  --shadow-modal: 0 24px 64px rgba(10, 10, 26, 0.14);
 
   --chart-1: #0505FF;
   --chart-2: #0284C7;
-  --chart-3: #16A34A;
+  --chart-3: #19FB44;
   --chart-4: #7C5CFF;
   --chart-5: #D97706;
 
   /* data-viz (charts/metrics only) */
   --viz-blue: #0505FF;
   --viz-cyan: #0284C7;
-  --viz-green: #16A34A;
+  --viz-green: #19FB44;
   --viz-violet: #7C5CFF;
   --viz-amber: #D97706;
   --viz-red: #FF4D67;
@@ -176,7 +177,7 @@
   *::-webkit-scrollbar-corner { background: var(--scrollbar-track); }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-base text-foreground;
     font-feature-settings: "tnum" 1, "cv01" 1;
   }
   html {
@@ -226,7 +227,7 @@
     text-shadow: 0 0 14px currentColor;
   }
 
-  /* Stablemate wallet (/app) — light lavender; see app-dashboard.tokens.css */
+  /* Basemate wallet (/app) — light lavender; see app-dashboard.tokens.css */
   .app-dashboard {
     color-scheme: light;
   }

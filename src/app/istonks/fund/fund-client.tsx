@@ -34,10 +34,10 @@ export function FundClient() {
     <div className="animate-ticker-in space-y-4">
       <div>
         <SectionLabel>fund</SectionLabel>
-        <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+        <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
           Your launch wallet
-        </h2>
-        <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+        </h1>
+        <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
           Launches are self-funded. You sign every transaction from this wallet, so it needs a
           little ETH on Base for gas before you can launch anything.
         </p>

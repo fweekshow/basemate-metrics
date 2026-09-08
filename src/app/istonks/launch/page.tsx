@@ -20,7 +20,7 @@ export default async function IstonksLaunchPage() {
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (
-    <IstonksShell>
+    <IstonksShell signedIn={signedIn}>
       {signedIn ? <LaunchClient /> : <SignInGate what="Launching an iStonks token" />}
     </IstonksShell>
   );

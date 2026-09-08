@@ -19,7 +19,7 @@ export default async function IstonksFeesPage() {
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (
-    <IstonksShell>
+    <IstonksShell signedIn={signedIn}>
       {signedIn ? <FeesClient /> : <SignInGate what="Claiming launcher fees" />}
     </IstonksShell>
   );

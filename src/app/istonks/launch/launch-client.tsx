@@ -211,10 +211,10 @@ export function LaunchClient() {
     <div className="animate-ticker-in mx-auto max-w-xl space-y-4">
       <div>
         <SectionLabel>launch</SectionLabel>
-        <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+        <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
           Pair a token with a stock
-        </h2>
-        <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+        </h1>
+        <p className="mt-2 text-base leading-relaxed text-muted-foreground">
           Same flow as iMessage — you pick the stock and how launcher fees pay out. Gas is
           self-funded from your Basemate wallet.
         </p>

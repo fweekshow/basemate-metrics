@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { AlertTriangle, Check, Copy, Loader2 } from "lucide-react";
 
+import { SignInDialog } from "@/components/shell/sign-in-dialog";
 import { BASESCAN_URL, readError, shortAddress, type StockStatus } from "@/lib/istonks";
 import { cn } from "@/lib/utils";
 
@@ -170,7 +170,7 @@ export function Cell({
 /* ── bits ───────────────────────────────────────────────────────────── */
 
 const STATUS_STYLE: Record<StockStatus, string> = {
-  launchable: "border-up/30 bg-up/10 text-up",
+  launchable: "border-up/40 bg-up/10 text-up",
   listed: "border-primary/30 bg-primary/10 text-primary",
   registered: "border-border bg-muted text-muted-foreground",
 };
@@ -179,7 +179,7 @@ export function StatusBadge({ status }: { status: StockStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]",
+        "inline-flex rounded-full border px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em]",
         STATUS_STYLE[status],
       )}
     >
@@ -284,8 +284,8 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border px-6 py-12 text-center">
-      <div className="rounded-2xl bg-white p-2 shadow-[var(--shadow-card)]">
+    <div className="flex flex-col items-center gap-4 rounded-[20px] border border-border bg-card px-6 py-12 text-center shadow-[var(--shadow-card)]">
+      <div className="rounded-2xl bg-white p-2">
         <Image
           src={`/brand/mascot/${mascot}`}
           alt=""
@@ -296,7 +296,7 @@ export function EmptyState({
       </div>
       <div>
         <p className="font-display text-base font-semibold">{title}</p>
-        <p className="mx-auto mt-1.5 max-w-sm text-[12px] leading-relaxed text-muted-foreground">
+        <p className="mx-auto mt-1.5 max-w-sm text-[14px] leading-relaxed text-muted-foreground">
           {body}
         </p>
       </div>
@@ -314,21 +314,26 @@ export function ErrorBand({ message }: { message: string }) {
   );
 }
 
-/** Sign-in prompt for the gated /istonks pages — hands off to the CDP flow at /app. */
+/** Sign-in prompt for gated /istonks pages — opens in-place CDP dialog. */
 export function SignInGate({ what }: { what: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <EmptyState
-      mascot="mate-support.png"
-      title="Sign in to continue"
-      body={`${what} is tied to your Basemate wallet. Sign in with the same email you use in iMessage, then come back here.`}
-      action={
-        <Link
-          href="/app"
-          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
-        >
-          Sign in at /app
-        </Link>
-      }
-    />
+    <>
+      <EmptyState
+        mascot="mate-support.png"
+        title="Sign in to continue"
+        body={`${what} is tied to your Basemate wallet. Sign in with the same email you use in iMessage.`}
+        action={
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-6 text-[15px] font-semibold text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+          >
+            Sign in
+          </button>
+        }
+      />
+      <SignInDialog open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }
