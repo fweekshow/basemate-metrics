@@ -9,13 +9,13 @@ export const metadata: Metadata = {
     "Country-by-country stablecoin issuers on Base — synced from Notion issuer & corridor pipeline.",
   openGraph: {
     title: "Stablemate Stablecoin Directory",
-    url: "https://basemate.app/stablecoin-directory",
+    url: "https://basemate.app/stablecoins",
   },
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function StablecoinDirectoryPage() {
+export default async function StablecoinsPage() {
   const { view, narrativeHtml } = await loadStablecoinDirectoryPage();
   return <StablecoinDirectoryClient view={view} narrativeHtml={narrativeHtml} />;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { Dashboard } from "@/components/dashboard/dashboard";
+import { ProductFrame } from "@/components/shell/product-frame";
 
 export const metadata: Metadata = {
   title: "basemate · metrics",
@@ -9,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function MetricsPage() {
-  return <Dashboard />;
+  return (
+    <ProductFrame>
+      <Dashboard />
+    </ProductFrame>
+  );
 }

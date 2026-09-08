@@ -6,12 +6,15 @@ import Link from "next/link";
 import { CheckCircle2, ImagePlus, Loader2, Rocket } from "lucide-react";
 
 import { Panel, SectionLabel } from "@/components/dashboard/primitives";
-import { ErrorBand, useIstonks } from "@/components/istonks/ui";
+import { ErrorBand, StatusBadge, useIstonks } from "@/components/istonks/ui";
+import { useSession } from "@/components/shell/session-provider";
 import {
   FEE_SPLIT,
   feeModeLabel,
+  formatUsd,
   normalizeStock,
   readError,
+  stockStatus,
   toArray,
   type IstonksStock,
 } from "@/lib/istonks";
@@ -47,7 +50,18 @@ async function downscaleToDataUrl(file: File, maxBytes = 900_000): Promise<strin
 }
 
 export function LaunchClient() {
+  const { signedIn, openSignIn } = useSession();
   const stocksFetch = useIstonks<unknown>("/api/istonks/stocks");
+  const catalog = useMemo(
+    () =>
+      toArray(stocksFetch.data)
+        .map(normalizeStock)
+        .sort((a, b) => {
+          const rank = (s: IstonksStock) => (s.launchable ? 0 : s.listed ? 1 : 2);
+          return rank(a) - rank(b) || (a.symbol ?? "").localeCompare(b.symbol ?? "");
+        }),
+    [stocksFetch.data],
+  );
   const launchable = useMemo(
     () =>
       toArray(stocksFetch.data)
@@ -123,6 +137,10 @@ export function LaunchClient() {
   }
 
   async function submitLaunch() {
+    if (!signedIn) {
+      openSignIn();
+      return;
+    }
     setSubmitting(true);
     setError(null);
     setFundUrl(null);
@@ -224,7 +242,7 @@ export function LaunchClient() {
       {fundUrl ? (
         <p className="text-[12px] text-muted-foreground">
           Need ETH?{" "}
-          <Link href="/istonks/fund" className="text-primary hover:underline">
+          <Link href="/account?deposit=1" className="text-primary hover:underline">
             Fund your wallet →
           </Link>
         </p>
@@ -421,6 +439,40 @@ export function LaunchClient() {
           </div>
         </Panel>
       )}
+
+      {step === "form" ? (
+        <div className="space-y-2 pt-4">
+          <SectionLabel>what’s live</SectionLabel>
+          <p className="text-[13px] text-muted-foreground">
+            Ready to pair first. Listed and registered stay collapsed in the full registry.
+          </p>
+          <ul className="divide-y divide-border/70 rounded-[20px] border border-border bg-card">
+            {catalog
+              .filter((s) => s.launchable)
+              .map((stock) => (
+                <li key={stock.symbol ?? stock.address}>
+                  <button
+                    type="button"
+                    onClick={() => setPairSymbol(stock.symbol ?? "")}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-accent/40"
+                  >
+                    <div>
+                      <p className="font-mono text-[13px] font-medium">${stock.symbol}</p>
+                      <p className="text-[12px] text-muted-foreground">{stock.name}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[13px] tabular-nums">{formatUsd(stock.priceUsd)}</span>
+                      <StatusBadge status={stockStatus(stock)} />
+                    </div>
+                  </button>
+                </li>
+              ))}
+          </ul>
+          <Link href="/istonks/stocks" className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary">
+            Full registry →
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

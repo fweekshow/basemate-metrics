@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 
 import { IstonksShell } from "@/components/istonks/shell";
-import { SignInGate } from "@/components/istonks/ui";
-import { getAppSession } from "@/lib/app-session";
-import { appUiPreviewServerEnabled } from "@/lib/app-ui-preview";
 import { LaunchClient } from "./launch-client";
 
 export const metadata: Metadata = {
@@ -15,13 +12,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function IstonksLaunchPage() {
-  const session = await getAppSession();
-  const signedIn = Boolean(session) || appUiPreviewServerEnabled();
-
+export default function IstonksLaunchPage() {
   return (
-    <IstonksShell signedIn={signedIn}>
-      {signedIn ? <LaunchClient /> : <SignInGate what="Launching an iStonks token" />}
+    <IstonksShell>
+      <LaunchClient />
     </IstonksShell>
   );
 }

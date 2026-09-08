@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { AlertTriangle, Check, Copy, Loader2 } from "lucide-react";
 
-import { SignInDialog } from "@/components/shell/sign-in-dialog";
+import { useSession } from "@/components/shell/session-provider";
 import { BASESCAN_URL, readError, shortAddress, type StockStatus } from "@/lib/istonks";
 import { cn } from "@/lib/utils";
 
@@ -314,26 +314,23 @@ export function ErrorBand({ message }: { message: string }) {
   );
 }
 
-/** Sign-in prompt for gated /istonks pages — opens in-place CDP dialog. */
+/** Sign-in prompt for gated /istonks pages — opens the shared session dialog. */
 export function SignInGate({ what }: { what: string }) {
-  const [open, setOpen] = useState(false);
+  const { openSignIn } = useSession();
   return (
-    <>
-      <EmptyState
-        mascot="mate-support.png"
-        title="Sign in to continue"
-        body={`${what} is tied to your Basemate wallet. Sign in with the same email you use in iMessage.`}
-        action={
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-6 text-[15px] font-semibold text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
-          >
-            Sign in
-          </button>
-        }
-      />
-      <SignInDialog open={open} onClose={() => setOpen(false)} />
-    </>
+    <EmptyState
+      mascot="mate-support.png"
+      title="Sign in to continue"
+      body={`${what} is tied to your Basemate wallet. Sign in with the same email you use in iMessage.`}
+      action={
+        <button
+          type="button"
+          onClick={openSignIn}
+          className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-6 text-[15px] font-semibold text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+        >
+          Sign in
+        </button>
+      }
+    />
   );
 }

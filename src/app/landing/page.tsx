@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Basemate: Money that lives in your texts",
   description:
     "Send money home in a text. Funds arrive in their bank account. No new app, no wallet, no crypto. Basemate routes it through the local stablecoin rail, invisibly.",
+  robots: { index: false, follow: false },
 };
 
 // ── Data ──────────────────────────────────────────────────────────────────────

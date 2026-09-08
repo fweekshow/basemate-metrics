@@ -11,8 +11,6 @@ import {
   ErrorBand,
   LoadingRows,
   Row,
-  SignInGate,
-  StatusBadge,
   Table,
   useIstonks,
 } from "@/components/istonks/ui";
@@ -24,7 +22,6 @@ import {
   normalizeStock,
   readError,
   sortLaunchesNewestFirst,
-  stockStatus,
   toArray,
   type IstonksLaunch,
   type IstonksStock,
@@ -55,6 +52,7 @@ function matchesQuery(launch: IstonksLaunch, q: string): boolean {
 
 export function BoardClient({ signedIn }: { signedIn: boolean }) {
   const stocksFetch = useIstonks<unknown>("/api/istonks/stocks");
+  const publicLaunchesFetch = useIstonks<unknown>("/api/istonks/launches");
   const myLaunchesFetch = useIstonks<unknown>(signedIn ? "/api/app/istonks/launches" : "");
 
   const stocks = useMemo(
@@ -65,14 +63,45 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
   const listed = stocks.filter((s) => s.listed).length;
 
   const myLaunches = useMemo(
-    () => sortLaunchesNewestFirst(toArray(myLaunchesFetch.data).map(normalizeLaunch)),
+    () =>
+      sortLaunchesNewestFirst(
+        toArray(myLaunchesFetch.data)
+          .map(normalizeLaunch)
+          // Failed attempts have no on-chain addresses — hide them from the board.
+          .filter((l) => Boolean(l.tokenAddress && l.poolId)),
+      ),
     [myLaunchesFetch.data],
   );
 
+  const publicLaunches = useMemo(
+    () =>
+      sortLaunchesNewestFirst(
+        toArray(publicLaunchesFetch.data)
+          .map(normalizeLaunch)
+          .filter((l) => Boolean(l.tokenAddress && l.poolId)),
+      ),
+    [publicLaunchesFetch.data],
+  );
+
   const [query, setQuery] = useState("");
+  const [pairFilter, setPairFilter] = useState("");
+  const filteredPublic = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return publicLaunches.filter((l) => {
+      if (pairFilter && (l.pairSymbol ?? "").toUpperCase() !== pairFilter.toUpperCase()) return false;
+      return matchesQuery(l, q);
+    });
+  }, [publicLaunches, query, pairFilter]);
+
   const filtered = useMemo(
     () => myLaunches.filter((l) => matchesQuery(l, query.trim().toLowerCase())),
     [myLaunches, query],
+  );
+
+  const early = publicLaunches.length < 8;
+  const pairOptions = useMemo(
+    () => [...new Set(publicLaunches.map((l) => l.pairSymbol).filter(Boolean))] as string[],
+    [publicLaunches],
   );
 
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -106,13 +135,13 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
     <div className="animate-ticker-in space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <SectionLabel>available stonks</SectionLabel>
+          <SectionLabel>board</SectionLabel>
           <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight sm:text-[32px]">
-            What you can pair against
+            Recent successful launches
           </h1>
           <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Coinbase tokenized stocks on Base. Launchable ones are live for iStonks Doppler
-            pairs from iMessage.
+            Live Doppler pairs. Failed attempts stay off this board. Launch one against a ready
+            stock.
           </p>
         </div>
         <Link
@@ -123,12 +152,20 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
         </Link>
       </div>
 
-      {stocksFetch.error ? <ErrorBand message={stocksFetch.error} /> : null}
+      {publicLaunchesFetch.error ? <ErrorBand message={publicLaunchesFetch.error} /> : null}
 
       <div className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border/60 pb-5 text-[15px]">
         <div>
           <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
-            Launchable
+            Live pairs
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-foreground">
+            {publicLaunchesFetch.loading ? "—" : publicLaunches.length}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+            Ready to pair
           </p>
           <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-up">
             {stocksFetch.loading ? "—" : launchable}
@@ -142,91 +179,117 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
             {stocksFetch.loading ? "—" : listed}
           </p>
         </div>
-        <div>
-          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
-            In catalog
-          </p>
-          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-foreground">
-            {stocksFetch.loading ? "—" : stocks.length}
-          </p>
-        </div>
       </div>
+
+      <div className="flex flex-wrap gap-2">
+        <label className="relative block w-full max-w-xs">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search ticker, pair, address…"
+            className="min-h-11 w-full rounded-full border border-border bg-card py-2 pr-4 pl-9 font-mono text-[14px] outline-none placeholder:text-muted-foreground focus:border-primary/50"
+          />
+        </label>
+        {pairOptions.length > 0 ? (
+          <select
+            value={pairFilter}
+            onChange={(e) => setPairFilter(e.target.value)}
+            className="min-h-11 rounded-full border border-border bg-card px-4 font-mono text-[13px]"
+          >
+            <option value="">All pairs</option>
+            {pairOptions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        ) : null}
+      </div>
+
+      <section className="space-y-3">
+        {publicLaunchesFetch.loading ? (
+          <Table head={["Token", "Pair", "Date"]}>
+            <LoadingRows rows={4} cols={3} />
+          </Table>
+        ) : filteredPublic.length === 0 ? (
+          <EmptyState
+            title={publicLaunches.length === 0 ? "No launches yet" : "No matches"}
+            body={
+              publicLaunches.length === 0
+                ? "Be first. Launch a pair against a ready stock."
+                : "Try a different ticker or pair filter."
+            }
+            mascot="mate-peace.png"
+          />
+        ) : (
+          <ul className={early ? "grid gap-3 sm:grid-cols-2" : "divide-y divide-border/70 rounded-[20px] border border-border bg-card"}>
+            {filteredPublic.map((launch) => {
+              const inner = (
+                <>
+                  <div className="min-w-0">
+                    <p className="font-mono text-[15px] font-medium">${launch.symbol ?? "—"}</p>
+                    <p className="truncate text-[13px] text-muted-foreground">
+                      {launch.name ?? "unnamed"}
+                      {launch.pairSymbol ? ` · ${launch.pairSymbol}` : ""}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-mono text-[12px] text-muted-foreground">
+                    {formatDate(launch.launchedAt)}
+                  </p>
+                </>
+              );
+              const href = launch.tokenAddress ? `/istonks/token/${launch.tokenAddress}` : null;
+              const className = early
+                ? "flex items-center justify-between gap-3 rounded-[20px] border border-border bg-card px-4 py-4 hover:border-primary/40"
+                : "flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-accent/40";
+              return (
+                <li key={launch.tokenAddress ?? launch.symbol}>
+                  {href ? (
+                    <Link href={href} className={className}>
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div className={className}>{inner}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-display text-xl font-semibold tracking-tight">Stock pairs</h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight">Ready to pair</h2>
             <p className="mt-1 text-[14px] text-muted-foreground">
-              Ticker · company · price · status
+              Live stocks you can launch against
             </p>
           </div>
           <Link
-            href="/istonks/stocks"
-            className="inline-flex min-h-11 items-center font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            href="/istonks/launch"
+            className="inline-flex min-h-11 items-center font-mono text-[12px] text-muted-foreground hover:text-primary"
           >
-            Full registry →
+            Launch against one →
           </Link>
         </div>
-
-        {stocksFetch.loading ? (
-          <div className="hidden md:block">
-            <Table head={["Ticker", "Company", "Price", "Status"]}>
-              <LoadingRows rows={6} cols={4} />
-            </Table>
-          </div>
-        ) : stocks.length === 0 ? (
-          <EmptyState
-            title={stocksFetch.unavailable ? "Catalog isn't live yet" : "No stocks configured"}
-            body={
-              stocksFetch.unavailable
-                ? "The stock registry endpoint hasn't been deployed to this agent yet."
-                : "The agent catalog is empty — check stockCatalog.ts."
-            }
-            mascot="mate-support.png"
-          />
-        ) : (
-          <>
-            <div className="hidden md:block">
-              <Table head={["Ticker", "Company", "Price", "Status"]}>
-                {stocks.map((stock) => (
-                  <Row key={stock.symbol ?? stock.address ?? Math.random()}>
-                    <Cell mono className="font-medium">
-                      ${stock.symbol ?? "—"}
-                    </Cell>
-                    <Cell>{stock.name ?? "—"}</Cell>
-                    <Cell mono>{formatUsd(stock.priceUsd)}</Cell>
-                    <Cell>
-                      <StatusBadge status={stockStatus(stock)} />
-                    </Cell>
-                  </Row>
-                ))}
-              </Table>
-            </div>
-            <ul className="divide-y divide-border/70 md:hidden">
-              {stocks.map((stock) => (
-                <li
-                  key={stock.symbol ?? stock.address ?? Math.random()}
-                  className="flex items-start justify-between gap-3 py-3.5"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[15px] font-medium">
-                        ${stock.symbol ?? "—"}
-                      </span>
-                      <StatusBadge status={stockStatus(stock)} />
-                    </div>
-                    <p className="mt-1 truncate text-[14px] text-muted-foreground">
-                      {stock.name ?? "—"}
-                    </p>
-                  </div>
-                  <p className="shrink-0 font-mono text-[15px] tabular-nums">
-                    {formatUsd(stock.priceUsd)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        {stocksFetch.error ? <ErrorBand message={stocksFetch.error} /> : null}
+        <div className="flex flex-wrap gap-2">
+          {stocks
+            .filter((s) => s.launchable)
+            .map((stock) => (
+              <Link
+                key={stock.symbol}
+                href="/istonks/launch"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-[13px] hover:border-primary/40"
+              >
+                <span className="font-mono font-medium">${stock.symbol}</span>
+                <span className="text-muted-foreground">{formatUsd(stock.priceUsd)}</span>
+              </Link>
+            ))}
+        </div>
       </section>
 
       {signedIn ? (
@@ -342,9 +405,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
             )}
           </Panel>
         </section>
-      ) : (
-        <SignInGate what="Seeing your launches" />
-      )}
+      ) : null}
     </div>
   );
 }

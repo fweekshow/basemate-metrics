@@ -45,6 +45,9 @@ import {
   type IstonksLaunch,
 } from "@/lib/istonks";
 import { IMESSAGE_HREF } from "@/lib/site";
+import { GatedPanel } from "@/components/shell/gated-panel";
+
+export type AccountTab = "home" | "activity" | "stonks" | "interest" | "contacts" | "agent";
 
 const PROJECT_ID =
   process.env.NEXT_PUBLIC_CDP_PROJECT_ID ?? "213ae300-ae45-48ba-b2c0-823126466b83";
@@ -63,19 +66,33 @@ const cdpConfig = {
   ethereum: { createOnLogin: "smart" as const },
 };
 
-export function AppClient({ initialHasSession = false }: { initialHasSession?: boolean }) {
+export function AppClient({
+  initialHasSession = false,
+  embedded = false,
+  tab,
+}: {
+  initialHasSession?: boolean;
+  embedded?: boolean;
+  tab?: AccountTab;
+}) {
   if (UI_PREVIEW_CLIENT) {
-    return <PreviewAuthGate />;
+    return <PreviewAuthGate embedded={embedded} tab={tab} />;
   }
   return (
     <CDPReactProvider config={cdpConfig}>
-      <AuthGate initialHasSession={initialHasSession} />
+      <AuthGate initialHasSession={initialHasSession} embedded={embedded} tab={tab} />
     </CDPReactProvider>
   );
 }
 
 /** Local UI iteration — mock data, no CDP (avoids Safari "Load failed" on localhost). */
-function PreviewAuthGate() {
+function PreviewAuthGate({
+  embedded = false,
+  tab,
+}: {
+  embedded?: boolean;
+  tab?: AccountTab;
+}) {
   const [phase, setPhase] = useState<"checking" | "gate" | "ready">("checking");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -113,7 +130,7 @@ function PreviewAuthGate() {
   if (phase === "ready") {
     return (
       <AppPreviewContext.Provider value>
-        <Dashboard />
+        <Dashboard embedded={embedded} forcedTab={tab} />
       </AppPreviewContext.Provider>
     );
   }
@@ -154,7 +171,15 @@ function PreviewAuthGate() {
 
 type AuthPhase = "checking" | "email" | "otp" | "linking" | "ready" | "error";
 
-function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }) {
+function AuthGate({
+  initialHasSession = false,
+  embedded = false,
+  tab,
+}: {
+  initialHasSession?: boolean;
+  embedded?: boolean;
+  tab?: AccountTab;
+}) {
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
   const { signInWithEmail } = useSignInWithEmail();
@@ -298,11 +323,30 @@ function AuthGate({ initialHasSession = false }: { initialHasSession?: boolean }
     }
   }
 
-  if (phase === "ready") return <Dashboard />;
+  if (phase === "ready") return <Dashboard embedded={embedded} forcedTab={tab} />;
 
   // While we confirm a server-detected session cookie is still valid, show a
   // skeleton that matches the Dashboard shell so the layout doesn't jump.
-  if (phase === "checking" && initialHasSession) return <DashboardSkeleton />;
+  if (phase === "checking" && initialHasSession) {
+    return embedded ? (
+      <div className="animate-pulse space-y-4 py-6">
+        <div className="h-10 w-40 rounded-full bg-muted" />
+        <div className="h-24 rounded-[20px] bg-muted" />
+        <div className="h-16 rounded-[20px] bg-muted" />
+      </div>
+    ) : (
+      <DashboardSkeleton />
+    );
+  }
+
+  if (embedded) {
+    return (
+      <GatedPanel
+        title="Sign in to your account"
+        body="Use the email you set up with Basemate in iMessage. Then you can send, earn, and claim from here."
+      />
+    );
+  }
 
   return (
     <div className="app-dashboard mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-md flex-col items-center justify-center gap-5 bg-background px-5 py-10 text-center">
@@ -465,7 +509,7 @@ function DashboardSkeleton() {
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 
-type Tab = "home" | "activity" | "stonks" | "interest" | "contacts" | "agent";
+type Tab = AccountTab;
 
 const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
   { id: "home", label: "Home", icon: Wallet },
@@ -507,9 +551,15 @@ function tabFromHash(): Tab | null {
   return HASH_ALIASES[raw] ?? null;
 }
 
-function Dashboard() {
-  const [tab, setTab] = useState<Tab>("home");
-  const [visited, setVisited] = useState<Set<Tab>>(() => new Set(["home"]));
+function Dashboard({
+  embedded = false,
+  forcedTab,
+}: {
+  embedded?: boolean;
+  forcedTab?: AccountTab;
+}) {
+  const [tab, setTab] = useState<Tab>(forcedTab ?? "home");
+  const [visited, setVisited] = useState<Set<Tab>>(() => new Set([forcedTab ?? "home"]));
   const [sendPrefill, setSendPrefill] = useState<SendPrefill | null>(null);
   const [sendOpen, setSendOpen] = useState(false);
 
@@ -518,6 +568,11 @@ function Dashboard() {
   // the dashboard is already open. Reading the hash post-mount (not in the
   // initial state) avoids a server/client hydration mismatch.
   useEffect(() => {
+    if (forcedTab) {
+      setTab(forcedTab);
+      setVisited((prev) => (prev.has(forcedTab) ? prev : new Set(prev).add(forcedTab)));
+      return;
+    }
     const sync = () => {
       const next = tabFromHash();
       if (next) {
@@ -528,7 +583,7 @@ function Dashboard() {
     sync();
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
-  }, []);
+  }, [forcedTab]);
 
   const selectTab = useCallback((id: Tab) => {
     setTab(id);
@@ -555,14 +610,30 @@ function Dashboard() {
     setSendOpen(true);
   }, []);
 
-  return (
-    <div className="app-dashboard relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-background">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md">
-        <MarkTile size={36} />
-        <span className="font-app-display text-lg font-semibold tracking-tight">{activeTitle}</span>
-      </header>
+  useEffect(() => {
+    if (!embedded) return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("send") === "1" || q.get("deposit") === "1") {
+      if (q.get("send") === "1") openSend(null);
+    }
+  }, [embedded, openSend]);
 
-      <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
+  return (
+    <div
+      className={
+        embedded
+          ? "relative w-full"
+          : "app-dashboard relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-background"
+      }
+    >
+      {embedded ? null : (
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md">
+          <MarkTile size={36} />
+          <span className="font-app-display text-lg font-semibold tracking-tight">{activeTitle}</span>
+        </header>
+      )}
+
+      <main className={embedded ? "w-full" : "flex-1 overflow-y-auto px-4 pb-28 pt-4"}>
         {visited.has("home") && (
           <div hidden={tab !== "home"}>
             <HomeTab onSend={() => openSend(null)} onOpenInterest={() => selectTab("interest")} />
@@ -611,33 +682,35 @@ function Dashboard() {
         }}
       />
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
-        <div className="flex items-stretch justify-around px-1 py-1.5">
-          {TABS.map(({ id, label, icon: Icon }) => {
-            const active = tab === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => selectTab(id)}
-                aria-current={active ? "page" : undefined}
-                className="flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 min-h-[44px]"
-              >
-                <span
-                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+      {embedded ? null : (
+        <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+          <div className="flex items-stretch justify-around px-1 py-1.5">
+            {TABS.map(({ id, label, icon: Icon }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => selectTab(id)}
+                  aria-current={active ? "page" : undefined}
+                  className="flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 min-h-[44px]"
                 >
-                  <Icon className="h-[18px] w-[18px]" />
-                </span>
-                <span
-                  className={`text-[10px] font-semibold transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
-                >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+                  <span
+                    className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+                  >
+                    <Icon className="h-[18px] w-[18px]" />
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
+                  >
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }
@@ -1488,7 +1561,9 @@ function StonksTab() {
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimed, setClaimed] = useState<string[]>([]);
 
-  const launches: IstonksLaunch[] = toArray(launchesApi.data).map(normalizeLaunch);
+  const launches: IstonksLaunch[] = toArray(launchesApi.data)
+    .map(normalizeLaunch)
+    .filter((l) => Boolean(l.tokenAddress && l.poolId));
   const fees: IstonksFee[] = toArray(feesApi.data).map(normalizeFee);
   const claimableCount = fees.filter((f, i) => f.claimable && !claimed.includes(feeRowKey(f, i))).length;
   const totalUsd = fees.reduce((sum, f) => sum + (f.amountUsd ?? 0), 0);

@@ -23,16 +23,30 @@ import { cdpConfig } from "@/lib/cdp-config";
 
 type Phase = "email" | "otp" | "linking" | "error";
 
-export function SignInDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function SignInDialog({
+  open,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}) {
   if (!open) return null;
   return (
     <CDPReactProvider config={cdpConfig}>
-      <SignInDialogInner onClose={onClose} />
+      <SignInDialogInner onClose={onClose} onSuccess={onSuccess} />
     </CDPReactProvider>
   );
 }
 
-function SignInDialogInner({ onClose }: { onClose: () => void }) {
+function SignInDialogInner({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess?: () => void;
+}) {
   const { isSignedIn } = useIsSignedIn();
   const { currentUser } = useCurrentUser();
   const { signInWithEmail } = useSignInWithEmail();
@@ -70,9 +84,8 @@ function SignInDialogInner({ onClose }: { onClose: () => void }) {
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) throw new Error(body?.error || "Sign-in failed.");
-      // Server components read the session cookie, so a refresh is what
-      // actually reveals the gated content behind this dialog.
-      window.location.reload();
+      if (onSuccess) onSuccess();
+      else window.location.reload();
     } catch (err) {
       setPhase("error");
       const raw = err instanceof Error ? err.message : "Sign-in failed.";
@@ -82,7 +95,7 @@ function SignInDialogInner({ onClose }: { onClose: () => void }) {
           : raw,
       );
     }
-  }, [currentUser, getAccessToken]);
+  }, [currentUser, getAccessToken, onSuccess]);
 
   // A CDP session may already exist from /app or /wallet/connect — link it
   // rather than asking for an email we don't need.
