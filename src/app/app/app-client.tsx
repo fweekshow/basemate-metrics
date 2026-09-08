@@ -17,6 +17,7 @@ import {
   Check,
   Copy,
   ChevronDown,
+  ChevronRight,
   ExternalLink,
   Loader2,
   LogOut,
@@ -24,6 +25,7 @@ import {
   Send,
   Settings,
   Sparkles,
+  TrendingUp,
   Users,
   Wallet,
   X,
@@ -32,6 +34,16 @@ import {
 import { SendSheet, type SendPrefill } from "@/app/app/send-sheet";
 import { BubbleMarkTile, MarkTile } from "@/app/app/app-brand-tiles";
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
+import {
+  feeModeLabel,
+  formatUsd,
+  normalizeFee,
+  normalizeLaunch,
+  readError,
+  toArray,
+  type IstonksFee,
+  type IstonksLaunch,
+} from "@/lib/istonks";
 import { IMESSAGE_HREF } from "@/lib/site";
 
 const PROJECT_ID =
@@ -444,17 +456,18 @@ function DashboardSkeleton() {
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 
-type Tab = "home" | "activity" | "interest" | "contacts" | "agent";
+type Tab = "home" | "activity" | "stonks" | "interest" | "contacts" | "agent";
 
 const TABS: { id: Tab; label: string; icon: typeof Wallet }[] = [
   { id: "home", label: "Home", icon: Wallet },
   { id: "activity", label: "Activity", icon: Activity },
-  { id: "interest", label: "Interest", icon: Sparkles },
+  { id: "stonks", label: "Stonks", icon: TrendingUp },
   { id: "contacts", label: "Contacts", icon: Users },
   { id: "agent", label: "Agent", icon: Settings },
 ];
 
-const TAB_IDS = TABS.map((t) => t.id) as Tab[];
+/** Tabs reachable via URL hash — includes Interest (no nav slot; Home + #earn). */
+const ROUTABLE_TABS: Tab[] = [...TABS.map((t) => t.id), "interest"];
 
 // Friendly hash aliases so deep links land on the right tab. Stablemate sends
 // these in chat (e.g. /app#balance, /app#payments); the canonical tab ids
@@ -465,6 +478,10 @@ const HASH_ALIASES: Record<string, Tab> = {
   earning: "interest",
   earn: "interest",
   interest: "interest",
+  istonks: "stonks",
+  launch: "stonks",
+  launches: "stonks",
+  fees: "stonks",
   sends: "activity",
   send: "home",
   payment: "agent",
@@ -477,7 +494,7 @@ function tabFromHash(): Tab | null {
   if (typeof window === "undefined") return null;
   const raw = window.location.hash.replace(/^#/, "").trim().toLowerCase();
   if (!raw) return null;
-  if ((TAB_IDS as string[]).includes(raw)) return raw as Tab;
+  if ((ROUTABLE_TABS as string[]).includes(raw)) return raw as Tab;
   return HASH_ALIASES[raw] ?? null;
 }
 
@@ -520,7 +537,9 @@ function Dashboard() {
         ? "Agent Settings"
         : tab === "interest"
           ? "Interest"
-          : (TABS.find((t) => t.id === tab)?.label ?? "Stablemate");
+          : tab === "stonks"
+            ? "Stonks"
+            : (TABS.find((t) => t.id === tab)?.label ?? "Stablemate");
 
   const openSend = useCallback((prefill?: SendPrefill | null) => {
     setSendPrefill(prefill ?? null);
@@ -537,12 +556,17 @@ function Dashboard() {
       <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
         {visited.has("home") && (
           <div hidden={tab !== "home"}>
-            <HomeTab onSend={() => openSend(null)} />
+            <HomeTab onSend={() => openSend(null)} onOpenInterest={() => selectTab("interest")} />
           </div>
         )}
         {visited.has("activity") && (
           <div hidden={tab !== "activity"}>
             <ActivityTab onSendAgain={(p) => openSend(p)} />
+          </div>
+        )}
+        {visited.has("stonks") && (
+          <div hidden={tab !== "stonks"}>
+            <StonksTab />
           </div>
         )}
         {visited.has("interest") && (
@@ -820,7 +844,13 @@ function TokenIcon({
   );
 }
 
-function HomeTab({ onSend }: { onSend: () => void }) {
+function HomeTab({
+  onSend,
+  onOpenInterest,
+}: {
+  onSend: () => void;
+  onOpenInterest: () => void;
+}) {
   const { data, loading, error, reload } = useApi<PortfolioPayload>("/api/app/portfolio");
   const total = data?.totals?.totalUsd ?? 0;
   const stakingUsd = data?.totals?.stakingUsd ?? 0;
@@ -843,9 +873,13 @@ function HomeTab({ onSend }: { onSend: () => void }) {
           </p>
         )}
         {stakingUsd > 0 && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-up/10 px-2.5 py-1 text-xs font-semibold text-up">
+          <button
+            type="button"
+            onClick={onOpenInterest}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-up/10 px-2.5 py-1 text-xs font-semibold text-up transition active:scale-[0.98]"
+          >
             <Sparkles className="h-3.5 w-3.5" /> {usd(stakingUsd)} earning
-          </p>
+          </button>
         )}
 
         <div className="mt-6 grid grid-cols-2 gap-2.5">
@@ -910,6 +944,21 @@ function HomeTab({ onSend }: { onSend: () => void }) {
           ))}
         </Stack>
       )}
+
+      <button
+        type="button"
+        onClick={onOpenInterest}
+        className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-left transition active:scale-[0.99]"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-up/15 text-up">
+          <Sparkles className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">Earn interest · Moonwell</p>
+          <p className="text-xs text-muted-foreground">USDC, ETH, and BTC — Stablemate covers gas</p>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </button>
     </>
   );
 }
@@ -1416,6 +1465,213 @@ function ActivityTab({ onSendAgain }: { onSendAgain: (prefill: SendPrefill) => v
         <ActivityRow key={t.id} t={t} onSendAgain={onSendAgain} />
       ))}
     </div>
+  );
+}
+
+function feeRowKey(fee: IstonksFee, index: number): string {
+  return fee.id ?? fee.poolId ?? fee.tokenAddress ?? `fee-${index}`;
+}
+
+function StonksTab() {
+  const launchesApi = useApi<{ items?: unknown }>("/api/app/istonks/launches");
+  const feesApi = useApi<{ items?: unknown; stale?: boolean }>("/api/app/istonks/fees");
+  const [claiming, setClaiming] = useState<string | null>(null);
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [claimed, setClaimed] = useState<string[]>([]);
+
+  const launches: IstonksLaunch[] = toArray(launchesApi.data).map(normalizeLaunch);
+  const fees: IstonksFee[] = toArray(feesApi.data).map(normalizeFee);
+  const claimableCount = fees.filter((f, i) => f.claimable && !claimed.includes(feeRowKey(f, i))).length;
+  const totalUsd = fees.reduce((sum, f) => sum + (f.amountUsd ?? 0), 0);
+  const feesUnauthorized =
+    Boolean(feesApi.error) && /invalid session|401|unauthorized|missing user/i.test(feesApi.error ?? "");
+
+  async function claim(fee: IstonksFee, key: string) {
+    setClaiming(key);
+    setClaimError(null);
+    try {
+      const res = await fetch("/api/app/istonks/fees/claim", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          poolId: fee.poolId,
+          tokenAddress: fee.tokenAddress,
+        }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(readError(body) ?? `HTTP ${res.status}`);
+      setClaimed((prev) => [...prev, key]);
+      invalidateApi("/api/app/istonks/fees");
+      feesApi.reload();
+    } catch (err) {
+      setClaimError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setClaiming(null);
+    }
+  }
+
+  return (
+    <>
+      <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Launcher fees
+        </p>
+        {feesApi.loading && !feesApi.data ? (
+          <Skeleton className="mt-3 h-10 w-32 rounded-xl" />
+        ) : feesUnauthorized ? (
+          <p className="mt-2 text-sm text-muted-foreground">Sign in again to see pending fees.</p>
+        ) : (
+          <p className="mt-2 font-app-display text-4xl font-bold leading-none tracking-tight tabular-nums">
+            {formatUsd(totalUsd)}
+          </p>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          {feesUnauthorized
+            ? "Your launches still load below."
+            : `${claimableCount} claimable · ${launches.length} launch${launches.length === 1 ? "" : "es"}`}
+        </p>
+        <a
+          href="/istonks/launch"
+          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--app-shadow-mark)] transition active:scale-[0.99]"
+        >
+          <TrendingUp className="h-4 w-4" /> Launch a token
+        </a>
+      </section>
+
+      {!feesUnauthorized && (
+        <>
+          <SectionLabel>Claimable fees</SectionLabel>
+          {claimError ? (
+            <div className="mb-2 rounded-2xl border border-down/30 bg-down/10 px-4 py-3 text-sm text-down">
+              {claimError}
+            </div>
+          ) : null}
+          {feesApi.loading && !feesApi.data ? (
+            <ListSkeleton rows={2} />
+          ) : feesApi.error && !feesUnauthorized ? (
+            <Empty
+              text="Couldn't load fees right now."
+              action={
+                <button
+                  type="button"
+                  onClick={feesApi.reload}
+                  className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+                >
+                  Try again
+                </button>
+              }
+            />
+          ) : fees.length === 0 ? (
+            <Empty text="No fees yet. They accrue as people trade your pools." />
+          ) : (
+            <Stack>
+              {fees.map((fee, i) => {
+                const key = feeRowKey(fee, i);
+                const busy = claiming === key;
+                const done = claimed.includes(key);
+                return (
+                  <StackRow key={key} bordered={i > 0} className="justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">${fee.tokenSymbol ?? "—"}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {fee.pairSymbol ? `paired ${fee.pairSymbol} · ` : ""}
+                        {feeModeLabel(fee.feeMode)}
+                      </p>
+                      <p className="mt-0.5 font-mono text-xs tabular-nums">
+                        {fee.amount ?? "—"}
+                        {fee.asset ? ` ${fee.asset}` : ""}
+                        {fee.amountUsd != null ? (
+                          <span className="ml-1.5 text-muted-foreground">{formatUsd(fee.amountUsd)}</span>
+                        ) : null}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!fee.claimable || busy || done}
+                      onClick={() => void claim(fee, key)}
+                      className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition active:scale-[0.98] disabled:opacity-50"
+                    >
+                      {busy ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : done ? (
+                        "Claimed"
+                      ) : (
+                        "Claim"
+                      )}
+                    </button>
+                  </StackRow>
+                );
+              })}
+            </Stack>
+          )}
+        </>
+      )}
+
+      <SectionLabel>Your launches</SectionLabel>
+      {launchesApi.loading && !launchesApi.data ? (
+        <ListSkeleton rows={3} />
+      ) : launchesApi.error ? (
+        <Empty
+          text="Couldn't load your launches."
+          action={
+            <button
+              type="button"
+              onClick={launchesApi.reload}
+              className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Try again
+            </button>
+          }
+        />
+      ) : launches.length === 0 ? (
+        <Empty
+          text="No launches yet. Pair a meme against a Coinbase stock."
+          action={
+            <a
+              href="/istonks/launch"
+              className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Launch a token
+            </a>
+          }
+        />
+      ) : (
+        <Stack>
+          {launches.map((launch, i) => {
+            const href = launch.tokenAddress ? `/istonks/token/${launch.tokenAddress}` : null;
+            const inner = (
+              <>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">${launch.symbol ?? "—"}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {launch.pairSymbol ? `vs ${launch.pairSymbol}` : "stock pair"}
+                    {launch.launchedAt ? ` · ${fmtDate(launch.launchedAt)}` : ""}
+                    {launch.feeMode ? ` · ${feeModeLabel(launch.feeMode)}` : ""}
+                  </p>
+                </div>
+                {href ? <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /> : null}
+              </>
+            );
+            return href ? (
+              <a
+                key={launch.tokenAddress ?? launch.symbol ?? i}
+                href={href}
+                className={`flex items-center gap-3 px-4 py-3.5 transition hover:bg-muted/40 ${i > 0 ? "border-t border-border" : ""}`}
+              >
+                {inner}
+              </a>
+            ) : (
+              <StackRow key={launch.symbol ?? i} bordered={i > 0}>
+                {inner}
+              </StackRow>
+            );
+          })}
+        </Stack>
+      )}
+    </>
   );
 }
 
