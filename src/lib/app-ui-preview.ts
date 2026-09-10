@@ -101,6 +101,7 @@ export function mockAppApiResponse(
             claimState: "unclaimed",
             claimDetail: "Claim link sent by text — waiting for Mum to claim.",
             claimExpiresAt: new Date(now + 86400000 * 2).toISOString(),
+            claimUrl: "https://app.basemate.app/wallet/connect?s=previewclaim",
             createdAt: new Date(now - 3600000).toISOString(),
           },
           {

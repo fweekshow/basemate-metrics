@@ -1375,6 +1375,7 @@ interface ActivityItem {
   claimState: ClaimState | null;
   claimDetail: string | null;
   claimExpiresAt: string | null;
+  claimUrl?: string | null;
   createdAt: string;
 }
 
@@ -1491,6 +1492,36 @@ function ActivityRow({
           {t.claimDetail && <p className="leading-relaxed">{t.claimDetail}</p>}
           {isSend && t.claimState === "unclaimed" && t.claimExpiresAt && (
             <p>Claim by {fmtDateTime(t.claimExpiresAt)}</p>
+          )}
+          {isSend && t.claimState === "unclaimed" && t.claimUrl && (
+            <div className="space-y-2">
+              <p className="break-all font-mono text-[11px] text-foreground">{t.claimUrl}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-foreground"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(t.claimUrl!);
+                  }}
+                >
+                  Copy claim link
+                </button>
+                {"share" in navigator ? (
+                  <button
+                    type="button"
+                    className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-foreground"
+                    onClick={() => {
+                      void navigator.share?.({
+                        title: "Claim your Basemate gift",
+                        url: t.claimUrl!,
+                      });
+                    }}
+                  >
+                    Share
+                  </button>
+                ) : null}
+              </div>
+            </div>
           )}
           {t.memo && (
             <p className="rounded-xl bg-secondary px-3 py-2 text-secondary-foreground">&ldquo;{t.memo}&rdquo;</p>
