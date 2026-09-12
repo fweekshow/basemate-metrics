@@ -14,6 +14,11 @@ interface OnrampPaymentFrameProps {
   layout?: "page" | "embedded" | "modal";
   /** Fired once when Coinbase confirms the onramp purchase (polling success). */
   onSuccess?: () => void;
+  /** Override success navigation. Default `/pay/success`. */
+  successPath?: string;
+  /** Override funding recorder. Default `/api/pay/record-funding`. */
+  recordPath?: string;
+  pollingSuccessMessage?: string;
 }
 
 interface FundPaymentLinkOption {
@@ -73,6 +78,9 @@ export function OnrampPaymentFrame({
   hostedFallbackUrl,
   layout = "page",
   onSuccess,
+  successPath = "/pay/success",
+  recordPath = "/api/pay/record-funding",
+  pollingSuccessMessage,
 }: OnrampPaymentFrameProps) {
   const router = useRouter();
   const onSuccessRef = useRef(onSuccess);
@@ -139,10 +147,13 @@ export function OnrampPaymentFrame({
         if (message.eventName === "onramp_api.polling_success" && !successFiredRef.current) {
           successFiredRef.current = true;
           setPhase("done");
-          void recordFundingSession(sessionToken);
+          if (pollingSuccessMessage) {
+            setStatus({ tone: "success", message: pollingSuccessMessage });
+          }
+          void recordFundingSession(sessionToken, recordPath);
           onSuccessRef.current?.();
           if (sessionToken) {
-            router.push(`/pay/success?s=${encodeURIComponent(sessionToken)}`);
+            router.push(`${successPath}?s=${encodeURIComponent(sessionToken)}`);
           }
         }
       }
@@ -150,7 +161,7 @@ export function OnrampPaymentFrame({
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [router, sessionToken]);
+  }, [router, sessionToken, successPath, recordPath, pollingSuccessMessage]);
 
   useEffect(() => {
     if (!selectedOptionUrl) return;
@@ -486,9 +497,9 @@ function formatExpiry(expiresAt: string): string {
   }).format(date);
 }
 
-function recordFundingSession(sessionToken?: string) {
+function recordFundingSession(sessionToken?: string, recordPath = "/api/pay/record-funding") {
   if (!sessionToken) return;
-  void fetch("/api/pay/record-funding", {
+  void fetch(recordPath, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ sessionToken }),
