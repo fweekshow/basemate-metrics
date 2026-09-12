@@ -28,6 +28,8 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  EyeOff,
+  Eye,
   X,
 } from "lucide-react";
 
@@ -46,6 +48,7 @@ import {
 } from "@/lib/istonks";
 import { IMESSAGE_HREF } from "@/lib/site";
 import { GatedPanel } from "@/components/shell/gated-panel";
+import { coinHideKey, readHiddenTokens, writeHiddenTokens } from "@/lib/hidden-tokens";
 
 export type AccountTab = "home" | "activity" | "stonks" | "interest" | "contacts" | "agent";
 
@@ -926,6 +929,36 @@ function TokenIcon({
   );
 }
 
+function useHiddenTokens(wallet: string | undefined) {
+  const [hidden, setHidden] = useState<string[]>([]);
+  useEffect(() => {
+    setHidden(readHiddenTokens(wallet));
+  }, [wallet]);
+  const hide = useCallback(
+    (key: string) => {
+      if (!wallet) return;
+      setHidden((prev) => {
+        const next = [...new Set([...prev, key.toLowerCase()])];
+        writeHiddenTokens(wallet, next);
+        return next;
+      });
+    },
+    [wallet],
+  );
+  const unhide = useCallback(
+    (key: string) => {
+      if (!wallet) return;
+      setHidden((prev) => {
+        const next = prev.filter((k) => k !== key.toLowerCase());
+        writeHiddenTokens(wallet, next);
+        return next;
+      });
+    },
+    [wallet],
+  );
+  return { hidden, hide, unhide };
+}
+
 function HomeTab({
   onSend,
   onOpenInterest,
@@ -934,10 +967,17 @@ function HomeTab({
   onOpenInterest: () => void;
 }) {
   const { data, loading, error, reload } = useApi<PortfolioPayload>("/api/app/portfolio");
-  const total = data?.totals?.totalUsd ?? 0;
   const stakingUsd = data?.totals?.stakingUsd ?? 0;
   const coins = data?.coins ?? [];
   const staking = data?.staking ?? [];
+  const wallet = data?.user?.wallets?.[0];
+  const { hidden, hide, unhide } = useHiddenTokens(wallet);
+  const hiddenSet = new Set(hidden);
+  const visibleCoins = coins.filter((c) => !hiddenSet.has(coinHideKey(c.tokenAddress, c.symbol)));
+  const hiddenCoins = coins.filter((c) => hiddenSet.has(coinHideKey(c.tokenAddress, c.symbol)));
+  const [showHidden, setShowHidden] = useState(false);
+  const coinsUsd = visibleCoins.reduce((sum, c) => sum + (c.valueUsd ?? 0), 0);
+  const total = coinsUsd + stakingUsd;
   const waiting = loading && !data;
   const empty = !waiting && !error && coins.length === 0 && staking.length === 0;
 
@@ -996,7 +1036,7 @@ function HomeTab({
         <Empty text="No tokens yet. Add funds to get started." />
       ) : (
         <Stack>
-          {coins.map((c, i) => (
+          {visibleCoins.map((c, i) => (
             <StackRow key={c.id} bordered={i > 0}>
               <TokenIcon symbol={c.symbol} tokenAddress={c.tokenAddress} imageUrl={c.imageUrl} />
               <div className="min-w-0 flex-1">
@@ -1006,10 +1046,18 @@ function HomeTab({
                 </p>
               </div>
               <p className="shrink-0 app-money text-sm font-semibold">{usd(c.valueUsd)}</p>
+              <button
+                type="button"
+                onClick={() => hide(coinHideKey(c.tokenAddress, c.symbol))}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                aria-label={`Hide ${c.symbol}`}
+              >
+                <EyeOff className="h-4 w-4" />
+              </button>
             </StackRow>
           ))}
           {staking.map((s, j) => (
-            <StackRow key={s.id} bordered={coins.length > 0 || j > 0}>
+            <StackRow key={s.id} bordered={visibleCoins.length > 0 || j > 0}>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-up/15 text-up">
                 <Sparkles className="h-4 w-4" />
               </div>
@@ -1025,6 +1073,38 @@ function HomeTab({
             </StackRow>
           ))}
         </Stack>
+      )}
+      {hiddenCoins.length > 0 && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setShowHidden((v) => !v)}
+            className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+          >
+            {showHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            {hiddenCoins.length} hidden
+          </button>
+          {showHidden && (
+            <Stack className="mt-2">
+              {hiddenCoins.map((c, i) => (
+                <StackRow key={c.id} bordered={i > 0} className="opacity-70">
+                  <TokenIcon symbol={c.symbol} tokenAddress={c.tokenAddress} imageUrl={c.imageUrl} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">{c.symbol}</p>
+                    <p className="text-xs text-muted-foreground">Hidden from your balance</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => unhide(coinHideKey(c.tokenAddress, c.symbol))}
+                    className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold"
+                  >
+                    Unhide
+                  </button>
+                </StackRow>
+              ))}
+            </Stack>
+          )}
+        </div>
       )}
 
       <button
