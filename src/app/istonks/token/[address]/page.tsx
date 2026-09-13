@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { IstonksShell } from "@/components/istonks/shell";
-import { getAppSession } from "@/lib/app-session";
+import { getIstonkSession } from "@/lib/istonk-session";
 import { appUiPreviewServerEnabled } from "@/lib/app-ui-preview";
 import { isAddress, normalizeToken, shortAddress } from "@/lib/istonks";
 import { fetchAgentJson } from "@/lib/istonks-server";
@@ -53,7 +53,7 @@ export default async function IstonksTokenPage({
   params: Promise<{ address: string }>;
 }) {
   const { address } = await params;
-  const session = await getAppSession();
+  const session = await getIstonkSession();
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (

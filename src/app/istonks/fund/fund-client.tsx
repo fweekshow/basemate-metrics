@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { Fuel, Smartphone, Wallet } from "lucide-react";
 
@@ -14,16 +13,18 @@ import {
   useIstonks,
 } from "@/components/istonks/ui";
 import { BASE_CHAIN_ID } from "@/lib/istonks";
+import { ISTONK_IMESSAGE_HREF } from "@/lib/istonks-pay";
 
-interface Profile {
-  displayName: string | null;
-  basename: string | null;
-  embeddedAddress: string | null;
+interface IstonkWallet {
+  address: string | null;
+  ethWei?: string;
 }
 
 export function FundClient() {
-  const { data, loading, error, unauthorized } = useIstonks<Profile>("/api/app/profile");
-  const address = data?.embeddedAddress ?? null;
+  const { data, loading, error, unauthorized } = useIstonks<IstonkWallet>(
+    "/api/istonks/app/stonks/wallet",
+  );
+  const address = data?.address ?? null;
   // EIP-681 payment URI — wallets that scan this land on Base with the
   // recipient prefilled instead of guessing the network.
   const paymentUri = address ? `ethereum:${address}@${BASE_CHAIN_ID}` : null;
@@ -48,7 +49,7 @@ export function FundClient() {
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Panel
           title="receive on base"
-          subtitle={data?.basename ?? data?.displayName ?? "your embedded wallet"}
+          subtitle="your iStonk wallet"
           bodyClassName="p-6"
         >
           {loading ? (
@@ -56,15 +57,15 @@ export function FundClient() {
           ) : !address ? (
             <div className="space-y-3 text-[13px] leading-relaxed text-muted-foreground">
               <p>
-                No embedded wallet on this account yet. Text the agent once from iMessage and
-                it&apos;ll create one, then this page will show the address.
+                No iStonk wallet on this account yet. Text iStonk in iMessage and reply
+                connect — then this page will show the address.
               </p>
-              <Link
-                href="/app"
+              <a
+                href={ISTONK_IMESSAGE_HREF}
                 className="inline-flex rounded-full bg-primary px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground"
               >
-                Open wallet
-              </Link>
+                Text iStonk
+              </a>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-5">
@@ -123,16 +124,16 @@ export function FundClient() {
               <Smartphone className="mt-0.5 size-4 shrink-0 text-primary" />
               <div className="space-y-3 text-[13px] leading-relaxed text-muted-foreground">
                 <p>
-                  You&apos;re signed in, so you can buy USDC on Base with Apple Pay, Google Pay, or
-                  card through Coinbase — same onramp the wallet uses. Minimum $2.
+                  Ask iStonk in iMessage to fund this wallet and it&apos;ll send you an Apple Pay
+                  link — USDC lands on Base in this address. Minimum $2.
                 </p>
-                <Link
-                  href="/app"
+                <a
+                  href={ISTONK_IMESSAGE_HREF}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
                 >
                   <Wallet className="size-3.5" />
-                  Add funds in wallet
-                </Link>
+                  Fund via iMessage
+                </a>
               </div>
             </div>
           </Panel>

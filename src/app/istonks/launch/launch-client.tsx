@@ -99,7 +99,7 @@ export function LaunchClient() {
     try {
       const dataUrl = await downscaleToDataUrl(file);
       setPreview(dataUrl);
-      const res = await fetch("/api/app/istonks/launch/image", {
+      const res = await fetch("/api/istonks/app/istonks/launch/image", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ dataUrl }),
@@ -146,7 +146,7 @@ export function LaunchClient() {
     setFundUrl(null);
     try {
       const ticker = symbol.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-      const res = await fetch("/api/app/istonks/launch", {
+      const res = await fetch("/api/istonks/app/istonks/launch", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

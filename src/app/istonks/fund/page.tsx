@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { IstonksShell } from "@/components/istonks/shell";
 import { SignInGate } from "@/components/istonks/ui";
-import { getAppSession } from "@/lib/app-session";
+import { getIstonkSession } from "@/lib/istonk-session";
 import { appUiPreviewServerEnabled } from "@/lib/app-ui-preview";
 import { FundClient } from "./fund-client";
 
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function IstonksFundPage() {
-  const session = await getAppSession();
+  const session = await getIstonkSession();
   const signedIn = Boolean(session) || appUiPreviewServerEnabled();
 
   return (

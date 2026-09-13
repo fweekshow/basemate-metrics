@@ -316,12 +316,13 @@ export function ErrorBand({ message }: { message: string }) {
 
 /** Sign-in prompt for gated /istonks pages — opens the shared session dialog. */
 export function SignInGate({ what }: { what: string }) {
-  const { openSignIn } = useSession();
+  const { openSignIn, product } = useSession();
+  const wallet = product === "istonk" ? "iStonk" : "Basemate";
   return (
     <EmptyState
       mascot="mate-support.png"
       title="Sign in to continue"
-      body={`${what} is tied to your Basemate wallet. Sign in with the same email you use in iMessage.`}
+      body={`${what} is tied to your ${wallet} wallet. Sign in with the same email you use in iMessage.`}
       action={
         <button
           type="button"

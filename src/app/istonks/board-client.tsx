@@ -53,7 +53,7 @@ function matchesQuery(launch: IstonksLaunch, q: string): boolean {
 export function BoardClient({ signedIn }: { signedIn: boolean }) {
   const stocksFetch = useIstonks<unknown>("/api/istonks/stocks");
   const publicLaunchesFetch = useIstonks<unknown>("/api/istonks/launches");
-  const myLaunchesFetch = useIstonks<unknown>(signedIn ? "/api/app/istonks/launches" : "");
+  const myLaunchesFetch = useIstonks<unknown>(signedIn ? "/api/istonks/app/istonks/launches" : "");
 
   const stocks = useMemo(
     () => toArray(stocksFetch.data).map(normalizeStock).sort(byTicker),
@@ -113,7 +113,7 @@ export function BoardClient({ signedIn }: { signedIn: boolean }) {
     setClaiming(key);
     setClaimError(null);
     try {
-      const res = await fetch("/api/app/istonks/fees/claim", {
+      const res = await fetch("/api/istonks/app/istonks/fees/claim", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

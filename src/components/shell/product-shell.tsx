@@ -100,7 +100,10 @@ export function ProductShell({
   regs?: boolean;
 }) {
   const pathname = usePathname() ?? "/";
-  const { signedIn, address, openSignIn } = useSession();
+  const { signedIn, address, openSignIn, product } = useSession();
+  // Basemate settings manage the Basemate wallet; the iStonk session's home is its fund page.
+  const accountHref = product === "istonk" ? "/istonks/fund" : "/account/settings";
+  const mobileAccountHref = product === "istonk" ? "/istonks/fund" : "/account";
   const [moreOpen, setMoreOpen] = useState(false);
   const [drawerOpaque, setDrawerOpaque] = useState(false);
 
@@ -169,7 +172,7 @@ export function ProductShell({
           <div className="mt-3">
             {signedIn ? (
               <Link
-                href="/account/settings"
+                href={accountHref}
                 className={cn(
                   "flex min-h-11 items-center gap-3 rounded-full border border-border bg-card px-3",
                   focusRing,
@@ -208,7 +211,7 @@ export function ProductShell({
             <div className="ml-auto flex items-center gap-2">
               {signedIn ? (
                 <Link
-                  href="/account"
+                  href={mobileAccountHref}
                   className={cn("inline-flex min-h-11 items-center rounded-full border border-border px-3 text-[13px]", focusRing)}
                 >
                   Account

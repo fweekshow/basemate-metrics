@@ -31,7 +31,7 @@ function feeKey(fee: IstonksFee, index: number): string {
 
 export function FeesClient() {
   const { data, loading, error, unavailable, unauthorized, reload } = useIstonks<unknown>(
-    "/api/app/istonks/fees",
+    "/api/istonks/app/istonks/fees",
   );
   const [claiming, setClaiming] = useState<string | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export function FeesClient() {
     setClaiming(key);
     setClaimError(null);
     try {
-      const res = await fetch("/api/app/istonks/fees/claim", {
+      const res = await fetch("/api/istonks/app/istonks/fees/claim", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

@@ -4,8 +4,11 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { useRouter } from "next/navigation";
 
 import { SignInDialog } from "@/components/shell/sign-in-dialog";
+import type { Product } from "@/lib/cdp-config";
 
 type SessionContextValue = {
+  /** Which CDP project / backend this session belongs to. */
+  product: Product;
   signedIn: boolean;
   address: string | null;
   openSignIn: () => void;
@@ -18,6 +21,7 @@ export function useSession(): SessionContextValue {
   const ctx = useContext(SessionContext);
   if (!ctx) {
     return {
+      product: "basemate",
       signedIn: false,
       address: null,
       openSignIn: () => {},
@@ -28,10 +32,12 @@ export function useSession(): SessionContextValue {
 }
 
 export function SessionProvider({
+  product = "basemate",
   initialSignedIn,
   address = null,
   children,
 }: {
+  product?: Product;
   initialSignedIn: boolean;
   address?: string | null;
   children: React.ReactNode;
@@ -47,18 +53,20 @@ export function SessionProvider({
 
   const value = useMemo<SessionContextValue>(
     () => ({
+      product,
       signedIn,
       address,
       openSignIn: () => setSignInOpen(true),
       refresh,
     }),
-    [signedIn, address, refresh],
+    [product, signedIn, address, refresh],
   );
 
   return (
     <SessionContext.Provider value={value}>
       {children}
       <SignInDialog
+        product={product}
         open={signInOpen}
         onClose={() => setSignInOpen(false)}
         onSuccess={() => {

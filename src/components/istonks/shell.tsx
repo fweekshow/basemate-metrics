@@ -9,7 +9,11 @@ export async function IstonksShell({
   /** @deprecated Session is read inside ProductFrame. */
   signedIn?: boolean;
 }) {
-  return <ProductFrame regs>{children}</ProductFrame>;
+  return (
+    <ProductFrame regs product="istonk">
+      {children}
+    </ProductFrame>
+  );
 }
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
