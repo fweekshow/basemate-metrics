@@ -9,6 +9,8 @@ import {
   ISTONK_PAY_OG_HEIGHT,
   ISTONK_PAY_OG_PATH,
   ISTONK_PAY_OG_WIDTH,
+  formatUsdAmount,
+  istonkPayCopy,
   istonksApiHost,
 } from "@/lib/istonks-pay";
 import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
@@ -17,11 +19,26 @@ import { SITE } from "@/lib/site";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function generateMetadata(): Promise<Metadata> {
+type SearchParams = Promise<{ s?: string | string[] }>;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const token = Array.isArray(params.s) ? params.s[0] : params.s;
+  const session = token ? await resolveFundSession(token) : null;
+  const copy = istonkPayCopy({
+    isBitrefill: Boolean(session?.isBitrefill),
+    productName: session?.productName,
+    giftLabel: session?.giftLabel,
+    formattedAmount: formatUsdAmount(session?.amountUsd),
+  });
   const origin = SITE.baseUrl;
   return basemateEmbedMetadata({
-    title: "Send a stock on iMessage",
-    description: "Apple Pay onramp to buy a tokenized stock and send it to a phone number.",
+    title: copy.ogTitle,
+    description: copy.ogDescription,
     url: `${origin}/istonks/pay`,
     origin,
     imageUrl: `${origin}${ISTONK_PAY_OG_PATH}`,
@@ -30,8 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
     buttonTitle: "Open iStonk",
   });
 }
-
-type SearchParams = Promise<{ s?: string | string[] }>;
 
 export interface FundPaymentLinkOption {
   method: "apple_pay" | "google_pay";
@@ -47,8 +62,11 @@ interface FundSessionResponse {
   expiresAt?: string;
   needsVerify?: boolean;
   isGift?: boolean;
+  isBitrefill?: boolean;
   giftLabel?: string;
   recipientDisplay?: string;
+  productName?: string;
+  intent?: { kind?: string; productName?: string };
   error?: string;
 }
 
@@ -68,8 +86,10 @@ export default async function IstonkPayPage({
           <IstonkPayClient
             sessionToken={token}
             amountUsd={session.amountUsd}
+            isBitrefill={Boolean(session.isBitrefill)}
             giftLabel={session.giftLabel}
             recipientDisplay={session.recipientDisplay}
+            productName={session.productName}
             needsVerify={Boolean(session.needsVerify)}
             expiresAt={session.expiresAt ?? new Date(Date.now() + 10 * 60_000).toISOString()}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
@@ -105,6 +125,7 @@ async function resolveFundSession(
       headers: { accept: "application/json" },
     });
     const body = (await res.json()) as FundSessionResponse;
+    const intentFields = intentFieldsFromSession(body);
     if (!res.ok) {
       return { error: body.error ?? "This fund link is invalid or expired." };
     }
@@ -113,9 +134,7 @@ async function resolveFundSession(
         needsVerify: true,
         amountUsd: body.amountUsd,
         expiresAt: body.expiresAt,
-        giftLabel: body.giftLabel,
-        recipientDisplay: body.recipientDisplay,
-        isGift: body.isGift,
+        ...intentFields,
       };
     }
     if (!body.paymentLinkUrl || !body.expiresAt) {
@@ -130,15 +149,24 @@ async function resolveFundSession(
           : undefined,
       amountUsd: body.amountUsd,
       expiresAt: body.expiresAt,
-      giftLabel: body.giftLabel,
-      recipientDisplay: body.recipientDisplay,
-      isGift: body.isGift,
+      ...intentFields,
     };
   } catch (err) {
     return {
       error: err instanceof Error ? err.message : "Could not load this fund link.",
     };
   }
+}
+
+function intentFieldsFromSession(body: FundSessionResponse) {
+  const isBitrefill = body.isBitrefill === true || body.intent?.kind === "bitrefill";
+  return {
+    giftLabel: body.giftLabel,
+    recipientDisplay: body.recipientDisplay,
+    productName: body.productName ?? (body.intent?.kind === "bitrefill" ? body.intent.productName : undefined),
+    isGift: body.isGift === true || body.intent?.kind === "gift_stock",
+    isBitrefill,
+  };
 }
 
 function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
