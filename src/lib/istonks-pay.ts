@@ -31,6 +31,7 @@ export function formatUsdAmount(amountUsd?: number): string | null {
 
 export function istonkPayCopy(input: {
   isBitrefill?: boolean;
+  isGift?: boolean;
   productName?: string | null;
   giftLabel?: string | null;
   recipientDisplay?: string | null;
@@ -55,20 +56,33 @@ export function istonkPayCopy(input: {
     };
   }
 
+  if (input.isGift || input.giftLabel) {
+    return {
+      kind: "stock" as const,
+      ogTitle: "Send a stock on iMessage",
+      ogDescription: "Apple Pay onramp to buy a tokenized stock and send it to a phone number.",
+      title: input.formattedAmount
+        ? `Add ${input.formattedAmount} to send ${input.giftLabel ?? "the stock"}`
+        : "Fund your iStonk send",
+      subtitle: input.recipientDisplay
+        ? `Buy USDC on Base with Apple Pay, then iStonk sends it to ${input.recipientDisplay}.`
+        : "Buy USDC on Base with Apple Pay. iStonk buys the stock and sends it after it clears.",
+      pollingSuccess: "Done. Your USDC is on its way — iStonk will buy and send the stock.",
+      successDescription: input.giftLabel
+        ? `iStonk is buying ${input.giftLabel}${input.recipientDisplay ? ` for ${input.recipientDisplay}` : ""} now. You'll get a text when it lands.`
+        : "iStonk is buying and sending the stock now. You'll get a text when it lands.",
+      successOgDescription: "iStonk is buying the stock and sending it now.",
+    };
+  }
+
   return {
-    kind: "stock" as const,
-    ogTitle: "Send a stock on iMessage",
-    ogDescription: "Apple Pay onramp to buy a tokenized stock and send it to a phone number.",
-    title: input.formattedAmount
-      ? `Add ${input.formattedAmount} to send ${input.giftLabel ?? "the stock"}`
-      : "Fund your iStonk send",
-    subtitle: input.recipientDisplay
-      ? `Buy USDC on Base with Apple Pay, then iStonk sends it to ${input.recipientDisplay}.`
-      : "Buy USDC on Base with Apple Pay. iStonk buys the stock and sends it after it clears.",
-    pollingSuccess: "Done. Your USDC is on its way — iStonk will buy and send the stock.",
-    successDescription: input.giftLabel
-      ? `iStonk is buying ${input.giftLabel}${input.recipientDisplay ? ` for ${input.recipientDisplay}` : ""} now. You'll get a text when it lands.`
-      : "iStonk is buying and sending the stock now. You'll get a text when it lands.",
-    successOgDescription: "iStonk is buying the stock and sending it now.",
+    kind: "fund" as const,
+    ogTitle: "Add funds on iMessage",
+    ogDescription: "Buy USDC on Base with Apple Pay.",
+    title: input.formattedAmount ? `Add ${input.formattedAmount} to your account` : "Fund your iStonk account",
+    subtitle: "Buy USDC on Base with Apple Pay.",
+    pollingSuccess: "Done. Your USDC is on its way to your iStonk account.",
+    successDescription: "Your USDC is on its way. You'll get a text when it lands.",
+    successOgDescription: "Your USDC is on its way to your iStonk account.",
   };
 }
