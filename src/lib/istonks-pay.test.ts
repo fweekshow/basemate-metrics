@@ -21,6 +21,13 @@ describe("istonkPayCopy", () => {
     expect(copy.subtitle).toContain("Sam");
   });
 
+  it("uses generic account copy when the session is not a send", () => {
+    const copy = istonkPayCopy({ formattedAmount: "$5" });
+    expect(copy.kind).toBe("fund");
+    expect(copy.title).toBe("Add $5 to your account");
+    expect(copy.subtitle).not.toContain("stock");
+  });
+
   it("uses gift-card copy for Bitrefill", () => {
     const copy = istonkPayCopy({
       isBitrefill: true,

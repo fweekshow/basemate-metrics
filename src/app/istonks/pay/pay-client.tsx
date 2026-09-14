@@ -51,6 +51,7 @@ export function IstonkPayClient({
 
   const copy = istonkPayCopy({
     isBitrefill,
+    isGift: Boolean(giftLabel),
     productName,
     giftLabel,
     recipientDisplay,
@@ -141,8 +142,8 @@ export function IstonkPayClient({
           expiresAt={checkout.expiresAt}
           sessionToken={sessionToken}
           hostedFallbackUrl={checkout.hostedFallbackUrl}
-          successPath="/istonks/pay/success"
-          recordPath="/api/istonks/pay/record-funding"
+          successPath="/pay/success"
+          recordPath="/api/pay/record-funding"
           pollingSuccessMessage={copy.pollingSuccess}
         />
       ) : (

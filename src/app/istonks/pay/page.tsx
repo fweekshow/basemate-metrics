@@ -39,7 +39,7 @@ export async function generateMetadata({
   return basemateEmbedMetadata({
     title: copy.ogTitle,
     description: copy.ogDescription,
-    url: `${origin}/istonks/pay`,
+    url: `${origin}/pay`,
     origin,
     imageUrl: `${origin}${ISTONK_PAY_OG_PATH}`,
     imageWidth: ISTONK_PAY_OG_WIDTH,

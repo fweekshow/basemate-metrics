@@ -3,38 +3,85 @@ import Image from "next/image";
 
 import { AlertCircle } from "lucide-react";
 
+import { IstonkPayClient } from "@/app/istonks/pay/pay-client";
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
 import { OfframpFlow } from "@/app/pay/offramp-flow";
 import { PayFlowShell } from "@/components/site/pay-flow-shell";
 import { SiteShell } from "@/components/site/site-shell";
+import { basemateEmbedMetadata } from "@/lib/embed";
 import { resolveEmbeddablePaymentLinks } from "@/lib/embed-payment-links";
+import {
+  ISTONK_PAY_OG_HEIGHT,
+  ISTONK_PAY_OG_PATH,
+  ISTONK_PAY_OG_WIDTH,
+  formatUsdAmount,
+  istonkPayCopy,
+} from "@/lib/istonks-pay";
+import { fetchFundSessionFromPayAgents, type PayAgentKind } from "@/lib/pay-agents";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-export const metadata: Metadata = {
-  title: "Pay · Basemate",
-  description: "Move money in and out of your Basemate wallet.",
-  openGraph: {
-    title: "Pay · Basemate",
-    description: "Move money in and out of your Basemate wallet.",
-    type: "website",
-    images: [SITE.pfp],
-  },
-};
 
 type PayPageSearchParams = Promise<{
   s?: string | string[];
   o?: string | string[];
 }>;
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: PayPageSearchParams;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const token = Array.isArray(params.s) ? params.s[0] : params.s;
+  const session = token ? await resolveFundSession(token) : null;
+  if (session && !session.error && isIstonkCheckout(session)) {
+    const copy = istonkPayCopy({
+      isBitrefill: Boolean(session.isBitrefill),
+      isGift: Boolean(session.isGift),
+      productName: session.productName,
+      giftLabel: session.giftLabel,
+      formattedAmount: formatUsdAmount(session.amountUsd),
+    });
+    const origin = SITE.baseUrl;
+    return basemateEmbedMetadata({
+      title: copy.ogTitle,
+      description: copy.ogDescription,
+      url: `${origin}/pay`,
+      origin,
+      imageUrl: `${origin}${ISTONK_PAY_OG_PATH}`,
+      imageWidth: ISTONK_PAY_OG_WIDTH,
+      imageHeight: ISTONK_PAY_OG_HEIGHT,
+      buttonTitle: "Open iStonk",
+    });
+  }
+  return {
+    title: "Pay · Basemate",
+    description: "Move money in and out of your Basemate account.",
+    openGraph: {
+      title: "Pay · Basemate",
+      description: "Move money in and out of your Basemate account.",
+      type: "website",
+      images: [SITE.pfp],
+    },
+  };
+}
+
 interface FundSessionResponse {
-  paymentLinkUrl: string;
+  paymentLinkUrl?: string;
   paymentLinkOptions?: FundPaymentLinkOption[];
   hostedFallbackUrl?: string;
   amountUsd?: number;
-  expiresAt: string;
+  expiresAt?: string;
+  needsVerify?: boolean;
+  isGift?: boolean;
+  isBitrefill?: boolean;
+  giftLabel?: string;
+  recipientDisplay?: string;
+  productName?: string;
+  source?: PayAgentKind;
+  error?: string;
 }
 
 export interface FundPaymentLinkOption {
@@ -69,7 +116,20 @@ export default async function PayPage({
   return (
     <Shell>
       <section className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center gap-6 py-4 sm:py-8">
-        {session?.paymentLinkUrl ? (
+        {session && !session.error && isIstonkCheckout(session) ? (
+          <IstonkPayClient
+            sessionToken={token}
+            amountUsd={session.amountUsd}
+            isBitrefill={Boolean(session.isBitrefill)}
+            giftLabel={session.giftLabel}
+            recipientDisplay={session.recipientDisplay}
+            productName={session.productName}
+            needsVerify={Boolean(session.needsVerify)}
+            expiresAt={session.expiresAt ?? new Date(Date.now() + 10 * 60_000).toISOString()}
+            paymentLinkOptions={paymentLinkOptionsForSession(session)}
+            hostedFallbackUrl={session.hostedFallbackUrl}
+          />
+        ) : session?.paymentLinkUrl && session.expiresAt ? (
           <article
             className="overflow-hidden rounded-[22px] border border-border/80 bg-card"
             style={{ boxShadow: "var(--shadow-card)" }}
@@ -205,55 +265,81 @@ function OfframpHeader() {
   );
 }
 
-async function resolveFundSession(
-  token: string,
-): Promise<(FundSessionResponse & { error?: never }) | { error: string; paymentLinkUrl?: never; expiresAt?: never }> {
-  const apiHost =
-    process.env.CHANNELS_API_HOST?.trim() ||
-    process.env.IMESSAGE_PORTFOLIO_API_HOST?.trim() ||
-    process.env.AGENT_API_HOST?.trim();
+function isIstonkCheckout(session: FundSessionResponse): boolean {
+  return session.source === "istonk" || Boolean(session.isGift) || Boolean(session.isBitrefill);
+}
 
-  if (!apiHost) {
-    return { error: "Fund session API is not configured." };
-  }
-
-  const endpoint = new URL("/api/agent/fund-session", apiHost.replace(/\/$/, ""));
-  endpoint.searchParams.set("token", token);
-
-  try {
-    const res = await fetch(endpoint, {
-      cache: "no-store",
-      headers: { accept: "application/json" },
-    });
-    const body = (await res.json()) as Partial<FundSessionResponse> & { error?: string };
-
-    if (!res.ok || !body.paymentLinkUrl || !body.expiresAt) {
-      return { error: body.error ?? "This fund link is invalid or expired." };
-    }
-
-    const amountUsd =
-      typeof body.amountUsd === "number" && Number.isFinite(body.amountUsd) && body.amountUsd > 0
-        ? body.amountUsd
-        : undefined;
-
-    return {
-      paymentLinkUrl: body.paymentLinkUrl,
-      paymentLinkOptions: body.paymentLinkOptions?.filter(isFundPaymentLinkOption),
-      hostedFallbackUrl:
-        typeof body.hostedFallbackUrl === "string" && body.hostedFallbackUrl.startsWith("https://")
-          ? body.hostedFallbackUrl
+function intentFieldsFromSession(body: Record<string, unknown>) {
+  const intent = body.intent as { kind?: string; productName?: string } | undefined;
+  const isBitrefill = body.isBitrefill === true || intent?.kind === "bitrefill";
+  const isGift = body.isGift === true || intent?.kind === "gift_stock";
+  return {
+    isGift,
+    isBitrefill,
+    giftLabel: typeof body.giftLabel === "string" ? body.giftLabel : undefined,
+    recipientDisplay: typeof body.recipientDisplay === "string" ? body.recipientDisplay : undefined,
+    productName:
+      typeof body.productName === "string"
+        ? body.productName
+        : intent?.kind === "bitrefill"
+          ? intent.productName
           : undefined,
-      amountUsd,
-      expiresAt: body.expiresAt,
-    };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Could not load this fund link.",
-    };
+  };
+}
+
+async function resolveFundSession(token: string): Promise<FundSessionResponse> {
+  const result = await fetchFundSessionFromPayAgents(token);
+  if (!result) {
+    return { error: "This fund link is invalid or expired." };
   }
+
+  const body = result.data;
+  const amountUsd =
+    typeof body.amountUsd === "number" && Number.isFinite(body.amountUsd) && body.amountUsd > 0
+      ? body.amountUsd
+      : undefined;
+  const paymentLinkUrl = typeof body.paymentLinkUrl === "string" ? body.paymentLinkUrl : undefined;
+  const expiresAt = typeof body.expiresAt === "string" ? body.expiresAt : undefined;
+  const intent = intentFieldsFromSession(body);
+  const isIstonk = result.kind === "istonk" || intent.isGift || intent.isBitrefill;
+  const needsVerify =
+    body.needsVerify === true || paymentLinkUrl === "pending://checkout" || !paymentLinkUrl;
+
+  if (needsVerify) {
+    if (isIstonk) {
+      return {
+        needsVerify: true,
+        amountUsd,
+        expiresAt,
+        source: result.kind,
+        ...intent,
+      };
+    }
+    return { error: typeof body.error === "string" ? body.error : "This fund link is invalid or expired." };
+  }
+
+  if (!paymentLinkUrl || !expiresAt) {
+    return { error: typeof body.error === "string" ? body.error : "This fund link is invalid or expired." };
+  }
+
+  return {
+    paymentLinkUrl,
+    paymentLinkOptions: Array.isArray(body.paymentLinkOptions)
+      ? body.paymentLinkOptions.filter(isFundPaymentLinkOption)
+      : undefined,
+    hostedFallbackUrl:
+      typeof body.hostedFallbackUrl === "string" && body.hostedFallbackUrl.startsWith("https://")
+        ? body.hostedFallbackUrl
+        : undefined,
+    amountUsd,
+    expiresAt,
+    source: result.kind,
+    ...intent,
+  };
 }
 
 function paymentLinkOptionsForSession(session: FundSessionResponse): FundPaymentLinkOption[] {
+  if (!session.paymentLinkUrl) return session.paymentLinkOptions?.filter(isFundPaymentLinkOption) ?? [];
   const embeddable = resolveEmbeddablePaymentLinks({
     paymentLinkUrl: session.paymentLinkUrl,
     paymentLinkOptions: session.paymentLinkOptions,

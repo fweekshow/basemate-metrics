@@ -5,18 +5,21 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { istonkPayCopy } from "@/lib/istonks-pay";
 import { IMESSAGE_HREF, SITE } from "@/lib/site";
 
 type GiftSuccessMeta = {
   isGift: boolean;
+  isBitrefill: boolean;
   claimUrl?: string | null;
   recipientDisplay?: string | null;
   stockLabel?: string | null;
+  productName?: string | null;
 };
 
 export function PaySuccessClient({ sessionToken }: { sessionToken?: string }) {
   const recordedRef = useRef(false);
-  const [gift, setGift] = useState<GiftSuccessMeta>({ isGift: false });
+  const [gift, setGift] = useState<GiftSuccessMeta>({ isGift: false, isBitrefill: false });
 
   useEffect(() => {
     if (!sessionToken || recordedRef.current) return;
@@ -30,10 +33,11 @@ export function PaySuccessClient({ sessionToken }: { sessionToken?: string }) {
         if (!res.ok) return;
         const data = (await res.json().catch(() => null)) as {
           isGift?: boolean;
+          isBitrefill?: boolean;
           giftId?: string | null;
         } | null;
-        if (data?.isGift) {
-          setGift({ isGift: true });
+        if (data?.isGift || data?.isBitrefill) {
+          setGift({ isGift: Boolean(data.isGift), isBitrefill: Boolean(data.isBitrefill) });
           void fetchGiftMeta(sessionToken).then((meta) => {
             if (meta) setGift(meta);
           });
@@ -42,7 +46,14 @@ export function PaySuccessClient({ sessionToken }: { sessionToken?: string }) {
       .catch(() => {});
   }, [sessionToken]);
 
-  if (gift.isGift) {
+  if (gift.isGift || gift.isBitrefill) {
+    const copy = istonkPayCopy({
+      isBitrefill: gift.isBitrefill,
+      isGift: gift.isGift,
+      productName: gift.productName,
+      giftLabel: gift.stockLabel,
+      recipientDisplay: gift.recipientDisplay,
+    });
     return (
       <section className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-lg flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
         <div
@@ -62,9 +73,7 @@ export function PaySuccessClient({ sessionToken }: { sessionToken?: string }) {
           Apple Pay confirmed
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {gift.stockLabel
-            ? `I'm buying ${gift.stockLabel}${gift.recipientDisplay ? ` for ${gift.recipientDisplay}` : ""} now — you'll get a text when it lands.`
-            : "I'm buying and sending the stock now — you'll get a text when it lands."}
+          {copy.successDescription}
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
           <Button
@@ -170,20 +179,24 @@ async function fetchGiftMeta(sessionToken: string): Promise<GiftSuccessMeta | nu
     const res = await fetch(`/api/pay/gift-status?s=${encodeURIComponent(sessionToken)}`, {
       cache: "no-store",
     });
-    if (!res.ok) return { isGift: true };
+    if (!res.ok) return { isGift: true, isBitrefill: false };
     const data = (await res.json()) as {
       isGift?: boolean;
+      isBitrefill?: boolean;
       claimUrl?: string | null;
       recipientDisplay?: string | null;
       stockLabel?: string | null;
+      productName?: string | null;
     };
     return {
       isGift: Boolean(data.isGift),
+      isBitrefill: Boolean(data.isBitrefill),
       claimUrl: data.claimUrl ?? null,
       recipientDisplay: data.recipientDisplay ?? null,
       stockLabel: data.stockLabel ?? null,
+      productName: data.productName ?? null,
     };
   } catch {
-    return { isGift: true };
+    return { isGift: true, isBitrefill: false };
   }
 }
