@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { OnrampPaymentFrame } from "@/app/pay/onramp-payment-frame";
-import { ISTONK_PAY_OG_PATH } from "@/lib/istonks-pay";
+import { ISTONK_PAY_OG_PATH, formatUsdAmount, istonkPayCopy } from "@/lib/istonks-pay";
 
 type PaymentOption = {
   method: "apple_pay" | "google_pay";
@@ -15,8 +15,10 @@ type PaymentOption = {
 export function IstonkPayClient({
   sessionToken,
   amountUsd,
+  isBitrefill,
   giftLabel,
   recipientDisplay,
+  productName,
   needsVerify,
   expiresAt,
   paymentLinkOptions,
@@ -24,8 +26,10 @@ export function IstonkPayClient({
 }: {
   sessionToken?: string;
   amountUsd?: number;
+  isBitrefill?: boolean;
   giftLabel?: string;
   recipientDisplay?: string;
+  productName?: string;
   needsVerify: boolean;
   expiresAt: string;
   paymentLinkOptions: PaymentOption[];
@@ -45,21 +49,15 @@ export function IstonkPayClient({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const formattedAmount =
-    typeof amountUsd === "number" && Number.isFinite(amountUsd) && amountUsd > 0
-      ? new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          maximumFractionDigits: amountUsd % 1 === 0 ? 0 : 2,
-        }).format(amountUsd)
-      : null;
-
-  const title = formattedAmount
-    ? `Add ${formattedAmount} to send ${giftLabel ?? "the stock"}`
-    : "Fund your iStonk send";
-  const subtitle = recipientDisplay
-    ? `Buy USDC on Base with Apple Pay, then iStonk sends it to ${recipientDisplay}.`
-    : "Buy USDC on Base with Apple Pay. iStonk buys the stock and sends it after it clears.";
+  const copy = istonkPayCopy({
+    isBitrefill,
+    productName,
+    giftLabel,
+    recipientDisplay,
+    formattedAmount: formatUsdAmount(amountUsd),
+  });
+  const title = copy.title;
+  const subtitle = copy.subtitle;
 
   async function onVerify(e: React.FormEvent) {
     e.preventDefault();
@@ -145,7 +143,7 @@ export function IstonkPayClient({
           hostedFallbackUrl={checkout.hostedFallbackUrl}
           successPath="/istonks/pay/success"
           recordPath="/api/istonks/pay/record-funding"
-          pollingSuccessMessage="Done. Your USDC is on its way — iStonk will buy and send the stock."
+          pollingSuccessMessage={copy.pollingSuccess}
         />
       ) : (
         <form onSubmit={onVerify} className="flex flex-col gap-4 px-5 py-5">
