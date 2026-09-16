@@ -75,6 +75,7 @@ interface FundSessionResponse {
   amountUsd?: number;
   expiresAt?: string;
   needsVerify?: boolean;
+  needsOnrampPhone?: boolean;
   isGift?: boolean;
   isBitrefill?: boolean;
   giftLabel?: string;
@@ -125,6 +126,7 @@ export default async function PayPage({
             recipientDisplay={session.recipientDisplay}
             productName={session.productName}
             needsVerify={Boolean(session.needsVerify)}
+            needsOnrampPhone={Boolean(session.needsOnrampPhone)}
             expiresAt={session.expiresAt ?? new Date(Date.now() + 10 * 60_000).toISOString()}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
             hostedFallbackUrl={session.hostedFallbackUrl}
@@ -294,6 +296,16 @@ async function resolveFundSession(token: string): Promise<FundSessionResponse> {
   }
 
   const body = result.data;
+  if (!result.ok) {
+    return {
+      error:
+        typeof body.error === "string" && body.error.trim()
+          ? body.error
+          : "This fund link is invalid or expired.",
+      source: result.kind,
+    };
+  }
+
   const amountUsd =
     typeof body.amountUsd === "number" && Number.isFinite(body.amountUsd) && body.amountUsd > 0
       ? body.amountUsd
@@ -309,6 +321,7 @@ async function resolveFundSession(token: string): Promise<FundSessionResponse> {
     if (isIstonk) {
       return {
         needsVerify: true,
+        needsOnrampPhone: body.needsOnrampPhone === true,
         amountUsd,
         expiresAt,
         source: result.kind,

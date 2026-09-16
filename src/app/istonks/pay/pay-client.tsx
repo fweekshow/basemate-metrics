@@ -20,6 +20,7 @@ export function IstonkPayClient({
   recipientDisplay,
   productName,
   needsVerify,
+  needsOnrampPhone,
   expiresAt,
   paymentLinkOptions,
   hostedFallbackUrl,
@@ -31,6 +32,7 @@ export function IstonkPayClient({
   recipientDisplay?: string;
   productName?: string;
   needsVerify: boolean;
+  needsOnrampPhone?: boolean;
   expiresAt: string;
   paymentLinkOptions: PaymentOption[];
   hostedFallbackUrl?: string;
@@ -45,6 +47,7 @@ export function IstonkPayClient({
       : null,
   );
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [tos, setTos] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +72,12 @@ export function IstonkPayClient({
       const res = await fetch("/api/istonks/pay/verify", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionToken, email, tosAccepted: tos }),
+        body: JSON.stringify({
+          sessionToken,
+          email,
+          tosAccepted: tos,
+          ...(needsOnrampPhone || phone.trim() ? { phone: phone.trim() } : {}),
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -97,7 +105,7 @@ export function IstonkPayClient({
         });
       }
       if (options.length === 0) {
-        setError("Apple Pay is not available for this session yet. Try again.");
+        setError(data.error ?? "Apple Pay is not available for this session yet. Try again.");
         return;
       }
       setCheckout({
@@ -149,8 +157,9 @@ export function IstonkPayClient({
       ) : (
         <form onSubmit={onVerify} className="flex flex-col gap-4 px-5 py-5">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Coinbase needs an email and a terms tap before Apple Pay. Your iMessage number is already
-            verified.
+            {needsOnrampPhone
+              ? "Coinbase needs your email, a US phone number, and a terms tap before Apple Pay."
+              : "Coinbase needs an email and a terms tap before Apple Pay. Your iMessage number is already verified."}
           </p>
           <label className="grid gap-1.5 text-left">
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -166,6 +175,22 @@ export function IstonkPayClient({
               placeholder="you@email.com"
             />
           </label>
+          {needsOnrampPhone ? (
+            <label className="grid gap-1.5 text-left">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                US phone
+              </span>
+              <input
+                type="tel"
+                required
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="h-11 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                placeholder="+1 555 123 4567"
+              />
+            </label>
+          ) : null}
           <label className="flex items-start gap-2 text-left text-sm text-muted-foreground">
             <input
               type="checkbox"

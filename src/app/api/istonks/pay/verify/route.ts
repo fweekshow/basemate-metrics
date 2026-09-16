@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
         ? body.s.trim()
         : "";
   const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const phone = typeof body?.phone === "string" ? body.phone.trim() : "";
   const tosAccepted = body?.tosAccepted === true;
 
   if (!isFundSessionToken(sessionToken)) {
@@ -44,7 +45,12 @@ export async function POST(req: NextRequest) {
         accept: "application/json",
         ...forwardClientIpHeaders(endUserIp),
       },
-      body: JSON.stringify({ sessionToken, email, tosAccepted: true }),
+      body: JSON.stringify({
+        sessionToken,
+        email,
+        tosAccepted: true,
+        ...(phone ? { phone } : {}),
+      }),
     });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status, headers: { "cache-control": "no-store" } });

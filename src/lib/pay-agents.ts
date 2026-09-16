@@ -30,8 +30,9 @@ export function payAgentHosts(): { kind: PayAgentKind; host: string }[] {
 export async function fetchFundSessionFromPayAgents(
   token: string,
   request?: Request,
-): Promise<{ kind: PayAgentKind; data: Record<string, unknown> } | null> {
+): Promise<{ kind: PayAgentKind; data: Record<string, unknown>; ok: boolean } | null> {
   const endUserIp = request ? clientIpFromRequest(request) : undefined;
+  let lastError: { kind: PayAgentKind; data: Record<string, unknown>; ok: false } | null = null;
   for (const agent of payAgentHosts()) {
     const endpoint = new URL("/api/agent/fund-session", `${agent.host}/`);
     endpoint.searchParams.set("token", token);
@@ -41,12 +42,18 @@ export async function fetchFundSessionFromPayAgents(
         headers: { accept: "application/json", ...forwardClientIpHeaders(endUserIp) },
       });
       const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-      if (res.ok) return { kind: agent.kind, data };
+      if (res.ok) return { kind: agent.kind, data, ok: true };
+      // Prefer a concrete agent error (e.g. Apple Pay mint failure) over "not found".
+      if (typeof data.error === "string" && data.error.trim() && res.status !== 404) {
+        lastError = { kind: agent.kind, data, ok: false };
+      } else if (!lastError && typeof data.error === "string") {
+        lastError = { kind: agent.kind, data, ok: false };
+      }
     } catch {
       // try the other host
     }
   }
-  return null;
+  return lastError;
 }
 
 export async function postPayAgent(

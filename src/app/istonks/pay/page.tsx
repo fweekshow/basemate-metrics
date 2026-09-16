@@ -61,6 +61,7 @@ interface FundSessionResponse {
   amountUsd?: number;
   expiresAt?: string;
   needsVerify?: boolean;
+  needsOnrampPhone?: boolean;
   isGift?: boolean;
   isBitrefill?: boolean;
   giftLabel?: string;
@@ -91,6 +92,7 @@ export default async function IstonkPayPage({
             recipientDisplay={session.recipientDisplay}
             productName={session.productName}
             needsVerify={Boolean(session.needsVerify)}
+            needsOnrampPhone={Boolean(session.needsOnrampPhone)}
             expiresAt={session.expiresAt ?? new Date(Date.now() + 10 * 60_000).toISOString()}
             paymentLinkOptions={paymentLinkOptionsForSession(session)}
             hostedFallbackUrl={session.hostedFallbackUrl}
@@ -132,6 +134,7 @@ async function resolveFundSession(
     if (body.needsVerify) {
       return {
         needsVerify: true,
+        needsOnrampPhone: Boolean(body.needsOnrampPhone),
         amountUsd: body.amountUsd,
         expiresAt: body.expiresAt,
         ...intentFields,
