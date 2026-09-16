@@ -17,9 +17,9 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/stablecoin-directory", destination: "/stablecoins", permanent: true },
-      // Apple Pay merchant domain is registered for /pay — keep iStonk links there.
+      // Apple Pay merchant domain is registered for /pay — checkout stays there.
+      // Success does not need the merchant domain; keep /istonks/pay/success branded.
       { source: "/istonks/pay", destination: "/pay", permanent: false },
-      { source: "/istonks/pay/success", destination: "/pay/success", permanent: false },
     ];
   },
 };

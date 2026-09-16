@@ -150,7 +150,7 @@ export function IstonkPayClient({
           expiresAt={checkout.expiresAt}
           sessionToken={sessionToken}
           hostedFallbackUrl={checkout.hostedFallbackUrl}
-          successPath="/pay/success"
+          successPath="/istonks/pay/success"
           recordPath="/api/pay/record-funding"
           pollingSuccessMessage={copy.pollingSuccess}
         />
