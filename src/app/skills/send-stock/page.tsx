@@ -3,7 +3,8 @@ import Image from "next/image";
 
 import { SkillCopy } from "@/app/skills/send-stock/skill-copy";
 import { SiteShell } from "@/components/site/site-shell";
-import { SEND_STOCK_API_URL, SEND_STOCK_SKILL } from "@/lib/skills/send-stock";
+import { SITE } from "@/lib/site";
+import { SEND_STOCK_SKILL } from "@/lib/skills/send-stock";
 
 export const metadata: Metadata = {
   title: "Send stock · Muse skill",
@@ -39,7 +40,7 @@ export default function SendStockSkillPage() {
           </p>
         </div>
 
-        <SkillCopy skill={SEND_STOCK_SKILL} apiUrl={SEND_STOCK_API_URL} />
+        <SkillCopy skill={SEND_STOCK_SKILL} pageUrl={`${SITE.baseUrl}/skills/send-stock`} />
       </section>
     </SiteShell>
   );

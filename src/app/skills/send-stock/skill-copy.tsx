@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-export function SkillCopy({ skill, apiUrl }: { skill: string; apiUrl: string }) {
+export function SkillCopy({ skill, pageUrl }: { skill: string; pageUrl: string }) {
   const [copied, setCopied] = useState<"skill" | "url" | null>(null);
 
   async function copy(kind: "skill" | "url", value: string) {
@@ -43,7 +43,7 @@ export function SkillCopy({ skill, apiUrl }: { skill: string; apiUrl: string }) 
             size="lg"
             variant="outline"
             className="h-12 rounded-full px-4 text-base"
-            onClick={() => void copy("url", apiUrl)}
+            onClick={() => void copy("url", pageUrl)}
           >
             {copied === "url" ? "Copied" : "Copy URL"}
           </Button>
