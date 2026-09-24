@@ -6,18 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
-  Coins,
   Home,
   LineChart,
   Menu,
+  Sparkles,
   MessageCircle,
-  Percent,
-  Rocket,
   Settings,
-  TrendingUp,
   User,
   Users,
-  Wallet,
   X,
 } from "lucide-react";
 
@@ -36,17 +32,10 @@ import { IMESSAGE_HREF, SITE } from "@/lib/site";
 
 const ICONS: Record<NavIcon, typeof Home> = {
   home: Home,
-  account: Wallet,
-  earn: Percent,
   activity: Activity,
   contacts: Users,
-  istonks: TrendingUp,
-  launch: Rocket,
-  fees: Coins,
-  launches: Rocket,
-  stocks: LineChart,
   metrics: LineChart,
-  stablecoins: Coins,
+  skills: Sparkles,
 };
 
 const focusRing =

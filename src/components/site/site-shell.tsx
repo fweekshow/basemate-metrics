@@ -7,14 +7,18 @@ import { SITE } from "@/lib/site";
 // Pay + wallet flows are link-only (they need a session token), so they aren't
 // nav items. The logo links home, so Home isn't a nav item either.
 const nav = [
+  { href: "/account", label: "Your Account", external: false },
+  { href: "/skills/send-stock", label: "Muse skill", external: false },
   { href: "/data-room", label: "Data Room", external: false },
   { href: SITE.metricsUrl, label: "Metrics", external: true },
 ] as const;
 
 export function SiteShell({
   children,
+  hideFooter = false,
 }: Readonly<{
   children: React.ReactNode;
+  hideFooter?: boolean;
 }>) {
   return (
     <div className="relative min-h-full flex flex-col bg-background">
@@ -30,7 +34,7 @@ export function SiteShell({
 
       <header className="relative z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/landing" className="flex shrink-0 items-center gap-2.5">
+          <Link href="/account" className="flex shrink-0 items-center gap-2.5">
             <Image
               src="/brand/logo/basemate-logo-flat.png"
               alt="@basemate"
@@ -70,6 +74,7 @@ export function SiteShell({
 
       <main className="relative z-10 flex flex-1 flex-col">{children}</main>
 
+      {hideFooter ? null : (
       <footer className="relative z-10 border-t border-border/60">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
@@ -99,6 +104,7 @@ export function SiteShell({
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

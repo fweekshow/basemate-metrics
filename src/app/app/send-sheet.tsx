@@ -16,6 +16,21 @@ type Phase = "compose" | "confirm" | "success";
 
 type ResolveDelivery = "instant" | "claim";
 
+type SendKind = "usdc" | "stock";
+
+const STOCK_TICKERS = [
+  "AAPL",
+  "AMZN",
+  "GOOGL",
+  "META",
+  "MSFT",
+  "MSTR",
+  "NVDA",
+  "SNDK",
+  "SPCX",
+  "TSLA",
+] as const;
+
 function newSendId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -39,6 +54,8 @@ export function SendSheet({
   onNeedDeposit: (amount: string) => void;
 }) {
   const [phase, setPhase] = useState<Phase>("compose");
+  const [kind, setKind] = useState<SendKind>("usdc");
+  const [ticker, setTicker] = useState<string>("AAPL");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
@@ -53,6 +70,8 @@ export function SendSheet({
   useEffect(() => {
     if (!open) return;
     setPhase("compose");
+    setKind("usdc");
+    setTicker("AAPL");
     setError(null);
     setConfirmToken(null);
     setName(prefill?.name ?? "");
@@ -91,6 +110,12 @@ export function SendSheet({
 
   async function continueToConfirm() {
     if (!canContinue || busy) return;
+    if (kind === "stock") {
+      setError(
+        `To send ${ticker}, use Muse or iMessage: “send $${numericAmount} of ${ticker} to ${phone.trim()}”. They get a claim link after you Apple Pay.`,
+      );
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -167,7 +192,7 @@ export function SendSheet({
       >
         <div className="flex items-center justify-between">
           <p className="font-display text-lg font-bold">
-            {phase === "confirm" ? "Confirm send" : phase === "success" ? "Sent" : "Send USDC"}
+            {phase === "confirm" ? "Confirm send" : phase === "success" ? "Sent" : "Send"}
           </p>
           <button
             type="button"
@@ -183,9 +208,44 @@ export function SendSheet({
         {phase === "compose" && (
           <>
             <p className="mt-1 text-xs text-muted-foreground">
-              Chat can auto-send under your limit — change that in Agent Settings.
+              Stables go from your wallet. Stocks buy on Apple Pay, then they get a claim link.
             </p>
             <div className="mt-4 space-y-3">
+              <div className="flex gap-2">
+                {(
+                  [
+                    ["usdc", "Stablecoins"],
+                    ["stock", "Stocks"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setKind(id)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                      kind === id ? "bg-primary text-primary-foreground" : "bg-secondary"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {kind === "stock" && (
+                <div className="flex flex-wrap gap-2">
+                  {STOCK_TICKERS.map((sym) => (
+                    <button
+                      key={sym}
+                      type="button"
+                      onClick={() => setTicker(sym)}
+                      className={`rounded-full px-3 py-1.5 font-mono text-xs font-semibold ${
+                        ticker === sym ? "bg-primary text-primary-foreground" : "bg-secondary"
+                      }`}
+                    >
+                      {sym}
+                    </button>
+                  ))}
+                </div>
+              )}
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}

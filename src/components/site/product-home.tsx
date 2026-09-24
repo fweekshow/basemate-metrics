@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MessageCircle, Percent, Rocket, Send } from "lucide-react";
+import { MessageCircle, Percent, Rocket, Send, Sparkles } from "lucide-react";
 
 import { SectionLabel } from "@/components/dashboard/primitives";
 import { EmptyState, ErrorBand, useIstonks } from "@/components/istonks/ui";
@@ -19,6 +19,7 @@ const VERBS = [
   { href: "/account/earn", label: "Earn", icon: Percent, onchain: true },
   { href: "/istonks/launch", label: "Launch", icon: Rocket, onchain: true },
   { href: IMESSAGE_HREF, label: "Text Basemate", icon: MessageCircle, onchain: false, external: true },
+  { href: "/skills/send-stock", label: "Muse skill", icon: Sparkles, onchain: false },
 ] as const;
 
 export function ProductHome() {

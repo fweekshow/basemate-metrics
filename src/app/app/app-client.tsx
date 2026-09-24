@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState, createContext, useContext } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { CDPReactProvider } from "@coinbase/cdp-react";
 import {
   useCurrentUser,
@@ -1106,6 +1108,26 @@ function HomeTab({
           )}
         </div>
       )}
+
+      <Link
+        href="/skills/send-stock"
+        className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-left transition active:scale-[0.99]"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+          <Image
+            src="/brand/muse/muse-portrait.png"
+            alt=""
+            width={36}
+            height={36}
+            className="h-9 w-9 object-cover"
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">Muse skill</p>
+          <p className="text-xs text-muted-foreground">Copy the send-stock skill. No API key.</p>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
 
       <button
         type="button"

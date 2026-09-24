@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { AccountPage } from "./account-page";
 
 export const metadata: Metadata = {
-  title: "Account",
-  description: "Your Basemate balances, deposits, and sends.",
+  title: "Home",
+  description: "Your cash and stocks. Send stables or stocks.",
 };
 
 export const dynamic = "force-dynamic";

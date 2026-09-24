@@ -1,10 +1,5 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { AccountPage } from "../account-page";
-
-export const metadata: Metadata = { title: "Your launches" };
-export const dynamic = "force-dynamic";
-
-export default function Page() {
-  return <AccountPage tab="stonks" />;
+export default function LaunchesRedirect() {
+  redirect("/account");
 }

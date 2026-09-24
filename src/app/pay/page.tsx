@@ -272,14 +272,36 @@ function isIstonkCheckout(session: FundSessionResponse): boolean {
 }
 
 function intentFieldsFromSession(body: Record<string, unknown>) {
-  const intent = body.intent as { kind?: string; productName?: string } | undefined;
+  const intent = body.intent as
+    | {
+        kind?: string;
+        productName?: string;
+        symbol?: string;
+        recipient?: { display?: string; name?: string; phone?: string };
+      }
+    | undefined;
   const isBitrefill = body.isBitrefill === true || intent?.kind === "bitrefill";
   const isGift = body.isGift === true || intent?.kind === "gift_stock";
+  const rec = intent?.recipient;
+  const fromIntent =
+    rec?.phone && rec.phone.trim()
+      ? rec.name?.trim()
+        ? `${rec.name.trim()} (${rec.phone.trim()})`
+        : rec.phone.trim()
+      : rec?.display?.trim();
   return {
     isGift,
     isBitrefill,
-    giftLabel: typeof body.giftLabel === "string" ? body.giftLabel : undefined,
-    recipientDisplay: typeof body.recipientDisplay === "string" ? body.recipientDisplay : undefined,
+    giftLabel:
+      typeof body.giftLabel === "string"
+        ? body.giftLabel
+        : intent?.kind === "gift_stock" && typeof intent.symbol === "string"
+          ? intent.symbol
+          : undefined,
+    recipientDisplay:
+      typeof body.recipientDisplay === "string" && body.recipientDisplay.trim()
+        ? body.recipientDisplay
+        : fromIntent,
     productName:
       typeof body.productName === "string"
         ? body.productName
