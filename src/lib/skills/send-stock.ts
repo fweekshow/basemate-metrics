@@ -9,9 +9,9 @@ Public skill. Install and use. **No API key. No secrets. Do not ask the user for
 
 Never say “gift.” This is a **stock send**.
 
-**Ten stocks, not four.** Always \`GET /api/muse/stocks\` before you answer what’s available. Do not recite an old list (Apple / Alphabet / Meta / NVIDIA only is outdated).
+**Always \`GET /api/muse/stocks\` before you answer what’s available.** Do not recite an old short list (Apple / Alphabet / Meta / NVIDIA only is outdated).
 
-Available now: **Apple (AAPL), Amazon (AMZN), Alphabet (GOOGL), Meta (META), Microsoft (MSFT), Strategy (MSTR), NVIDIA (NVDA), SanDisk (SNDK), SpaceX (SPCX), Tesla (TSLA).** COIN, Circle, and Intel are off. Do not invent tickers.
+Available now: **Apple (AAPL), Amazon (AMZN), Alphabet (GOOGL), Meta (META), Microsoft (MSFT), Micron (MU), NVIDIA (NVDA), Palantir (PLTR), Roblox (RBLX), Strategy (MSTR), SanDisk (SNDK), SpaceX (SPCX), Tesla (TSLA).** COIN, Circle, and Intel are off. Thin books (AMD, Netflix, Reddit, …) are off. Do not invent tickers.
 
 Call:
 
@@ -21,13 +21,18 @@ ${SEND_STOCK_API_URL}
 
 Anyone can start a send. Money only moves when **that user** Apple Pays on Basemate.
 
-## Contacts (required)
+## Contacts
 
-You must use **Muse Contacts**. “Mom” / “Sarah” is not a destination.
+You already have this user's phone contacts. Use that. A name is not a number. Do not ask them to type one, and do not invent one.
 
-1. Open this user’s contacts. If you cannot, ask them to allow Muse Contacts (or paste the number). Do not POST until you have a real mobile.
-2. Resolve the person to one E.164 (\`+1…\`). Two matches → ask which number. No mobile → stop. Never invent a number.
-3. Show the user the **name and number you found** before or with the pay link. Example: Mom (+15551234567). Never say “your mom” without the number.
+Look the person up and take the mobile on the contact. Two matches → ask which one. No mobile → stop.
+
+Before you POST, the contact number has to include a country code.
+
+- It already has one (\`+1…\`, \`+44…\`, whatever is on the card) → use that number exactly. Do not ask. Do not change it.
+- It does not (a local number, no \`+\`) → do not POST. Show them the number and ask for the country code. A missing \`+1\` is not a real destination, and the stock will not send after they pay. Never stick a \`+\` on the front yourself.
+
+Show the **name and number** before or with the pay link. Example: Boris (+13806702400). Never say “your mom” without the number.
 
 **Payer** = this user’s mobile (their contact card / their Basemate phone). Include \`payer.name\` (this Muse user’s name) so the recipient text isn’t a raw phone number. Optional: \`payer.email\`. Ask once if missing.
 
@@ -69,7 +74,7 @@ No Authorization header.
 GET ${SEND_STOCK_API_URL}/api/muse/stocks
 \`\`\`
 
-Use the \`items\` from that call (\`symbol\` + \`name\`). Microsoft is \`MSFT\` / \`MSFTc\`.
+Use the \`items\` from that call (\`symbol\` + \`name\`). Tickers on the wire use the \`c\` suffix (\`MSFT\` → \`MSFTc\`, \`MU\` → \`MUc\`, \`PLTR\` → \`PLTRc\`, \`RBLX\` → \`RBLXc\`).
 
 \`\`\`
 POST ${SEND_STOCK_API_URL}/api/muse/sends
