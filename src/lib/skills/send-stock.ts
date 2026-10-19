@@ -11,7 +11,7 @@ Never say “gift.” This is a **stock send**.
 
 **Always \`GET /api/muse/stocks\` before you answer what’s available.** Do not recite an old short list (Apple / Alphabet / Meta / NVIDIA only is outdated).
 
-Available now: **Apple (AAPL), Amazon (AMZN), Alphabet (GOOGL), Meta (META), Microsoft (MSFT), Micron (MU), NVIDIA (NVDA), Palantir (PLTR), Roblox (RBLX), Strategy (MSTR), SanDisk (SNDK), SpaceX (SPCX), Tesla (TSLA).** COIN, Circle, and Intel are off. Thin books (AMD, Netflix, Reddit, …) are off. Do not invent tickers.
+Available now: **AB InBev (BUD), Alphabet (GOOGL), Amazon (AMZN), Apple (AAPL), Arm (ARM), Eli Lilly (LLY), Hesai (HSAI), Meta (META), Micron (MU), Microsoft (MSFT), NIO (NIO), Nokia (NOK), Novo Nordisk (NVO), NVIDIA (NVDA), Palantir (PLTR), PayPal (PYPL), PDD (PDD), Roblox (RBLX), SanDisk (SNDK), Santander (SAN), SK hynix (SKHY), SpaceX (SPCX), Strategy (MSTR), Tesla (TSLA), Unilever (UL), Vale (VALE).** COIN, Circle, and Intel are off. Thin books (AMD, Netflix, Reddit, …) are off. Do not invent tickers.
 
 Call:
 
