@@ -29,9 +29,12 @@ export default function MessagingProgramPage() {
     >
       <LegalSection heading="How you opt in">
         <p id="messaging-opt-in">
-          Text the keyword <strong>CONFIRM</strong> to{" "}
-          <a href={SMS_CONFIRM_HREF}>{SITE.imessagePhoneDisplay}</a>. That is the
-          only way to opt in to these texts. {SITE.legalName}, operating as{" "}
+          Call to action shown to customers: text CONFIRM to{" "}
+          {SITE.imessagePhoneDisplay}.{" "}
+          <a href={SMS_CONFIRM_HREF}>
+            Text CONFIRM to {SITE.imessagePhoneDisplay}
+          </a>
+          . That is the only way to opt in. {SITE.legalName}, operating as{" "}
           {SITE.name}, does not text you before you do this.
         </p>
         <p>When you text CONFIRM, the first reply is only this welcome:</p>
