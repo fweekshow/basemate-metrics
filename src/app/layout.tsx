@@ -50,6 +50,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta
+          name="facebook-domain-verification"
+          content="qvuab6vhmvgsu6b95vga9hw24gfciy"
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
