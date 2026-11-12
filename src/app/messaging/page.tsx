@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const WELCOME =
-  "Basemate, a service of Stablemate Labs Inc: texts when a payment or stock is sent to you, and to finish that send. Message frequency varies. Message and data rates may apply. Reply HELP for help or email support@basemate.app. Reply STOP to opt out. Terms: https://basemate.app/terms Privacy: https://basemate.app/privacy. Reply Y to confirm.";
+  "Basemate, a service of Stablemate Labs Inc: texts when a payment or stock is sent to you. Message frequency varies. Message and data rates may apply. Reply HELP for help, STOP to opt out. Terms: https://basemate.app/terms Privacy: https://basemate.app/privacy. Reply Y to confirm.";
 
 const ENROLLED =
   "Basemate: You're in. Message frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to cancel.";
