@@ -5,73 +5,86 @@ import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
 import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Messaging program · Stablemate",
-  description:
-    "How Stablemate uses SMS and chat for service messages — opt-in, transfers, and opt-out.",
+  title: "Messaging program",
+  description: `How ${SITE.legalName} uses SMS for ${SITE.name} service messages — opt-in, transfers, and opt-out.`,
 };
 
 export default function MessagingProgramPage() {
   return (
     <LegalDoc
       title="Messaging program"
-      description="Stablemate is live in chat. We only message you from numbers you already use with us, or when someone you know sends you money."
+      description={`${SITE.name} is a service of ${SITE.legalName}. We only message you from numbers you already use with us, or when someone you know sends you money.`}
     >
       <LegalSection heading="How you opt in">
         <p id="messaging-opt-in">
-          <strong>Chat-first.</strong> You start the conversation from your own phone
-          number — we do not cold-text strangers.
+          <strong>Chat-first.</strong> You opt in by texting {SITE.legalName} first
+          from your own phone number. We do not cold-text strangers. There is no
+          web-form checkbox and no verbal or paper sign-up.
         </p>
         <ul>
           <li>
-            <strong>iMessage / SMS (US):</strong>{" "}
-            <a href={IMESSAGE_HREF}>Message {SITE.imessagePhoneDisplay}</a> or text{" "}
-            <a href={SMS_TOLL_FREE_HREF}>{SITE.smsTollFreeDisplay}</a> (e.g. &quot;gm&quot;)
-            to open a thread with Stablemate.
+            <strong>SMS (US):</strong> Text the keyword &quot;gm&quot; (or any message)
+            to <a href={SMS_TOLL_FREE_HREF}>{SITE.smsTollFreeDisplay}</a> to open a{" "}
+            {SITE.name} thread with {SITE.legalName}.
           </li>
           <li>
-            <strong>WhatsApp:</strong> Message Stablemate on WhatsApp from the number
-            you use day to day. Same agent — send, receive, and claim transfers in
-            the thread you opened.
+            <strong>iMessage:</strong>{" "}
+            <a href={IMESSAGE_HREF}>Message {SITE.imessagePhoneDisplay}</a> from the
+            number you use day to day.
+          </li>
+          <li>
+            <strong>WhatsApp:</strong> Message {SITE.name} on WhatsApp. That program
+            is separate from this SMS campaign.
           </li>
         </ul>
         <p>
-          Ongoing replies and service messages in that thread are part of the
-          conversation you started. Reply <strong>STOP</strong> on SMS to opt out of
-          further SMS from {SITE.smsTollFreeDisplay}. Reply <strong>HELP</strong> for
-          support.
+          <strong>Consent wording:</strong> &quot;You start the conversation from your
+          own phone number. {SITE.legalName} sends service texts about your transfers
+          and account. Message frequency varies. Message and data rates may apply.
+          Reply STOP to opt out. Reply HELP for help.&quot;
+        </p>
+        <p>
+          After you text in, we confirm: &quot;{SITE.legalName}: Thanks for messaging
+          us. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to opt
+          out, HELP for help.&quot;
+        </p>
+        <p>
+          Ongoing replies in that thread are part of the conversation you started.
+          Reply <strong>STOP</strong> on SMS to opt out of further SMS from{" "}
+          {SITE.smsTollFreeDisplay}. Reply <strong>HELP</strong> for support, or
+          email <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>.
         </p>
       </LegalSection>
 
       <LegalSection heading="When we message you first">
         <p>
-          The only time Stablemate may text you without a prior message in that session
-          is a <strong>transactional transfer notice</strong>:
+          The only time {SITE.legalName} may text you without a prior message in that
+          session is a <strong>transactional transfer notice</strong>:
         </p>
         <ul>
           <li>
-            Someone on Stablemate sends money to a phone number in their{" "}
+            Someone using {SITE.name} sends money to a phone number in their{" "}
             <strong>saved contacts</strong>.
           </li>
           <li>
-            We notify the recipient that funds are waiting and how to reply to{" "}
-            <strong>claim</strong> them (including any time limit before return to
-            sender).
+            We notify the recipient that the transfer is in their account, including
+            any time limit before it returns to the sender.
           </li>
         </ul>
         <p>
-          Example: &quot;Hey! Alex sent you 50 USDC with Stablemate. Reply here and
-          I&apos;ll help you receive it.&quot; This is not marketing; it completes a
-          payment the sender initiated to your number.
+          Example: &quot;{SITE.legalName}: Alex sent you $50. Details:{" "}
+          {SITE.baseUrl}. Reply STOP to opt out, HELP for help.&quot; This completes
+          a payment the sender initiated to your number. It is not marketing.
         </p>
       </LegalSection>
 
       <LegalSection heading="What we do not do">
         <ul>
           <li>No purchased phone lists.</li>
-          <li>No promotional blast SMS unrelated to your Stablemate activity.</li>
+          <li>No promotional blast SMS unrelated to your {SITE.name} activity.</li>
           <li>
-            No waitlist or invite spam —{" "}
-            <Link href="/landing">Stablemate is live</Link>; start in chat.
+            No waitlist or invite spam. <Link href="/landing">{SITE.name} is live</Link>.
+            Start in chat.
           </li>
         </ul>
       </LegalSection>

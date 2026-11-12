@@ -79,6 +79,7 @@ export function SiteShell({
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
             {SITE.name} · {SITE.tagline}
+            <span className="mt-1 block text-xs">Operated by {SITE.legalName}</span>
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <a

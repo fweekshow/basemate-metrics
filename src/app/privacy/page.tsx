@@ -4,23 +4,23 @@ import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
 import { SITE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · Stablemate",
-  description: "How Stablemate collects, uses, and protects your information.",
+  title: "Privacy Policy",
+  description: `How ${SITE.legalName} collects, uses, and protects your information when you use ${SITE.name}.`,
 };
 
 export default function PrivacyPage() {
-  const effective = "August 1, 2026";
+  const effective = "November 12, 2026";
 
   return (
     <LegalDoc
       title="Privacy Policy"
-      description={`Effective ${effective}. This policy describes how Stablemate ("Stablemate," "we," "us") handles information when you use our websites and messaging services.`}
+      description={`Effective ${effective}. This policy describes how ${SITE.legalName} ("${SITE.legalName}," "we," "us") handles information when you use ${SITE.name}, our websites, and our messaging services.`}
     >
       <LegalSection heading="Overview">
         <p>
-          Stablemate provides money-in-chat services on Base. We collect only what we
-          need to run the product, comply with law, and communicate with you about
-          your account and access.
+          {SITE.legalName} operates {SITE.name}, a money-in-chat service on Base. We
+          collect only what we need to run the product, comply with law, and
+          communicate with you about your account and access.
         </p>
       </LegalSection>
 
@@ -28,10 +28,10 @@ export default function PrivacyPage() {
         <ul>
           <li>
             <strong>Contact information</strong> — name, email, phone number, and
-            country when you message or use Stablemate from your phone number.
+            country when you message or use {SITE.name} from your phone number.
           </li>
           <li>
-            <strong>Messages and transactions</strong> — content you send to Stablemate
+            <strong>Messages and transactions</strong> — content you send to {SITE.name}{" "}
             and records of transfers, funding, and related activity needed to
             operate the service.
           </li>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="How we use information">
         <ul>
-          <li>Provide, secure, and improve Stablemate.</li>
+          <li>Provide, secure, and improve {SITE.name}.</li>
           <li>Process payments and transfers you request.</li>
           <li>Send service-related email and SMS (see Text messages below).</li>
           <li>Comply with legal and regulatory obligations.</li>
@@ -63,9 +63,9 @@ export default function PrivacyPage() {
             thread (iMessage, SMS, or WhatsApp depending on channel).
           </li>
           <li>
-            Someone sends you money via Stablemate to a number in their{" "}
-            <strong>contacts</strong> — we send a transactional notice so you can
-            claim funds.
+            Someone sends you money via {SITE.name} to a number in their{" "}
+            <strong>contacts</strong> — we send a transactional notice about that
+            transfer.
           </li>
           <li>Account and funding confirmations tied to actions you take.</li>
         </ul>
@@ -77,16 +77,21 @@ export default function PrivacyPage() {
           are not liable for delayed or undelivered messages.
         </p>
         <p>
-          We do not sell your phone number. We share data with service providers
-          (such as messaging carriers) only as needed to deliver the service.
+          No mobile information will be shared with third parties or affiliates for
+          marketing or promotional purposes. Text messaging originator opt-in data
+          and consent will not be shared with any third parties, except with
+          carriers and service providers as needed to deliver the messages you
+          requested.
         </p>
       </LegalSection>
 
       <LegalSection heading="Sharing">
         <p>
           We share information with infrastructure and financial partners when
-          required to move money, verify identity, or send messages. We may disclose
-          information if required by law or to protect users and Stablemate.
+          required to move money, verify identity, or send messages. We do not sell
+          your phone number, and we do not share it for third-party marketing. We
+          may disclose information if required by law or to protect users and{" "}
+          {SITE.legalName}.
         </p>
       </LegalSection>
 
@@ -111,7 +116,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="Children">
-        <p>Stablemate is not directed to children under 18. We do not knowingly collect their data.</p>
+        <p>{SITE.name} is not directed to children under 18. We do not knowingly collect their data.</p>
       </LegalSection>
 
       <LegalSection heading="Changes">
@@ -123,7 +128,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="Contact">
         <p>
-          Stablemate —{" "}
+          {SITE.legalName} —{" "}
           <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>
           <br />
           Website: <a href={SITE.baseUrl}>{SITE.baseUrl}</a>

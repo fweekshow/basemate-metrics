@@ -2,9 +2,10 @@
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://basemate.app";
 
-/** Product brand shown in UI, titles, and OG tags. Legal/investor copy stays "Basemate". */
+/** Product brand shown in UI. `legalName` is the incorporated sender on SMS compliance pages. */
 export const SITE = {
   name: "Basemate",
+  legalName: "Stablemate Labs",
   tagline: "Send, Earn, Trade, Save",
   description:
     "Money that lives in your texts. Send across borders, earn yield, trade, and save — all in iMessage and Base App on Base.",
