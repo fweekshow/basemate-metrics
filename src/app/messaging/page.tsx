@@ -2,90 +2,86 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LegalDoc, LegalSection } from "@/components/legal/legal-doc";
-import { IMESSAGE_HREF, SITE, SMS_TOLL_FREE_HREF } from "@/lib/site";
+import { SITE, SMS_CONFIRM_HREF } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Messaging program",
-  description: `How ${SITE.legalName} uses SMS for ${SITE.name} service messages — opt-in, transfers, and opt-out.`,
+  description: `How ${SITE.legalName} uses SMS for ${SITE.name} payment and stock confirmations.`,
 };
+
+const WELCOME =
+  "Basemate, a service of Stablemate Labs Inc: texts when a payment or stock is sent to you, and to finish that send. Message frequency varies. Message and data rates may apply. Reply HELP for help or email support@basemate.app. Reply STOP to opt out. Terms: https://basemate.app/terms Privacy: https://basemate.app/privacy. Reply Y to confirm.";
+
+const ENROLLED =
+  "Basemate: You're in. Message frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to cancel.";
+
+const STOP =
+  "Basemate: You are unsubscribed. No further messages will be sent.";
+
+const HELP =
+  "Basemate: For help, email support@basemate.app or visit https://basemate.app/messaging. Reply STOP to unsubscribe.";
 
 export default function MessagingProgramPage() {
   return (
     <LegalDoc
       title="Messaging program"
-      description={`${SITE.name} is a service of ${SITE.legalName}. We only message you from numbers you already use with us, or when someone you know sends you money.`}
+      description={`${SITE.name} is a service of ${SITE.legalName}. SMS confirms a payment or a stock that was sent to you, and only after you opt in.`}
     >
       <LegalSection heading="How you opt in">
         <p id="messaging-opt-in">
-          <strong>Chat-first.</strong> You opt in by texting {SITE.legalName} first
-          from your own phone number. We do not cold-text strangers. There is no
-          web-form checkbox and no verbal or paper sign-up.
+          Text the keyword <strong>CONFIRM</strong> to{" "}
+          <a href={SMS_CONFIRM_HREF}>{SITE.imessagePhoneDisplay}</a>. That is the
+          only way to opt in to these texts. {SITE.legalName}, operating as{" "}
+          {SITE.name}, does not text you before you do this.
         </p>
-        <ul>
-          <li>
-            <strong>SMS (US):</strong> Text the keyword &quot;gm&quot; (or any message)
-            to <a href={SMS_TOLL_FREE_HREF}>{SITE.smsTollFreeDisplay}</a> to open a{" "}
-            {SITE.name} thread with {SITE.legalName}.
-          </li>
-          <li>
-            <strong>iMessage:</strong>{" "}
-            <a href={IMESSAGE_HREF}>Message {SITE.imessagePhoneDisplay}</a> from the
-            number you use day to day.
-          </li>
-          <li>
-            <strong>WhatsApp:</strong> Message {SITE.name} on WhatsApp. That program
-            is separate from this SMS campaign.
-          </li>
-        </ul>
+        <p>When you text CONFIRM, the first reply is only this welcome:</p>
+        <p>&quot;{WELCOME}&quot;</p>
+        <p>Reply <strong>Y</strong> to that welcome. The next message is:</p>
+        <p>&quot;{ENROLLED}&quot;</p>
         <p>
-          <strong>Consent wording:</strong> &quot;You start the conversation from your
-          own phone number. {SITE.legalName} sends service texts about your transfers
-          and account. Message frequency varies. Message and data rates may apply.
-          Reply STOP to opt out. Reply HELP for help.&quot;
+          A payment or stock confirmation is sent only after that reply. If you
+          do not have a {SITE.name} account yet, that confirmation includes a
+          link on {SITE.baseUrl} to claim it. Message frequency varies with
+          those sends. Message and data rates may apply.
         </p>
         <p>
-          After you text in, we confirm: &quot;{SITE.legalName}: Thanks for messaging
-          us. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to opt
-          out, HELP for help.&quot;
-        </p>
-        <p>
-          Ongoing replies in that thread are part of the conversation you started.
-          Reply <strong>STOP</strong> on SMS to opt out of further SMS from{" "}
-          {SITE.smsTollFreeDisplay}. Reply <strong>HELP</strong> for support, or
-          email <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>.
+          Reply <strong>STOP</strong> to opt out. Reply <strong>HELP</strong> for
+          help, or email{" "}
+          <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>.
         </p>
       </LegalSection>
 
-      <LegalSection heading="When we message you first">
+      <LegalSection heading="Exact replies">
         <p>
-          The only time {SITE.legalName} may text you without a prior message in that
-          session is a <strong>transactional transfer notice</strong>:
+          <strong>CONFIRM</strong> receives the welcome above, and nothing else.
         </p>
-        <ul>
-          <li>
-            Someone using {SITE.name} sends money to a phone number in their{" "}
-            <strong>saved contacts</strong>.
-          </li>
-          <li>
-            We notify the recipient that the transfer is in their account, including
-            any time limit before it returns to the sender.
-          </li>
-        </ul>
         <p>
-          Example: &quot;{SITE.legalName}: Alex sent you $50. Details:{" "}
-          {SITE.baseUrl}. Reply STOP to opt out, HELP for help.&quot; This completes
-          a payment the sender initiated to your number. It is not marketing.
+          <strong>Y</strong> receives: &quot;{ENROLLED}&quot;
+        </p>
+        <p>
+          <strong>STOP</strong> receives: &quot;{STOP}&quot;
+        </p>
+        <p>
+          <strong>HELP</strong> receives: &quot;{HELP}&quot;
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="What the confirmation says">
+        <p>If you already have an account:</p>
+        <p>&quot;[Name] sent you [amount] with Basemate.&quot;</p>
+        <p>If you do not have an account yet, the text adds a claim link:</p>
+        <p>
+          &quot;Hey! [Name] sent you [amount] with Basemate.{" "}
+          {SITE.baseUrl}/wallet/connect Claim within 72 hours or it goes back
+          to the sender.&quot;
         </p>
       </LegalSection>
 
       <LegalSection heading="What we do not do">
         <ul>
+          <li>No text to a number that has not replied Y.</li>
           <li>No purchased phone lists.</li>
-          <li>No promotional blast SMS unrelated to your {SITE.name} activity.</li>
-          <li>
-            No waitlist or invite spam. <Link href="/landing">{SITE.name} is live</Link>.
-            Start in chat.
-          </li>
+          <li>No promotional SMS.</li>
         </ul>
       </LegalSection>
 

@@ -54,21 +54,10 @@ export default function PrivacyPage() {
       <LegalSection heading="Text messages (SMS) and chat">
         <p>
           See our{" "}
-          <a href={`${SITE_URL}/messaging`}>Messaging program</a>. In summary, we
-          send SMS from {SITE.smsTollFreeDisplay} when:
+          <a href={`${SITE_URL}/messaging`}>Messaging program</a>. We send SMS from{" "}
+          {SITE.imessagePhoneDisplay} only after you text CONFIRM and reply Y.
+          Those texts confirm that a payment or a stock was sent to you.
         </p>
-        <ul>
-          <li>
-            You <strong>text us first</strong> from your number and we reply in that
-            thread (iMessage, SMS, or WhatsApp depending on channel).
-          </li>
-          <li>
-            Someone sends you money via {SITE.name} to a number in their{" "}
-            <strong>contacts</strong> — we send a transactional notice about that
-            transfer.
-          </li>
-          <li>Account and funding confirmations tied to actions you take.</li>
-        </ul>
         <p>
           <strong>Message frequency varies.</strong> Message and data rates may
           apply. Reply <strong>STOP</strong> to opt out of SMS. Reply{" "}
@@ -77,11 +66,10 @@ export default function PrivacyPage() {
           are not liable for delayed or undelivered messages.
         </p>
         <p>
-          No mobile information will be shared with third parties or affiliates for
-          marketing or promotional purposes. Text messaging originator opt-in data
-          and consent will not be shared with any third parties, except with
-          carriers and service providers as needed to deliver the messages you
-          requested.
+          We do not sell or share your SMS opt-in data or personal information
+          with third parties for marketing purposes. Text messaging originator
+          opt-in data and consent are shared only with carriers and service
+          providers as needed to deliver the messages you requested.
         </p>
       </LegalSection>
 

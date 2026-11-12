@@ -51,30 +51,25 @@ export default function TermsPage() {
 
       <LegalSection heading="Messaging (SMS, iMessage, WhatsApp)">
         <p>
-          {SITE.name} is a chat-first service of {SITE.legalName}. You opt in by
-          texting us from your phone number, as described on our{" "}
-          <a href={`${SITE_URL}/messaging`}>Messaging program</a> page. We may send
-          automated service messages from {SITE.smsTollFreeDisplay} (SMS) or our
-          WhatsApp Business number in the thread you opened.
+          {SITE.name} is a service of {SITE.legalName}. US SMS from{" "}
+          {SITE.imessagePhoneDisplay} confirms that a payment or a stock was sent
+          to you. You opt in by texting CONFIRM to that number and replying Y, as
+          described on our <a href={`${SITE_URL}/messaging`}>Messaging program</a>{" "}
+          page. We do not send that text before you opt in.
         </p>
         <ul>
           <li>
-            <strong>Consent.</strong> You start the conversation by texting{" "}
-            {SITE.smsTollFreeDisplay}. Consent wording: &quot;You start the
-            conversation from your own phone number. {SITE.legalName} sends service
-            texts about your transfers and account. Message frequency varies.
-            Message and data rates may apply. Reply STOP to opt out. Reply HELP for
-            help.&quot; We do not cold-text for marketing. A transfer notice may
-            arrive when a saved contact sends you money.
-          </li>
-          <li>
-            <strong>Frequency</strong> varies. <strong>Message and data rates</strong>{" "}
-            may apply.
+            <strong>Program.</strong> {SITE.name} confirms payments and stocks sent
+            to people who opted in. Message frequency varies. Message and data
+            rates may apply.
           </li>
           <li>
             Reply <strong>STOP</strong> to cancel SMS. Reply <strong>HELP</strong> for
             help or email{" "}
             <a href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>.
+          </li>
+          <li>
+            Carriers are not liable for delayed or undelivered messages.
           </li>
         </ul>
         <p>

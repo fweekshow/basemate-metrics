@@ -5,7 +5,7 @@ export const SITE_URL =
 /** Product brand shown in UI. `legalName` is the incorporated sender on SMS compliance pages. */
 export const SITE = {
   name: "Basemate",
-  legalName: "Stablemate Labs",
+  legalName: "Stablemate Labs Inc",
   tagline: "Send, Earn, Trade, Save",
   description:
     "Money that lives in your texts. Send across borders, earn yield, trade, and save — all in iMessage and Base App on Base.",
@@ -46,3 +46,6 @@ export const IMESSAGE_HREF = `sms:${SITE.imessagePhone}?&body=${encodeURICompone
 
 /** Toll-free SMS entry (same opt-in pattern as iMessage). */
 export const SMS_TOLL_FREE_HREF = `sms:${SITE.smsTollFree}?&body=${encodeURIComponent("gm")}`;
+
+/** US SMS opt-in. CONFIRM is handled on the Basemate line when the reply is SMS. */
+export const SMS_CONFIRM_HREF = `sms:${SITE.imessagePhone}?&body=${encodeURIComponent("CONFIRM")}`;
